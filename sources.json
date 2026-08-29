@@ -1,0 +1,12 @@
+[
+  {"name":"Library of Congress — Chronicling America","type":"National newspaper archive","url":"https://www.loc.gov/collections/chronicling-america/","notes":"Historic American newspapers through 1963; primary discovery backbone."},
+  {"name":"American Antiquarian Society — Newspapers","type":"Early American newspaper archive","url":"https://www.americanantiquarian.org/newspapers","notes":"Major early-American collection; more than 20,000 titles and two million issues."},
+  {"name":"Howard University — Black Press Archives","type":"Black press archive","url":"https://msrc.howard.edu/black-press-archive","notes":"More than 2,000 newspaper titles and over 100,000 individual issues."},
+  {"name":"Schomburg Center — Black Newspapers","type":"Black history / newspaper archive","url":"https://archives.nypl.org/scm/20969","notes":"Representative Black newspaper holdings and broader Schomburg archival collections."},
+  {"name":"Freedom's Journal — Library of Congress","type":"Historic newspaper","url":"https://www.loc.gov/item/sn83030455/","notes":"First African American-owned and operated newspaper in the United States, founded 1827."},
+  {"name":"New York Post — Library of Congress record","type":"Hamilton-founded newspaper lineage","url":"https://www.loc.gov/item/lcwaN0011417/","notes":"Established in 1801 by Alexander Hamilton as the New-York Evening Post."},
+  {"name":"Sequoyah National Research Center","type":"Indigenous press archive","url":"https://ualr.edu/sequoyah/our-collections/","notes":"Extensive American Indian, Alaska Native and First Nations newspaper and periodical holdings."},
+  {"name":"Sequoyah — Indigenous Newspapers in North America","type":"Indigenous newspaper collection","url":"https://ualr.edu/sequoyah/indigenous-newspapers/","notes":"Thousands of editions from Indigenous publications; some access is on-site/subscription."},
+  {"name":"California Digital Newspaper Collection","type":"Western / California archive","url":"https://cdnc.ucr.edu/","notes":"Digitized California newspapers for Western and local reporting."},
+  {"name":"Hoji Shinbun Digital Collection","type":"Japanese diaspora press","url":"https://hojishinbun.hoover.org/","notes":"Japanese diaspora newspapers; useful for Japanese American community press research."}
+]

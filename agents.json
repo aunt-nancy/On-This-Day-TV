@@ -1,0 +1,13 @@
+{
+  "launch_model":"one-day MVP",
+  "human_intervention":"exception-only",
+  "agents":[
+    {"name":"Date & Story Queue","role":"Calculate 200/100/75-year windows, create daily research slate, cluster duplicate stories."},
+    {"name":"Major Press Research","role":"Find and rank national/major metropolitan headlines and original issue links."},
+    {"name":"Black & Community Press Research","role":"Search Black Press and broader Community Press Voices archives for same-day coverage and parallel leads."},
+    {"name":"Regional / Local Research","role":"Find geographically relevant reporting and identify city/state context."},
+    {"name":"Verification + Discrepancy","role":"Cross-check dates, attributions, OCR, translations and rights flags; route unresolved conflicts to human review."},
+    {"name":"Publishing + Social","role":"Assemble verified website cards and platform-native packages for YouTube, Facebook, Instagram, TikTok, X and Threads."}
+  ],
+  "automation_rule":"If source and verification checks agree, continue automatically. If material discrepancies remain after secondary checks, HOLD and request human resolution."
+}
