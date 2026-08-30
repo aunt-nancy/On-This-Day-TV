@@ -61,3 +61,13 @@
     anchor = card;
   });
 })();
+
+
+// The landing-page centerpiece is the day's major 100-year headline.
+// Agents can populate this before publish without changing page structure.
+window.OnThisDay = window.OnThisDay || {};
+window.OnThisDay.setMajorHeadline = function(headline){
+  document.querySelectorAll('[data-major-headline]').forEach(el=>{
+    el.textContent = headline || "Today’s Leading Verified Headline";
+  });
+};

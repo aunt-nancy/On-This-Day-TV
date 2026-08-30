@@ -41,3 +41,10 @@ Upload/overwrite all files in the repository root. Vercel will redeploy automati
   - art-map.svg
   - art-voices.svg
   - art-archive.svg
+
+## Center headline revision
+- Removed the redundant second "ON THIS DAY" heading from the parchment news board.
+- The center of the page now presents the day's major 100-year headline.
+- The headline is followed by "Major American Press ↔ African American / Black Press."
+- The 100-year comparison remains the dominant center tile immediately below.
+- The headline can be populated programmatically with `window.OnThisDay.setMajorHeadline(...)`.
