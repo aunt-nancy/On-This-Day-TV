@@ -5,10 +5,15 @@
 .admin-shell{max-width:1180px;margin:0 auto;padding:20px;background:#f8f1e5;min-height:100vh}.admin-top{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#071b30;color:#fff;padding:18px;border-bottom:3px solid #b98933}.admin-top h1{margin:0}.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-input{padding:9px;border:1px solid #baa984;min-width:200px}.agent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.agent-card{background:#fffaf1;border:1px solid #c7b48f;padding:12px;min-height:112px}.agent-card h3{margin:0 0 4px;font-size:15px}.agent-card p{font-size:11px;margin:0;color:#5b5347}.pill{display:inline-block;font:800 8px Arial,sans-serif;text-transform:uppercase;padding:4px 6px;margin-top:8px;background:#102d4d;color:#fff}.pill.error{background:#7c211f}.pill.complete{background:#315d2d}.pill.running{background:#7d5c14}.panel{background:#fffaf1;border:1px solid #c7b48f;padding:14px;margin:12px 0}.panel pre{white-space:pre-wrap;font:11px/1.4 Consolas,monospace;max-height:300px;overflow:auto;background:#101820;color:#eae8e0;padding:12px}.run-row{padding:9px 0;border-bottom:1px solid #ded0b7;font-size:12px}.review-card{border:1px solid #ba8b73;background:#fff8ef;padding:14px;margin:10px 0}.review-card h3{margin:0 0 6px;color:#7c211f}.review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.review-actions button{cursor:pointer}.source-link{word-break:break-all}.success{color:#315d2d}.error-text{color:#7c211f}.progress{font-weight:700;color:#102d4d}@media(max-width:900px){.agent-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.agent-grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}.admin-input{min-width:100%}}
 </style></head>
 <body><main class="admin-shell">
-<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk, assigns the research, and returns as closing publisher. Agents are ranked by editorial importance; execution follows dependencies for reliability.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button></div></header>
+<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button></div></header>
 <div id="env" class="panel"></div>
 <div id="progress" class="panel progress">Waiting for status…</div>
-<section class="panel"><h2>Priority & Execution Model</h2><div class="run-row"><b>Priority:</b> Editor Opening → Black Press → Major Press → Source Verification → Discrepancy → Regional → Community → Context → Rights → Translation → Visual → Editor Closing → Social.</div><div class="run-row"><b>Execution:</b> dependencies are respected, so verification waits for research; translation auto-skips when no non-English source requires it; visuals wait until stories are verified.</div></section>
+<section class="panel"><h2>Priority & Execution Model</h2>
+<div class="run-row"><b>Priority:</b> Editor Opening → Black Press → Major Press → Source Verification → Discrepancy → Regional → Community → Context → Rights → Translation → Visual → Editor Closing → Social.</div>
+<div class="run-row"><b>Parallel engine:</b> ON — up to 2 expensive research/verification requests run at once. Independent work no longer waits in a single-file line.</div>
+<div class="run-row"><b>Time-to-publish:</b> verified safe articles are written to the public edition before optional editorial polish, visual research, or social production.</div>
+<div class="run-row"><b>Stall protection:</b> OpenAI calls hard-timeout server-side; stale RUNNING jobs are cleared automatically.</div>
+</section>
 <section><h2>Agent Roster — Ranked by Importance</h2><div id="agents" class="agent-grid"></div></section>
 <section class="panel"><h2>Needs Review</h2><p>Only unresolved disputed items appear here. Approving one story does not hold unrelated articles.</p><div id="reviews">Loading…</div></section>
 <section class="panel"><h2>Publishing Status</h2><div id="publishing">Checking…</div></section>
@@ -17,8 +22,19 @@
 <section class="panel"><h2>Raw Status</h2><pre id="raw">Loading…</pre></section>
 </main>
 <script>
-const order=['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','source_verification','visual_archive','rights_review','discrepancy_exception','editor_producer','social_editor','short_form_video','engagement_trends','social_distribution'];
+const order=['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','source_verification','rights_review','discrepancy_exception','editor_producer','visual_archive','social_editor','short_form_video','engagement_trends','social_distribution'];
 const nonfatal=new Set(['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','visual_archive','social_editor','short_form_video','engagement_trends','social_distribution']);
+const coreRetryOnce=new Set(['black_press','major_press']);
+const waves=[
+  {name:'Opening Desk', agents:['editor_opening'], concurrency:1},
+  {name:'Research Desk', agents:['black_press','major_press','regional_local','community_press'], concurrency:2},
+  {name:'Analysis + Verification', agents:['source_verification','historical_context','translation'], concurrency:2},
+  {name:'Rights Review', agents:['rights_review'], concurrency:1},
+  {name:'Exception Control', agents:['discrepancy_exception'], concurrency:1},
+  {name:'Closing Desk — Publish', agents:['editor_producer'], concurrency:1},
+  {name:'Post-Publish Production', agents:['visual_archive','social_editor','short_form_video','engagement_trends'], concurrency:3},
+  {name:'Distribution', agents:['social_distribution'], concurrency:1},
+];
 let latestStatusData=null;
 
 function pendingStageFor(runId,d){
@@ -37,7 +53,7 @@ function pendingStageFor(runId,d){
 
 async function runStageRequest(runId,agentKey){
   const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),210000);
+  const timeout=setTimeout(()=>controller.abort(),190000);
   try{
     const r=await fetch('/api/agents/run-stage',{
       method:'POST',
@@ -51,7 +67,7 @@ async function runStageRequest(runId,agentKey){
     return d;
   }catch(e){
     if(e.name==='AbortError'){
-      throw new Error(`${agentKey} exceeded 3½ minutes. The run was paused, not restarted. Use Resume Current Run after Refresh Status.`);
+      throw new Error(`${agentKey} exceeded the browser safety window. Server-side AI timeouts prevent it from remaining RUNNING indefinitely.`);
     }
     throw e;
   }finally{
@@ -117,7 +133,7 @@ async function status(){
   latestStatusData=d;
   document.getElementById('raw').textContent=JSON.stringify(d,null,2);
   if(!d.ok){document.getElementById('env').textContent=d.error||'Unable to load';return d}
-  document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> staged Vercel requests &nbsp; <b>Model:</b> ${d.environment.model}`;
+  document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> bounded parallel waves &nbsp; <b>Model:</b> ${d.environment.model}`;
   const latest=d.runs[0]||null;
   const jobs=latest?d.jobs.filter(j=>j.run_id===latest.id):[];
   document.getElementById('agents').innerHTML=d.agents.map(a=>{
@@ -130,48 +146,112 @@ async function status(){
   if(latest){
     const complete=new Set(jobs.filter(j=>j.status==='complete').map(j=>j.agent_key));
     const failed=new Set(jobs.filter(j=>j.status==='failed').map(j=>j.agent_key));
-    const active=order.find(k=>!complete.has(k)&&!failed.has(k))||'finished';
-    document.getElementById('progress').innerHTML=`Latest run <b>${latest.edition_date}</b>: ${latest.status}. ${complete.size}/${order.length} complete. Next/current: <b>${active}</b>.`;
+    const running=[...new Set(jobs.filter(j=>j.status==='running').map(j=>j.agent_key))];
+    const active=running.length ? running.join(' + ') : (order.find(k=>!complete.has(k)&&!failed.has(k))||'finished');
+    document.getElementById('progress').innerHTML=`Latest run <b>${latest.edition_date}</b>: ${latest.status}. ${complete.size}/${order.length} complete. Active/next: <b>${active}</b>.`;
   }
   await publishingStatus();
   await reviewStatus();
   return d;
 }
 
-async function runAllStages(runId, firstAgent){
-  let agentKey=firstAgent;
-  while(agentKey){
-    const started=Date.now();
-    document.getElementById('progress').innerHTML=`Running <b>${agentKey}</b>… This stage has a 3½-minute safety timeout. Completed agents will not be rerun.`;
-    let d;
-    try{
-      d=await runStageRequest(runId,agentKey);
-    }catch(e){
+function latestJobFor(runId,key,d=latestStatusData){
+  const jobs=(d?.jobs||[]).filter(j=>j.run_id===runId&&j.agent_key===key)
+    .sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||'')));
+  return jobs[0]||null;
+}
+
+function isDoneForPipeline(runId,key,d=latestStatusData){
+  const job=latestJobFor(runId,key,d);
+  if(!job)return false;
+  if(job.status==='complete')return true;
+  if(job.status==='failed'&&nonfatal.has(key))return true;
+  return false;
+}
+
+async function waitForExisting(runId,agentKey){
+  const started=Date.now();
+  while(Date.now()-started<155000){
+    await sleep(2500);
+    const d=await status();
+    const job=latestJobFor(runId,agentKey,d);
+    if(!job||job.status!=='running')return job;
+  }
+  return latestJobFor(runId,agentKey,latestStatusData);
+}
+
+async function executeAgent(runId,agentKey){
+  let d=await runStageRequest(runId,agentKey);
+
+  if(d.inProgress){
+    document.getElementById('progress').innerHTML=`<b>${agentKey}</b> already has a live request. Waiting for that request instead of launching a duplicate…`;
+    const job=await waitForExisting(runId,agentKey);
+    if(job?.status==='complete')return {ok:true,agentKey,reused:true};
+    if(job?.status==='failed')return {ok:false,agentKey,error:job.error||'failed',continue:nonfatal.has(agentKey)};
+    // Server-side stale cleanup will make a subsequent retry safe.
+    d=await runStageRequest(runId,agentKey);
+  }
+
+  if(!d.ok && coreRetryOnce.has(agentKey)){
+    document.getElementById('progress').innerHTML=`${agentKey} did not complete on its first attempt. Retrying this priority research desk once…`;
+    await sleep(900);
+    d=await runStageRequest(runId,agentKey);
+  }
+
+  if(!d.ok && !d.continue){
+    throw new Error(`${agentKey}: ${d.error||'blocking stage failed'}`);
+  }
+
+  return {ok:Boolean(d.ok),agentKey,error:d.error||null,continue:Boolean(d.continue)};
+}
+
+async function runPool(runId,agentKeys,limit,waveName){
+  const pending=agentKeys.filter(key=>!isDoneForPipeline(runId,key));
+  if(!pending.length)return;
+
+  let cursor=0;
+  let blockingError=null;
+
+  async function worker(){
+    while(cursor<pending.length&&!blockingError){
+      const index=cursor++;
+      const key=pending[index];
+      document.getElementById('progress').innerHTML=`<b>${waveName}</b>: running ${key}. Up to ${limit} independent agents may work at once.`;
+      try{
+        const result=await executeAgent(runId,key);
+        if(!result.ok&&!nonfatal.has(key)){
+          blockingError=new Error(`${key}: ${result.error||'failed'}`);
+          return;
+        }
+      }catch(e){
+        blockingError=e;
+        return;
+      }
       await status();
-      document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
-      return;
     }
+  }
 
+  const workers=Array.from({length:Math.min(limit,pending.length)},()=>worker());
+  await Promise.all(workers);
+  if(blockingError)throw blockingError;
+}
+
+async function runParallelPipeline(runId){
+  for(const wave of waves){
+    // Refresh before each dependency wave so a reload/resume skips completed work.
     await status();
+    document.getElementById('progress').innerHTML=`Starting <b>${wave.name}</b>…`;
+    await runPool(runId,wave.agents,wave.concurrency,wave.name);
 
-    if(!d.ok && !d.continue){
-      document.getElementById('progress').innerHTML=`<span class="error-text">${agentKey}: ${d.error||'failed'}. The run is paused. Fix the blocking error, then use Resume Current Run.</span>`;
-      return;
-    }
-
-    // Never trust a stale nextAgent blindly. Recompute from Supabase status so
-    // a browser interruption/reload can resume from the first unfinished stage.
-    const s=latestStatusData||{};
-    agentKey=pendingStageFor(runId,s);
-
-    if(agentKey){
-      const elapsed=Math.round((Date.now()-started)/1000);
-      document.getElementById('progress').innerHTML=`Previous stage finished in ${elapsed}s. Next: <b>${agentKey}</b>…`;
-      await sleep(900);
+    // Critical product rule: publication is complete at the Closing Desk.
+    if(wave.name==='Closing Desk — Publish'){
+      await publishingStatus();
+      const pub=document.getElementById('publishing').textContent||'';
+      document.getElementById('progress').innerHTML=`<b>Closing Desk completed.</b> Verified safe articles have been sent to Publishing Status. Optional post-publish agents are continuing.`;
     }
   }
   await status();
-  document.getElementById('progress').innerHTML='Run reached the end of the staged workflow.';
+  document.getElementById('progress').innerHTML='Parallel newsroom run reached the end of the workflow.';
 }
 
 document.getElementById('resume').onclick=async()=>{
@@ -181,13 +261,13 @@ document.getElementById('resume').onclick=async()=>{
     const d=await status();
     const run=d?.runs?.[0];
     if(!run) throw new Error('No run is available to resume.');
-    const next=pendingStageFor(run.id,d);
-    if(!next){
+    const unfinished=order.filter(key=>!isDoneForPipeline(run.id,key,d));
+    if(!unfinished.length){
       document.getElementById('progress').textContent='The latest run has no unfinished stages.';
       return;
     }
     button.textContent='Resuming…';
-    await runAllStages(run.id,next);
+    await runParallelPipeline(run.id);
   }catch(e){
     document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
   }finally{
@@ -203,8 +283,8 @@ document.getElementById('run').onclick=async()=>{
     const r=await fetch('/api/agents/run-all',{method:'POST',headers:headers(),body:JSON.stringify({date:document.getElementById('date').value||undefined})});
     const d=await r.json();
     if(!d.ok)throw new Error(d.error||'Unable to create run');
-    button.textContent='Agents Running…';
-    await runAllStages(d.runId,d.firstAgent);
+    button.textContent='Parallel Run Active…';
+    await runParallelPipeline(d.runId);
     await status();
   }catch(e){
     document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
