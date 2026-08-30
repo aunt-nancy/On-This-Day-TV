@@ -26,78 +26,70 @@
   </section>
 </header>
 
-<section class="history-board editorial-board" id="editorialBoard" aria-live="polite">
-  <div class="edition-heading">
-    <div class="edition-kicker">Today’s Historical Edition</div>
-    <div class="edition-date" data-edition-monthday></div>
-    <div class="edition-rule" aria-hidden="true"></div>
+<section class="history-board">
+  <div class="board-title major-lead">
+    <div class="lead-kicker">Major Headline — 100 Years Ago</div>
+    <h2 data-major-headline>Today’s Leading Verified Headline</h2>
+        <div class="board-date"><span data-current-monthday></span></div>
   </div>
 
-  <div class="era-layout editorial-era-layout" id="editorialEraLayout">
-    <article class="era-box era-side era-200 editorial-era" data-story-card="y200" hidden>
+  <div class="era-layout">
+    <article class="era-box era-side era-200">
       <div class="era-cap">200 Years Ago</div>
-      <div class="era-year" data-edition-year="y200"></div>
+      <div class="era-year" data-year-offset="200"></div>
       <div class="era-ago">Early American News</div>
-      <div class="era-body editorial-era-body">
-        <article class="news-story side-story">
-          <div class="story-publication" data-y200-publication></div>
-          <div class="story-date" data-y200-date></div>
-          <h2 class="story-headline" data-y200-headline></h2>
-          <p class="story-summary" data-y200-summary></p>
-          <div class="story-source-meta" data-y200-source-meta hidden></div>
-          <a class="source-link editorial-source-link" data-y200-source-link target="_blank" rel="noopener noreferrer" hidden>View Original Source →</a>
-        </article>
-      </div>
-    </article>
-
-    <article class="era-box era-center editorial-era">
-      <div class="era-cap">100 Years Ago — Featured</div>
-      <div class="era-year" data-edition-year="y100"></div>
-      <div class="era-ago">The Day’s Featured Historical News Desk</div>
-
-      <div class="era-body editorial-era-body">
-        <div class="center-compare editorial-compare" id="featuredComparison">
-          <article class="center-paper editorial-paper major-paper" data-story-card="y100-major" hidden>
-            <div class="paper-label">Major American Press</div>
-            <div class="story-publication" data-y100-major-publication></div>
-            <div class="story-date" data-y100-major-date></div>
-            <h2 class="story-headline featured-headline" data-y100-major-headline></h2>
-            <p class="story-summary" data-y100-major-summary></p>
-            <div class="story-source-meta" data-y100-major-source-meta hidden></div>
-            <a class="source-link editorial-source-link" data-y100-major-source-link target="_blank" rel="noopener noreferrer" hidden>View Original Source →</a>
-          </article>
-
-          <article class="center-paper editorial-paper black black-paper" data-story-card="y100-black" hidden>
-            <div class="paper-label">Black Press</div>
-            <div class="story-publication" data-y100-black-publication></div>
-            <div class="story-date" data-y100-black-date></div>
-            <h2 class="story-headline featured-headline" data-y100-black-headline></h2>
-            <p class="story-summary" data-y100-black-summary></p>
-            <div class="story-source-meta" data-y100-black-source-meta hidden></div>
-            <a class="source-link editorial-source-link" data-y100-black-source-link target="_blank" rel="noopener noreferrer" hidden>View Original Source →</a>
-          </article>
+      <div class="era-body">
+        <div class="paper">
+          <div class="paper-label">Major Headline</div><div class="paper-illustration press"></div>
+          <div class="paper-name">Original Newspaper</div>
+          <div class="paper-date" data-current-monthday></div>
+          <div class="paper-headline">Today’s verified lead headline</div>
+          <div class="paper-copy">A short historical treatment with the original publication, date, page, and archive link.</div>
+          <a class="source-link" href="today.html">Read 200 Years Ago →</a>
         </div>
-
-        <section class="verified-secondary" id="verifiedSecondary" hidden>
-          <div class="secondary-heading">More Verified Headlines</div>
-          <div class="secondary-list" id="secondaryHeadlineList"></div>
-        </section>
       </div>
     </article>
 
-    <article class="era-box era-side era-76 editorial-era" data-story-card="y76" hidden>
-      <div class="era-cap"><span data-y76-ago-label>76 Years Ago</span></div>
-      <div class="era-year" data-edition-year="y76"></div>
+    <article class="era-box era-center">
+      <div class="era-cap">100 Years Ago — Featured Comparison</div>
+      <div class="era-year" data-year-offset="100"></div>
+      <div class="era-ago">The Day’s Largest Historical News Desk</div>
+      <div class="era-body">
+        <div class="center-compare">
+          <div class="center-paper">
+            <div class="paper-label">Major American Headline</div>
+            <div class="paper-name">Major American Press</div>
+            <div class="paper-date" data-current-monthday></div>
+            <div class="paper-headline">The day’s leading verified headline</div>
+            <div class="paper-copy">How a major national or metropolitan newspaper framed the event.</div>
+            <a class="source-link" href="today.html">View Original Source →</a>
+          </div>
+          <div class="center-paper black">
+            <div class="paper-label">Black Press Report</div>
+            <div class="paper-name">Black American Press</div>
+            <div class="paper-date" data-current-monthday></div>
+            <div class="paper-headline">How the Black press reported—or led—the day</div>
+            <div class="paper-copy">Compare prominence, wording, sources, agency, context, and what was emphasized.</div>
+            <a class="source-link" href="community.html#black">View Black Press Source →</a>
+          </div>
+        </div>
+        <div class="more-headlines"><strong>More Major Headlines</strong><p>Multiple daily headlines are grouped as a ranked news slate. Different front pages are preserved rather than forced into a false one-story comparison.</p></div>
+      </div>
+    </article>
+
+    <article class="era-box era-side era-76">
+      <div class="era-cap">76 Years Ago</div>
+      <div class="era-year" data-year-offset="76"></div>
       <div class="era-ago">Mid-Century American News</div>
-      <div class="era-body editorial-era-body">
-        <article class="news-story side-story">
-          <div class="story-publication" data-y76-publication></div>
-          <div class="story-date" data-y76-date></div>
-          <h2 class="story-headline" data-y76-headline></h2>
-          <p class="story-summary" data-y76-summary></p>
-          <div class="story-source-meta" data-y76-source-meta hidden></div>
-          <a class="source-link editorial-source-link" data-y76-source-link target="_blank" rel="noopener noreferrer" hidden>View Original Source →</a>
-        </article>
+      <div class="era-body">
+        <div class="paper">
+          <div class="paper-label">Major Headline</div><div class="paper-illustration map"></div>
+          <div class="paper-name">Original Newspaper</div>
+          <div class="paper-date" data-current-monthday></div>
+          <div class="paper-headline">Today’s verified lead headline</div>
+          <div class="paper-copy">Compact coverage, with a community-press comparison when surviving records support it.</div>
+          <a class="source-link" href="today.html">Read 76 Years Ago →</a>
+        </div>
       </div>
     </article>
   </div>
