@@ -48,3 +48,11 @@ Upload/overwrite all files in the repository root. Vercel will redeploy automati
 - The headline is followed by "Major American Press ↔ African American / Black Press."
 - The 100-year comparison remains the dominant center tile immediately below.
 - The headline can be populated programmatically with `window.OnThisDay.setMajorHeadline(...)`.
+
+
+## Minimal illustration locked revision
+- Horizontal masthead left untouched.
+- Center 100-year tile left text-first and illustration-free.
+- Removed the comparison subtitle beneath the center headline area.
+- Supporting illustrations were reduced and placed only in side tiles and small page/card headers.
+- Interior visual bands and showcase cards were scaled down so articles and source links remain dominant.

@@ -428,3 +428,98 @@ a{color:inherit}
 .major-lead .board-date{
   margin-top:8px;
 }
+
+
+/* MINIMAL ILLUSTRATION LOCK: keep masthead untouched, keep center tile text-first */
+.major-lead{
+  max-width:860px;
+  margin:0 auto 8px;
+  padding:2px 18px 2px;
+}
+.major-lead .lead-kicker{margin-bottom:4px}
+.major-lead h2{
+  max-width:780px;
+  font-size:clamp(28px,3.7vw,44px);
+  line-height:1.0;
+}
+.major-lead .board-date{margin-top:5px}
+
+/* side-tile illustrations only, and kept modest */
+.era-side .paper-illustration{
+  height:62px;
+  margin:0 0 8px;
+  background-size:cover;
+  opacity:.92;
+}
+
+/* no illustration block should appear inside the center tile */
+.era-center .paper-illustration{
+  display:none !important;
+}
+.era-center .center-paper{
+  padding-top:2px;
+}
+.era-center .paper-name{
+  margin-top:4px;
+}
+
+/* toned-down homepage illustration showcase */
+.graphic-showcase{
+  padding:0 18px 18px;
+}
+.showcase-grid{
+  gap:8px;
+}
+.showcase-card{
+  min-height:170px;
+}
+.showcase-art{
+  height:74px;
+  background-size:contain;
+  background-position:center right;
+  background-color:#fbf5ea;
+}
+.showcase-copy{padding:10px 12px}
+.showcase-copy p{font-size:10.5px;line-height:1.36}
+
+/* smaller illustration strip on interior pages */
+.page-visual-band{
+  padding:10px 18px 14px;
+  gap:8px;
+}
+.visual-panel{
+  min-height:152px;
+}
+.visual-panel .art{
+  height:66px;
+  background-size:contain;
+  background-position:center right;
+  background-color:#fbf5ea;
+}
+.visual-panel .copy{padding:10px 12px}
+.visual-panel p{font-size:10.5px;line-height:1.36}
+
+/* subtle community tile watermarks only */
+.community-card:after{
+  width:30px;
+  height:30px;
+  opacity:.07;
+  right:8px;
+  bottom:8px;
+  background-size:contain;
+}
+
+/* supporting cards keep small header illustrations so articles remain dominant */
+.source-card::before,
+.archive-card::before,
+.region-card::before{
+  height:54px;
+  margin-bottom:8px;
+  background-size:contain;
+  background-position:center right;
+}
+
+@media(max-width:700px){
+  .major-lead{padding:2px 10px 4px}
+  .page-visual-band{padding:10px 10px 12px}
+}
