@@ -27,3 +27,37 @@
   search?.addEventListener('input',filterArchive);
   community?.addEventListener('change',filterArchive);
 })();
+
+
+// Community Press ranking:
+// African American / Black Press is always fixed in the center.
+// All surrounding tiles are ordered by weighted population importance + headline relevance.
+// Agents can update data-headline-weight daily without changing the layout.
+(function(){
+  const grid = document.getElementById('communityPriorityGrid');
+  if(!grid) return;
+
+  const black = document.getElementById('blackCenter');
+  const cards = [...grid.querySelectorAll('.sortable-community')];
+
+  cards.sort((a,b)=>{
+    const score = el => {
+      const population = Number(el.dataset.populationWeight || 0);
+      const headline = Number(el.dataset.headlineWeight || 0);
+      return (population * 0.55) + (headline * 0.45);
+    };
+    return score(b) - score(a);
+  });
+
+  // Desktop target:
+  // row 1 = top ranked left, Black Press center, second ranked right.
+  // remaining cards follow in descending weighted order.
+  if(cards[0]) grid.insertBefore(cards[0], black);
+  if(cards[1]) black.after(cards[1]);
+
+  let anchor = cards[1] || black;
+  cards.slice(2).forEach(card=>{
+    anchor.after(card);
+    anchor = card;
+  });
+})();
