@@ -5,10 +5,11 @@
 .admin-shell{max-width:1180px;margin:0 auto;padding:20px;background:#f8f1e5;min-height:100vh}.admin-top{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#071b30;color:#fff;padding:18px;border-bottom:3px solid #b98933}.admin-top h1{margin:0}.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-input{padding:9px;border:1px solid #baa984;min-width:200px}.agent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.agent-card{background:#fffaf1;border:1px solid #c7b48f;padding:12px;min-height:112px}.agent-card h3{margin:0 0 4px;font-size:15px}.agent-card p{font-size:11px;margin:0;color:#5b5347}.pill{display:inline-block;font:800 8px Arial,sans-serif;text-transform:uppercase;padding:4px 6px;margin-top:8px;background:#102d4d;color:#fff}.pill.error{background:#7c211f}.pill.complete{background:#315d2d}.pill.running{background:#7d5c14}.panel{background:#fffaf1;border:1px solid #c7b48f;padding:14px;margin:12px 0}.panel pre{white-space:pre-wrap;font:11px/1.4 Consolas,monospace;max-height:300px;overflow:auto;background:#101820;color:#eae8e0;padding:12px}.run-row{padding:9px 0;border-bottom:1px solid #ded0b7;font-size:12px}.review-card{border:1px solid #ba8b73;background:#fff8ef;padding:14px;margin:10px 0}.review-card h3{margin:0 0 6px;color:#7c211f}.review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.review-actions button{cursor:pointer}.source-link{word-break:break-all}.success{color:#315d2d}.error-text{color:#7c211f}.progress{font-weight:700;color:#102d4d}@media(max-width:900px){.agent-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.agent-grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}.admin-input{min-width:100%}}
 </style></head>
 <body><main class="admin-shell">
-<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>One click runs agents in separate Vercel requests. Safe stories publish automatically; only disputed stories come here for review.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="refresh">Refresh Status</button></div></header>
+<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk, assigns the research, and returns as closing publisher. Agents are ranked by editorial importance; execution follows dependencies for reliability.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button></div></header>
 <div id="env" class="panel"></div>
 <div id="progress" class="panel progress">Waiting for status…</div>
-<section><h2>Agent Roster</h2><div id="agents" class="agent-grid"></div></section>
+<section class="panel"><h2>Priority & Execution Model</h2><div class="run-row"><b>Priority:</b> Editor Opening → Black Press → Major Press → Source Verification → Discrepancy → Regional → Community → Context → Rights → Translation → Visual → Editor Closing → Social.</div><div class="run-row"><b>Execution:</b> dependencies are respected, so verification waits for research; translation auto-skips when no non-English source requires it; visuals wait until stories are verified.</div></section>
+<section><h2>Agent Roster — Ranked by Importance</h2><div id="agents" class="agent-grid"></div></section>
 <section class="panel"><h2>Needs Review</h2><p>Only unresolved disputed items appear here. Approving one story does not hold unrelated articles.</p><div id="reviews">Loading…</div></section>
 <section class="panel"><h2>Publishing Status</h2><div id="publishing">Checking…</div></section>
 <section class="panel"><h2>Recent Runs</h2><div id="runs"></div></section>
@@ -16,7 +17,47 @@
 <section class="panel"><h2>Raw Status</h2><pre id="raw">Loading…</pre></section>
 </main>
 <script>
-const order=['date_anniversary','major_press','black_press','regional_local','community_press','visual_archive','historical_context','translation','source_verification','rights_review','discrepancy_exception','editor_producer','social_editor','short_form_video','engagement_trends','social_distribution'];
+const order=['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','source_verification','visual_archive','rights_review','discrepancy_exception','editor_producer','social_editor','short_form_video','engagement_trends','social_distribution'];
+const nonfatal=new Set(['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','visual_archive','social_editor','short_form_video','engagement_trends','social_distribution']);
+let latestStatusData=null;
+
+function pendingStageFor(runId,d){
+  const jobs=(d.jobs||[]).filter(j=>j.run_id===runId);
+  const newest=new Map();
+  [...jobs].sort((a,b)=>String(a.started_at||'').localeCompare(String(b.started_at||''))).forEach(j=>newest.set(j.agent_key,j));
+  for(const key of order){
+    const job=newest.get(key);
+    if(!job) return key;
+    if(job.status==='complete') continue;
+    if(job.status==='failed' && nonfatal.has(key)) continue;
+    return key;
+  }
+  return null;
+}
+
+async function runStageRequest(runId,agentKey){
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),210000);
+  try{
+    const r=await fetch('/api/agents/run-stage',{
+      method:'POST',
+      headers:headers(),
+      body:JSON.stringify({runId,agentKey}),
+      signal:controller.signal
+    });
+    const raw=await r.text();
+    let d;
+    try{d=JSON.parse(raw)}catch{throw new Error(`${agentKey} returned a non-JSON response: ${raw.slice(0,180)}`)}
+    return d;
+  }catch(e){
+    if(e.name==='AbortError'){
+      throw new Error(`${agentKey} exceeded 3½ minutes. The run was paused, not restarted. Use Resume Current Run after Refresh Status.`);
+    }
+    throw e;
+  }finally{
+    clearTimeout(timeout);
+  }
+}
 const tokenEl=document.getElementById('token');
 tokenEl.value=localStorage.getItem('otd_admin_token')||'';
 tokenEl.addEventListener('change',()=>localStorage.setItem('otd_admin_token',tokenEl.value));
@@ -73,6 +114,7 @@ window.review=review;
 async function status(){
   const r=await fetch('/api/agents/status',{headers:headers()});
   const d=await r.json();
+  latestStatusData=d;
   document.getElementById('raw').textContent=JSON.stringify(d,null,2);
   if(!d.ok){document.getElementById('env').textContent=d.error||'Unable to load';return d}
   document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> staged Vercel requests &nbsp; <b>Model:</b> ${d.environment.model}`;
@@ -81,7 +123,7 @@ async function status(){
   document.getElementById('agents').innerHTML=d.agents.map(a=>{
     const matches=jobs.filter(j=>j.agent_key===a.key).sort((x,y)=>String(y.started_at||'').localeCompare(String(x.started_at||'')));
     const job=matches[0]; const s=job?.status||'ready'; const err=job?.error?`<p class="error-text"><b>Error:</b> ${job.error}</p>`:'';
-    return `<div class="agent-card"><h3>${a.name}</h3><p>${a.group} • automatic</p><span class="pill ${statusClass(s)}">${s}</span>${err}</div>`
+    return `<div class="agent-card"><h3>#${a.priority||'?'} ${a.name}</h3><p>${a.group} • ${a.phase||'workflow'} • automatic</p><span class="pill ${statusClass(s)}">${s}</span>${err}</div>`
   }).join('');
   document.getElementById('runs').innerHTML=d.runs.map(x=>`<div class="run-row"><b>${x.edition_date}</b> — ${x.status} — ${x.trigger} — ${x.started_at||''}${x.error?`<br><span class="error-text">${x.error}</span>`:''}</div>`).join('')||'No runs yet.';
   document.getElementById('discrepancies').innerHTML=d.discrepancies.map(x=>`<div class="run-row"><b>${x.severity}</b> — ${x.description}</div>`).join('')||'No open discrepancies.';
@@ -89,7 +131,7 @@ async function status(){
     const complete=new Set(jobs.filter(j=>j.status==='complete').map(j=>j.agent_key));
     const failed=new Set(jobs.filter(j=>j.status==='failed').map(j=>j.agent_key));
     const active=order.find(k=>!complete.has(k)&&!failed.has(k))||'finished';
-    document.getElementById('progress').innerHTML=`Latest run <b>${latest.edition_date}</b>: ${latest.status}. ${complete.size}/16 complete. Next/current: <b>${active}</b>.`;
+    document.getElementById('progress').innerHTML=`Latest run <b>${latest.edition_date}</b>: ${latest.status}. ${complete.size}/${order.length} complete. Next/current: <b>${active}</b>.`;
   }
   await publishingStatus();
   await reviewStatus();
@@ -99,22 +141,59 @@ async function status(){
 async function runAllStages(runId, firstAgent){
   let agentKey=firstAgent;
   while(agentKey){
-    document.getElementById('progress').innerHTML=`Running <b>${agentKey}</b>… Articles will appear once Editor & Producer completes.`;
-    const r=await fetch('/api/agents/run-stage',{
-      method:'POST',
-      headers:headers(),
-      body:JSON.stringify({runId,agentKey})
-    });
-    const d=await r.json();
-    await status();
-    if(!d.ok && !d.continue){
-      throw new Error(`${agentKey}: ${d.error||'failed'}`);
+    const started=Date.now();
+    document.getElementById('progress').innerHTML=`Running <b>${agentKey}</b>… This stage has a 3½-minute safety timeout. Completed agents will not be rerun.`;
+    let d;
+    try{
+      d=await runStageRequest(runId,agentKey);
+    }catch(e){
+      await status();
+      document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
+      return;
     }
-    agentKey=d.nextAgent||null;
-    if(agentKey) await sleep(1200);
+
+    await status();
+
+    if(!d.ok && !d.continue){
+      document.getElementById('progress').innerHTML=`<span class="error-text">${agentKey}: ${d.error||'failed'}. The run is paused. Fix the blocking error, then use Resume Current Run.</span>`;
+      return;
+    }
+
+    // Never trust a stale nextAgent blindly. Recompute from Supabase status so
+    // a browser interruption/reload can resume from the first unfinished stage.
+    const s=latestStatusData||{};
+    agentKey=pendingStageFor(runId,s);
+
+    if(agentKey){
+      const elapsed=Math.round((Date.now()-started)/1000);
+      document.getElementById('progress').innerHTML=`Previous stage finished in ${elapsed}s. Next: <b>${agentKey}</b>…`;
+      await sleep(900);
+    }
   }
+  await status();
+  document.getElementById('progress').innerHTML='Run reached the end of the staged workflow.';
 }
 
+document.getElementById('resume').onclick=async()=>{
+  const button=document.getElementById('resume');
+  button.disabled=true; button.textContent='Checking…';
+  try{
+    const d=await status();
+    const run=d?.runs?.[0];
+    if(!run) throw new Error('No run is available to resume.');
+    const next=pendingStageFor(run.id,d);
+    if(!next){
+      document.getElementById('progress').textContent='The latest run has no unfinished stages.';
+      return;
+    }
+    button.textContent='Resuming…';
+    await runAllStages(run.id,next);
+  }catch(e){
+    document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
+  }finally{
+    button.disabled=false; button.textContent='Resume Current Run';
+  }
+};
 document.getElementById('refresh').onclick=status;
 document.getElementById('run').onclick=async()=>{
   const button=document.getElementById('run');
