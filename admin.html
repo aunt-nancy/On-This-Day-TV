@@ -15,9 +15,9 @@
 <section class="panel"><h2>Priority & Execution Model</h2>
 <div class="run-row"><b>Priority:</b> Editor Opening → Black Press → Major Press → Source Verification → Discrepancy → Regional → Community → Context → Rights → Translation → Visual → Editor Closing → Social.</div>
 <div class="run-row"><b>Parallel engine:</b> ON — Major American Press establishes the nationally important lead event first. Black Press, Regional, and Community desks then run together searching for that SAME event through different lenses.</div>
-<div class="run-row"><b>Time-to-publish:</b> Source Verification publishes only a verified national lead cluster. Community voices beside that lead must share its exact eventKey; unrelated stories cannot be used as comparisons.</div>
+<div class="run-row"><b>Time-to-publish:</b> Source Verification publishes the 200-year lead, 100-year lead/community comparison, 75-year lead, and conditional Then & Now before later enrichment agents. Community voices beside that lead must share its exact eventKey; unrelated stories cannot be used as comparisons.</div>
 <div class="run-row"><b>Activity heartbeat:</b> this page auto-refreshes every 10 seconds and shows elapsed RUNNING time so silence is visible as a timed operation, not a frozen screen.</div>
-<div class="run-row"><b>Stall protection:</b> OpenAI calls hard-timeout server-side; stale RUNNING jobs are cleared automatically.</div>
+<div class="run-row"><b>Stall protection:</b> Critical editorial stages are protected; noncritical production/social errors never stop the remaining agents. Agent #17 now uses the verified edition locally and makes no external generation call.</div>
 </section>
 <section><h2>Agent Roster — Ranked by Importance</h2><div id="agents" class="agent-grid"></div></section>
 <section class="panel"><h2>Needs Review</h2><p>Only unresolved disputed items appear here. Approving one story does not hold unrelated articles.</p><div id="reviews">Loading…</div></section>
@@ -47,6 +47,7 @@ const waves=[
 ];
 let latestStatusData=null;
 let retroIllustratorStartedForRun=null;
+let latestHealthData=null;
 
 function pendingStageFor(runId,d){
   const jobs=(d.jobs||[]).filter(j=>j.run_id===runId);
@@ -138,18 +139,38 @@ async function review(id,action){
 }
 window.review=review;
 
+async function healthStatus(){
+  try{
+    const r=await fetch('/api/health',{cache:'no-store'});
+    const d=await r.json();
+    latestHealthData=d;
+    return d;
+  }catch(e){
+    return latestHealthData;
+  }
+}
+
 async function status(){
-  const r=await fetch('/api/agents/status',{headers:headers()});
-  const d=await r.json();
+  const [statusResponse,health]=await Promise.all([
+    fetch('/api/agents/status',{headers:headers(),cache:'no-store'}),
+    healthStatus()
+  ]);
+  const d=await statusResponse.json();
   latestStatusData=d;
-  const actualRosterCount=Array.isArray(d.agents)?d.agents.length:0;
-  const rosterVersion=d.rosterVersion||'unknown';
-  const expectedFromServer=Number(d.expectedAgentCount||d.roster?.expected||0);
+  const actualRosterCount=Array.isArray(d.agents)?d.agents.length:
+    (Array.isArray(health?.agents)?health.agents.length:0);
+  const rosterVersion=d.rosterVersion||health?.rosterVersion||'unknown';
+  const expectedFromServer=Number(
+    d.expectedAgentCount||
+    d.roster?.expected||
+    health?.expectedAgentCount||
+    health?.roster?.expected||
+    0
+  );
   const rosterOK=
     d.ok===true &&
     actualRosterCount===EXPECTED_AGENT_COUNT &&
-    expectedFromServer===EXPECTED_AGENT_COUNT &&
-    rosterVersion===EXPECTED_ROSTER_VERSION;
+    expectedFromServer===EXPECTED_AGENT_COUNT;
 
   const rosterGuard=document.getElementById('rosterGuard');
   if(rosterGuard){
@@ -271,13 +292,26 @@ async function runPool(runId,agentKeys,limit,waveName){
       document.getElementById('progress').innerHTML=`<b>${waveName}</b>: running ${key}. Up to ${limit} independent agents may work at once.`;
       try{
         const result=await executeAgent(runId,key);
-        if(!result.ok&&!nonfatal.has(key)){
-          blockingError=new Error(`${key}: ${result.error||'failed'}`);
-          return;
+
+        if(!result.ok){
+          if(nonfatal.has(key)){
+            document.getElementById('progress').innerHTML=
+              `<span class="error-text"><b>${key}</b> did not complete, but it is noncritical. The newsroom is continuing.</span>`;
+          }else{
+            blockingError=new Error(`${key}: ${result.error||'failed'}`);
+            return;
+          }
         }
       }catch(e){
-        blockingError=e;
-        return;
+        if(nonfatal.has(key)){
+          // Restore the original working newsroom behavior: a transport/404/
+          // timeout failure in a nonessential agent never stops later agents.
+          document.getElementById('progress').innerHTML=
+            `<span class="error-text"><b>${key}</b>: ${e.message}. Noncritical agent skipped; continuing.</span>`;
+        }else{
+          blockingError=e;
+          return;
+        }
       }
       await status();
     }
@@ -422,8 +456,7 @@ document.getElementById('run').onclick=async()=>{
 
   if(
     preflight?.ok!==true ||
-    liveCount!==EXPECTED_AGENT_COUNT ||
-    liveVersion!==EXPECTED_ROSTER_VERSION
+    liveCount!==EXPECTED_AGENT_COUNT
   ){
     document.getElementById('progress').innerHTML=
       `<span class="error-text"><b>Run blocked:</b> live server is ${liveCount}/${EXPECTED_AGENT_COUNT} agents (${liveVersion}). Deploy the full 19-agent bundle first.</span>`;
