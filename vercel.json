@@ -3,6 +3,17 @@
   "functions": {
     "api/**/*.js": {
       "maxDuration": 300
+    },
+    "api/queues/agent.js": {
+      "maxDuration": 300,
+      "experimentalTriggers": [
+        {
+          "type": "queue/v2beta",
+          "topic": "otd-agent-work",
+          "retryAfterSeconds": 20,
+          "initialDelaySeconds": 0
+        }
+      ]
     }
   },
   "crons": [

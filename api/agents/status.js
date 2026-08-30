@@ -8,10 +8,24 @@ export default async function handler(req, res) {
   try {
     const [runs, jobs, discrepancies] = await Promise.all([
       select('agent_runs', 'select=*&order=started_at.desc&limit=20'),
-      select('agent_jobs', 'select=*&order=started_at.desc&limit=100'),
+      select('agent_jobs', 'select=*&order=started_at.desc&limit=200'),
       select('discrepancies', 'select=*&status=eq.open&order=created_at.desc&limit=100'),
     ]);
-    json(res, 200, { ok: true, environment: environmentStatus(), agents: AGENTS, runs, jobs, discrepancies });
+
+    const latestRun = runs[0] || null;
+    const latestJobs = latestRun ? jobs.filter(j => j.run_id === latestRun.id) : [];
+
+    json(res, 200, {
+      ok: true,
+      environment: environmentStatus(),
+      agents: AGENTS,
+      runs,
+      jobs,
+      latestRun,
+      latestJobs,
+      discrepancies,
+      architecture: 'durable_queue',
+    });
   } catch (error) {
     json(res, 500, { ok: false, error: error.message });
   }

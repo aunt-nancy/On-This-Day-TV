@@ -2,20 +2,83 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Agent Newsroom | On This Day</title><link rel="stylesheet" href="styles.css">
 <style>
-.admin-shell{max-width:1180px;margin:0 auto;padding:20px;background:#f8f1e5;min-height:100vh}.admin-top{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#071b30;color:#fff;padding:18px;border-bottom:3px solid #b98933}.admin-top h1{margin:0}.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-input{padding:9px;border:1px solid #baa984;min-width:260px}.agent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.agent-card{background:#fffaf1;border:1px solid #c7b48f;padding:12px;min-height:110px}.agent-card h3{margin:0 0 4px;font-size:15px}.agent-card p{font-size:11px;margin:0;color:#5b5347}.pill{display:inline-block;font:800 8px Arial,sans-serif;text-transform:uppercase;padding:4px 6px;margin-top:8px;background:#102d4d;color:#fff}.pill.waiting{background:#8a641e}.pill.error{background:#7c211f}.panel{background:#fffaf1;border:1px solid #c7b48f;padding:14px;margin:12px 0}.panel pre{white-space:pre-wrap;font:11px/1.4 Consolas,monospace;max-height:440px;overflow:auto;background:#101820;color:#eae8e0;padding:12px}.run-row{padding:9px 0;border-bottom:1px solid #ded0b7;font-size:12px}@media(max-width:900px){.agent-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.agent-grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}.admin-input{min-width:100%}}
+.admin-shell{max-width:1180px;margin:0 auto;padding:20px;background:#f8f1e5;min-height:100vh}.admin-top{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#071b30;color:#fff;padding:18px;border-bottom:3px solid #b98933}.admin-top h1{margin:0}.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-input{padding:9px;border:1px solid #baa984;min-width:220px}.agent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.agent-card{background:#fffaf1;border:1px solid #c7b48f;padding:12px;min-height:112px}.agent-card h3{margin:0 0 4px;font-size:15px}.agent-card p{font-size:11px;margin:0;color:#5b5347}.agent-error{font-size:10px!important;color:#7c211f!important;margin-top:6px!important}.pill{display:inline-block;font:800 8px Arial,sans-serif;text-transform:uppercase;padding:4px 6px;margin-top:8px;background:#102d4d;color:#fff}.pill.waiting{background:#8a641e}.pill.error{background:#7c211f}.pill.complete{background:#315d2d}.pill.running{background:#7d5c14}.panel{background:#fffaf1;border:1px solid #c7b48f;padding:14px;margin:12px 0}.panel pre{white-space:pre-wrap;font:11px/1.4 Consolas,monospace;max-height:380px;overflow:auto;background:#101820;color:#eae8e0;padding:12px}.run-row{padding:9px 0;border-bottom:1px solid #ded0b7;font-size:12px}.progress{font-weight:700;color:#102d4d}.success{color:#315d2d}.error-text{color:#7c211f}@media(max-width:900px){.agent-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.agent-grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}.admin-input{min-width:100%}}
 </style></head>
 <body><main class="admin-shell">
-  <header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>All agents run automatically. Human intervention appears only for unresolved discrepancies.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="refresh">Refresh Status</button></div></header>
-  <div id="env" class="panel"></div>
-  <section><h2>Agent Roster</h2><div id="agents" class="agent-grid"></div></section>
-  <section class="panel"><h2>Latest Agent Failures</h2><div id="failures">No failures in the latest run.</div></section>
-  <section class="panel"><h2>Recent Runs</h2><div id="runs"></div></section>
-  <section class="panel"><h2>Open Discrepancies</h2><div id="discrepancies"></div></section>
-  <section class="panel"><h2>Raw Status</h2><pre id="raw">Loading…</pre></section>
+<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Durable queue: one agent per job. Completed agents stay completed through retries and deployments.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Start New Run</button><button class="button" id="refresh">Refresh Status</button></div></header>
+<div id="env" class="panel"></div>
+<div id="progress" class="panel progress">Waiting for status…</div>
+<section><h2>Latest Run Agent Roster</h2><div id="agents" class="agent-grid"></div></section>
+<section class="panel"><h2>Latest Agent Failures</h2><div id="failures">No failures in latest run.</div></section>
+<section class="panel"><h2>Recent Runs</h2><div id="runs"></div></section>
+<section class="panel"><h2>Open Discrepancies</h2><div id="discrepancies"></div></section>
+<section class="panel"><h2>Raw Status</h2><pre id="raw">Loading…</pre></section>
 </main>
 <script>
+const order=['date_anniversary','major_press','black_press','regional_local','community_press','visual_archive','historical_context','translation','source_verification','rights_review','discrepancy_exception','editor_producer','social_editor','short_form_video','engagement_trends','social_distribution'];
 const tokenEl=document.getElementById('token');tokenEl.value=localStorage.getItem('otd_admin_token')||'';tokenEl.addEventListener('change',()=>localStorage.setItem('otd_admin_token',tokenEl.value));
 const headers=()=>({Authorization:`Bearer ${tokenEl.value}`,'Content-Type':'application/json'});
-async function status(){const r=await fetch('/api/agents/status',{headers:headers()});const d=await r.json();document.getElementById('raw').textContent=JSON.stringify(d,null,2);if(!d.ok){document.getElementById('env').textContent=d.error||'Unable to load';return}document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Model:</b> ${d.environment.model}<br><small>Required: ${Object.entries(d.environment.required).map(([k,v])=>`${k}=${v?'connected':'missing'}`).join(' • ')}</small><br><small>Social: ${Object.entries(d.environment.social).map(([k,v])=>`${k}=${v?'connected':'waiting'}`).join(' • ')}</small>`;document.getElementById('agents').innerHTML=d.agents.map(a=>{const job=d.jobs.find(j=>j.agent_key===a.key);const s=job?.status||'ready';const err=job?.error?`<p style="color:#7c211f;margin-top:6px"><b>Error:</b> ${job.error}</p>`:'';return `<div class="agent-card"><h3>${a.name}</h3><p>${a.group} • automatic</p><span class="pill ${s==='failed'?'error':s==='waiting_credentials'?'waiting':''}">${s}</span>${err}</div>`}).join('');const latestRun=d.runs[0];const failedJobs=latestRun?d.jobs.filter(j=>j.run_id===latestRun.id&&j.status==='failed'):[];document.getElementById('failures').innerHTML=failedJobs.length?failedJobs.map(j=>`<div class="run-row"><b>${j.agent_key}</b><br><span style="color:#7c211f">${j.error||'Unknown agent failure'}</span></div>`).join(''):'No failures in the latest run.';document.getElementById('runs').innerHTML=d.runs.map(x=>`<div class="run-row"><b>${x.edition_date}</b> — ${x.status} — ${x.trigger} — ${x.started_at||''}${x.error?`<br><span style="color:#7c211f"><b>Error:</b> ${x.error}</span>`:''}</div>`).join('')||'No runs yet.';document.getElementById('discrepancies').innerHTML=d.discrepancies.map(x=>`<div class="run-row"><b>${x.severity}</b> — ${x.description}</div>`).join('')||'No open discrepancies.'}
-document.getElementById('refresh').onclick=status;document.getElementById('run').onclick=async()=>{localStorage.setItem('otd_admin_token',tokenEl.value);const button=document.getElementById('run');button.disabled=true;button.textContent='Agents running…';try{const r=await fetch('/api/agents/run-all',{method:'POST',headers:headers(),body:JSON.stringify({date:document.getElementById('date').value||undefined})});const d=await r.json();document.getElementById('raw').textContent=JSON.stringify(d,null,2);await status()}finally{button.disabled=false;button.textContent='Run All Agents'}};status();
+let pollTimer=null;
+
+function statusClass(s){return s==='failed'?'error':s==='complete'?'complete':s==='running'?'running':s==='waiting_credentials'?'waiting':''}
+
+async function status(){
+  const r=await fetch('/api/agents/status',{headers:headers()});
+  const d=await r.json();
+  document.getElementById('raw').textContent=JSON.stringify(d,null,2);
+  if(!d.ok){document.getElementById('env').textContent=d.error||'Unable to load';return d}
+
+  document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> ${d.architecture||'legacy'} &nbsp; <b>Model:</b> ${d.environment.model}<br><small>Required: ${Object.entries(d.environment.required).map(([k,v])=>`${k}=${v?'connected':'missing'}`).join(' • ')}</small>`;
+
+  const jobs=d.latestJobs||[];
+  document.getElementById('agents').innerHTML=d.agents.map(a=>{
+    const matches=jobs.filter(j=>j.agent_key===a.key).sort((x,y)=>String(y.started_at||'').localeCompare(String(x.started_at||'')));
+    const job=matches[0];
+    const s=job?.status||'ready';
+    const err=job?.error?`<p class="agent-error"><b>Error:</b> ${job.error}</p>`:'';
+    return `<div class="agent-card"><h3>${a.name}</h3><p>${a.group} • automatic</p><span class="pill ${statusClass(s)}">${s}</span>${err}</div>`
+  }).join('');
+
+  const failures=jobs.filter(j=>j.status==='failed');
+  document.getElementById('failures').innerHTML=failures.length?failures.map(j=>`<div class="run-row"><b>${j.agent_key}</b><br><span class="error-text">${j.error||'Unknown failure'}</span></div>`).join(''):'No failures in latest run.';
+
+  document.getElementById('runs').innerHTML=d.runs.map(x=>`<div class="run-row"><b>${x.edition_date}</b> — ${x.status} — ${x.trigger} — ${x.started_at||''}${x.error?`<br><span class="error-text">${x.error}</span>`:''}</div>`).join('')||'No runs yet.';
+  document.getElementById('discrepancies').innerHTML=d.discrepancies.map(x=>`<div class="run-row"><b>${x.severity}</b> — ${x.description}</div>`).join('')||'No open discrepancies.';
+
+  const run=d.latestRun;
+  if(!run){document.getElementById('progress').textContent='No runs yet.';return d}
+
+  const completeKeys=new Set(jobs.filter(j=>j.status==='complete').map(j=>j.agent_key));
+  const failedKeys=new Set(jobs.filter(j=>j.status==='failed').map(j=>j.agent_key));
+  const runningKeys=new Set(jobs.filter(j=>j.status==='running').map(j=>j.agent_key));
+  const done=completeKeys.size;
+  let active=order.find(k=>runningKeys.has(k))||order.find(k=>!completeKeys.has(k)&&!failedKeys.has(k))||'finalizing';
+  const articleLive=completeKeys.has('editor_producer');
+  document.getElementById('progress').innerHTML=`Run <b>${run.edition_date}</b>: ${run.status}. ${done}/16 agents complete. Current: <b>${active}</b>. Articles: <b class="${articleLive?'success':''}">${articleLive?'PUBLISHED/UPDATED':'waiting for Editor & Producer'}</b>.`;
+
+  if(['complete','needs_human','failed'].includes(run.status)){
+    if(pollTimer){clearInterval(pollTimer);pollTimer=null}
+  }
+  return d;
+}
+
+document.getElementById('refresh').onclick=status;
+document.getElementById('run').onclick=async()=>{
+  localStorage.setItem('otd_admin_token',tokenEl.value);
+  const button=document.getElementById('run');button.disabled=true;button.textContent='Queueing…';
+  try{
+    const r=await fetch('/api/agents/run-all',{method:'POST',headers:headers(),body:JSON.stringify({date:document.getElementById('date').value||undefined})});
+    const d=await r.json();
+    document.getElementById('raw').textContent=JSON.stringify(d,null,2);
+    if(!d.ok) throw new Error(d.error||'Unable to queue run');
+    await status();
+    if(pollTimer) clearInterval(pollTimer);
+    pollTimer=setInterval(status,5000);
+  }catch(e){
+    document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
+  }finally{
+    button.disabled=false;button.textContent='Start New Run';
+  }
+};
+status();
 </script></body></html>
