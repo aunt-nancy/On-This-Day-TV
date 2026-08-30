@@ -1,26 +1,15 @@
-# ON THIS DAY — One-Day MVP Build
+# On This Day — Locked Landing Build
 
-This package implements the locked homepage structure and first-pass site architecture.
+This package restores the approved landing-page structure:
+1. Black masthead: ON THIS DAY / HISTORY AS IT HAPPENED
+2. Current date + TODAY IN HISTORY + sepia newspaper-reader image
+3. Parchment ON THIS DAY three-era board
+   - 200 Years Ago: short left box
+   - 100 Years Ago: large center box, Major American Press ↔ Black Press
+   - 76 Years Ago: short right box
+4. Real Sources strip
+5. Community Press Voices immediately below
+6. No “TV” in the public-facing masthead or page title.
 
-## Pages
-- index.html — locked landing page
-- today.html — multi-headline daily edition
-- archive.html — lean searchable archive shell
-- community.html — Community Press Voices directory
-- sources.html — clickable historic archive/source directory
-- about.html — method, agents and discrepancy handling
-
-## Locked homepage rules implemented
-- Brand is “ON THIS DAY” only.
-- Above fold uses 200 / 100 / 75-year grouping.
-- 200- and 75-year boxes are deliberately smaller/shorter.
-- 100-year center is visually dominant.
-- 100-year center contains Mainstream Press ↔ Black Press comparison.
-- Directly below Real Sources / Multiple Perspectives / Context Across Time / Our Voices is entirely Community Press Voices.
-- Historic archive links are exposed to users.
-
-## Important
-The historical headline text in this first build is structural placeholder copy, not fabricated historical reporting. Production data should come from verified daily research packages.
-
-## Run locally
-Open index.html in a browser, or serve the directory with any static web server.
+All files are flat at repository root to simplify manual GitHub upload.
+Upload/overwrite all files in the repository root. Vercel will redeploy automatically after the GitHub commit.

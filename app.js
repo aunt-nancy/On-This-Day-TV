@@ -1,8 +1,29 @@
-const $=(s,r=document)=>r.querySelector(s); const $$=(s,r=document)=>[...r.querySelectorAll(s)];
-const today=new Date();
-function fmt(d){return d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
-$$('[data-current-date]').forEach(el=>el.textContent=fmt(today));
-$$('[data-year-offset]').forEach(el=>{const off=Number(el.dataset.yearOffset); el.textContent=today.getFullYear()-off});
-const search=$('#archiveSearch'); if(search){search.addEventListener('input',e=>{const q=e.target.value.toLowerCase();$$('.archive-card').forEach(c=>c.hidden=!c.innerText.toLowerCase().includes(q));});}
-const community=$('#communityFilter'); if(community){community.addEventListener('change',e=>{const v=e.target.value;$$('.archive-card').forEach(c=>c.hidden=v!=='all'&&!c.dataset.community.includes(v));});}
-const discrepancyToggle=$('#discrepancyDemo'); if(discrepancyToggle){discrepancyToggle.addEventListener('click',()=>{const el=$('#discrepancyBox'); el.hidden=!el.hidden;});}
+
+(function(){
+  const now = new Date();
+  const month = new Intl.DateTimeFormat('en-US',{month:'long'}).format(now);
+  const fullDate = `${month} ${now.getDate()}, ${now.getFullYear()}`;
+  const monthDay = `${month} ${now.getDate()}`;
+  document.querySelectorAll('[data-current-date]').forEach(el => el.textContent = fullDate);
+  document.querySelectorAll('[data-current-monthday]').forEach(el => el.textContent = monthDay);
+  document.querySelectorAll('[data-current-year]').forEach(el => el.textContent = String(now.getFullYear()));
+  document.querySelectorAll('[data-year-offset]').forEach(el => {
+    const offset = parseInt(el.getAttribute('data-year-offset'),10) || 0;
+    el.textContent = String(now.getFullYear() - offset);
+  });
+
+  const search = document.getElementById('archiveSearch');
+  const community = document.getElementById('communityFilter');
+  function filterArchive(){
+    const q=(search?.value||'').toLowerCase().trim();
+    const c=community?.value||'all';
+    document.querySelectorAll('.archive-card').forEach(card=>{
+      const text=card.textContent.toLowerCase();
+      const matchText=!q||text.includes(q);
+      const matchCommunity=c==='all'||card.dataset.community===c;
+      card.style.display=(matchText&&matchCommunity)?'block':'none';
+    });
+  }
+  search?.addEventListener('input',filterArchive);
+  community?.addEventListener('change',filterArchive);
+})();
