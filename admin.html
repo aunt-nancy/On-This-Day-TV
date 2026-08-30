@@ -10,6 +10,7 @@
 <div id="progress" class="panel progress">Waiting for status…</div>
 <section><h2>Latest Run Agent Roster</h2><div id="agents" class="agent-grid"></div></section>
 <section class="panel"><h2>Latest Agent Failures</h2><div id="failures">No failures in latest run.</div></section>
+<section class="panel"><h2>Publishing Status</h2><div id="publishing">Checking published articles…</div></section>
 <section class="panel"><h2>Recent Runs</h2><div id="runs"></div></section>
 <section class="panel"><h2>Open Discrepancies</h2><div id="discrepancies"></div></section>
 <section class="panel"><h2>Raw Status</h2><pre id="raw">Loading…</pre></section>
@@ -21,6 +22,20 @@ const headers=()=>({Authorization:`Bearer ${tokenEl.value}`,'Content-Type':'appl
 let pollTimer=null;
 
 function statusClass(s){return s==='failed'?'error':s==='complete'?'complete':s==='running'?'running':s==='waiting_credentials'?'waiting':''}
+
+
+async function publishingStatus(){
+  try{
+    const r=await fetch('/api/admin/publishing',{headers:headers()});
+    const d=await r.json();
+    const el=document.getElementById('publishing');
+    if(!d.ok){el.innerHTML=`<span class="error-text">${d.error||'Unable to load publishing status'}</span>`;return}
+    if(!d.latestEdition){el.textContent='No edition has been created yet.';return}
+    el.innerHTML=`<b>${d.latestEdition.edition_date}</b> — edition status: <b>${d.latestEdition.status}</b> — safe articles stored: <b>${d.publishedStoryCount}</b> — public site: <b class="${d.publicEndpointWillServe?'success':''}">${d.publicEndpointWillServe?'SERVING ARTICLES':'NOT SERVING YET'}</b> — open discrepancies: <b>${d.openDiscrepancies.length}</b>`;
+  }catch(e){
+    document.getElementById('publishing').innerHTML=`<span class="error-text">${e.message}</span>`;
+  }
+}
 
 async function status(){
   const r=await fetch('/api/agents/status',{headers:headers()});
@@ -59,6 +74,7 @@ async function status(){
   if(['complete','needs_human','failed'].includes(run.status)){
     if(pollTimer){clearInterval(pollTimer);pollTimer=null}
   }
+  await publishingStatus();
   return d;
 }
 
