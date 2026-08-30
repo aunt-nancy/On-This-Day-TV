@@ -164,20 +164,42 @@ function normalizeCommunity(value){
       ...(Array.isArray(edition.communityTiles) ? edition.communityTiles : [])
     ].filter(Boolean);
 
-    const best = new Map();
+    const leadEventKey = text(edition.leadEventKey || major?.eventKey);
+
+    const candidatesByCommunity = new Map();
     for(const story of pool){
       const key = normalizeCommunity(
         story.community || story.communityKey || story.label || story.group
       );
       if(!key || !text(story.title)) continue;
-      const existing = best.get(key);
-      if(!existing || Number(story.confidence || 0) > Number(existing.confidence || 0)){
-        best.set(key,story);
+      if(!candidatesByCommunity.has(key)) candidatesByCommunity.set(key,[]);
+      candidatesByCommunity.get(key).push(story);
+    }
+
+    function chooseCommunityStory(key){
+      const candidates = candidatesByCommunity.get(key) || [];
+      if(!candidates.length) return null;
+
+      // Editorial priority #1: a verified community lens on the SAME national event.
+      const sameEvent = candidates
+        .filter(story => leadEventKey && text(story.eventKey) === leadEventKey)
+        .sort((a,b)=>Number(b.confidence||0)-Number(a.confidence||0));
+
+      if(sameEvent.length){
+        return {...sameEvent[0], comparisonType:'same_event'};
       }
+
+      // Editorial priority #2: that community's strongest verified headline
+      // for the same historical date. It is explicitly NOT presented as a
+      // point of view on the national lead.
+      const fallback = [...candidates]
+        .sort((a,b)=>Number(b.confidence||0)-Number(a.confidence||0))[0];
+
+      return fallback ? {...fallback, comparisonType:'community_lead'} : null;
     }
 
     for(const key of ['black','latino','german','british','chinese','japanese','irish','italian','jewish','indigenous','more']){
-      const story = best.get(key);
+      const story = chooseCommunityStory(key);
       if(!story) continue;
 
       const card = key === 'black'
@@ -185,20 +207,36 @@ function normalizeCommunity(value){
         : document.querySelector(`.community-card[data-community="${key}"]`);
       if(!card) continue;
 
+      card.dataset.comparisonType = story.comparisonType;
+
       const p = card.querySelector('p');
       if(p){
         const pub = text(story.publication);
         const summary = text(story.summary);
-        p.textContent = `${pub ? pub + ': ' : ''}${story.title}${summary ? ' — ' + summary : ''}`;
+        const prefix = story.comparisonType === 'same_event'
+          ? 'Same-event coverage: '
+          : 'Leading community headline: ';
+        p.textContent = `${prefix}${pub ? pub + ': ' : ''}${story.title}${summary ? ' — ' + summary : ''}`;
       }
 
       const link = card.querySelector('a');
-      setSourceLink(link, story.sourceUrl, 'View Original Source →');
+      setSourceLink(
+        link,
+        story.sourceUrl,
+        story.comparisonType === 'same_event'
+          ? 'View Original Source →'
+          : 'View Leading Headline Source →'
+      );
 
-      // Only update the existing ranking input. The locked layout itself is
-      // never redesigned or replaced.
-      if(key !== 'black'){
-        card.dataset.headlineWeight = '100';
+      if(key === 'black'){
+        const mini = card.querySelector('.black-compare-mini');
+        if(mini){
+          mini.style.display = story.comparisonType === 'same_event' ? '' : 'none';
+        }
+      }else{
+        // Same-event coverage gets the highest relevance boost. A fallback
+        // headline still raises the tile above a completely static card.
+        card.dataset.headlineWeight = story.comparisonType === 'same_event' ? '100' : '70';
       }
     }
 
