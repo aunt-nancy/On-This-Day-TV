@@ -1,8 +1,50 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/**/*.js": {
+    "api/router.js": {
       "maxDuration": 300
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/api/health",
+      "destination": "/api/router?route=health"
+    },
+    {
+      "source": "/api/agents/run-all",
+      "destination": "/api/router?route=agents/run-all"
+    },
+    {
+      "source": "/api/agents/run-stage",
+      "destination": "/api/router?route=agents/run-stage"
+    },
+    {
+      "source": "/api/agents/status",
+      "destination": "/api/router?route=agents/status"
+    },
+    {
+      "source": "/api/admin/review",
+      "destination": "/api/router?route=admin/review"
+    },
+    {
+      "source": "/api/admin/publishing",
+      "destination": "/api/router?route=admin/publishing"
+    },
+    {
+      "source": "/api/admin/discrepancies",
+      "destination": "/api/router?route=admin/discrepancies"
+    },
+    {
+      "source": "/api/content/today",
+      "destination": "/api/router?route=content/today"
+    },
+    {
+      "source": "/api/social/queue",
+      "destination": "/api/router?route=social/queue"
+    },
+    {
+      "source": "/api/cron/daily",
+      "destination": "/api/router?route=cron/daily"
+    }
+  ]
 }

@@ -1,24 +1,50 @@
-# On This Day — Staged Backend Sync
+# On This Day — Single Function Backend Fix
 
-Your new admin.html is live, but its matching API routes are not all live.
+ROOT CAUSE
+Vercel Hobby allows no more than 12 Serverless Functions. Old API files from
+earlier patches accumulated in GitHub, so deployments were rejected even when
+the JavaScript build itself succeeded.
 
-The visible symptom is:
-Unexpected token 'T' ... is not valid JSON
+THIS FIX
+The backend now deploys as ONE Vercel Serverless Function:
 
-That means admin.html is calling an endpoint such as /api/admin/review,
-but Vercel is returning a text/404 error page instead of JSON.
+    api/router.js
 
-Upload this folder structure to the repository root and replace matching files.
+All existing public/admin URLs are preserved with Vercel rewrites:
+- /api/health
+- /api/agents/run-all
+- /api/agents/run-stage
+- /api/agents/status
+- /api/admin/review
+- /api/admin/publishing
+- /api/admin/discrepancies
+- /api/content/today
+- /api/social/queue
+- /api/cron/daily
 
-Important:
-- Preserve folders exactly: api/admin, api/agents, api/content, api/cron, api/social, lib.
-- Do not flatten these files into the repository root.
-- Replace package.json and vercel.json at the repository root.
-- vercel.json in this package contains NO queue trigger and NO api/queues/agent.js reference.
-- No environment-variable, Supabase, DNS, or design changes are required.
+`.vercelignore` prevents old API endpoint files from being uploaded to Vercel,
+so they no longer count against the Hobby function limit.
 
-After Vercel is Ready:
-1. Open /api/admin/review in the browser while authenticated through admin.html.
-2. Refresh admin.html.
-3. Needs Review should show either "No articles currently require human review"
-   or actual review cards, not a JSON parsing error.
+UPLOAD TO GITHUB ROOT, PRESERVING FOLDERS:
+- .vercelignore
+- vercel.json
+- package.json
+- api/router.js
+- lib/routes/*  (all route modules)
+- lib/agents.js
+- lib/config.js
+- lib/http.js
+- lib/openai.js
+- lib/prompts.js
+- lib/queued-pipeline.js
+- lib/social.js
+- lib/supabase.js
+
+You do NOT have to delete old API files from GitHub.
+No keys, Supabase, DNS, or domain settings need to change.
+
+SUCCESS CHECK
+After Vercel says READY:
+1. https://www.onthisday.tv/api/health must return JSON.
+2. admin.html Refresh Status must load without "Unexpected token" errors.
+3. Needs Review must show either no reviews or actual Approve/Reject cards.
