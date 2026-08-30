@@ -1,19 +1,20 @@
-# Vercel Queue Path Build Fix
+# Queue worker existing-folder fix
 
-The failed deployment error was:
+Vercel rejected the prior path because it could not find `api/queue-worker.js`.
 
-`The pattern "api/queues/agent.js" defined in "functions" doesn't match any Serverless Functions inside the "api" directory.`
+This version places the queue consumer inside the existing API folder that Vercel already recognizes:
 
-This fix moves the queue consumer to:
+`api/agents/queue-worker.js`
 
-`api/queue-worker.js`
+Upload these exact files:
+- `api/agents/queue-worker.js`
+- `vercel.json`
+- `package.json`
 
-and updates the Vercel function trigger accordingly.
+Important:
+- In GitHub, open the existing `api` folder, then the existing `agents` folder, and upload `queue-worker.js` there.
+- Do not upload `queue-worker.js` at the repository root.
+- Replace `vercel.json` and `package.json` at the repository root.
+- No Vercel variables, Supabase settings, keys, DNS, or design changes are needed.
 
-Upload/replace:
-- api/queue-worker.js
-- vercel.json
-- package.json
-
-No environment-variable, Supabase, DNS, or design changes are required.
-The old `api/queues/agent.js` can remain in the repository; it is no longer referenced by `vercel.json`.
+The old `api/queues/agent.js` and root `api/queue-worker.js` may remain; the new configuration ignores them.
