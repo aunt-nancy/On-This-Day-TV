@@ -109,6 +109,20 @@ function normalizeCommunity(value){
   return '';
 }
 
+
+function applyGeneratedIllustration(selector, illustration){
+  const el = document.querySelector(selector);
+  if(!el || !illustration?.url) return;
+  el.style.backgroundImage = `url("${illustration.url}")`;
+  el.style.backgroundSize = 'cover';
+  el.style.backgroundPosition = 'center';
+  el.style.backgroundRepeat = 'no-repeat';
+  el.setAttribute('role','img');
+  el.setAttribute('aria-label', illustration.label || 'Editorial illustration');
+  el.title = illustration.label || 'Editorial illustration';
+  el.dataset.generatedIllustration = 'true';
+}
+
 (async function loadPublishedEditionIntoLockedDesign(){
   try{
     const response = await fetch('/api/content/today',{
@@ -154,6 +168,17 @@ function normalizeCommunity(value){
       document.querySelector('.era-76 .paper'),
       y76,
       'View Original Source →'
+    );
+
+    // Dedicated Illustrator Agent fills ONLY the two existing side-era
+    // illustration slots. The center comparison and masthead are untouched.
+    applyGeneratedIllustration(
+      '.era-200 .paper-illustration',
+      edition?.illustrations?.y200
+    );
+    applyGeneratedIllustration(
+      '.era-76 .paper-illustration',
+      edition?.illustrations?.y76
     );
 
     // The pre-approved Community Press Voices cards remain exactly where and
