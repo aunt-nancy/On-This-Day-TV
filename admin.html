@@ -10,8 +10,8 @@
 <div id="progress" class="panel progress">Waiting for status…</div>
 <section class="panel"><h2>Priority & Execution Model</h2>
 <div class="run-row"><b>Priority:</b> Editor Opening → Black Press → Major Press → Source Verification → Discrepancy → Regional → Community → Context → Rights → Translation → Visual → Editor Closing → Social.</div>
-<div class="run-row"><b>Parallel engine:</b> ON — Black Press and Major Press run together. Supporting research runs after the first public edition is started.</div>
-<div class="run-row"><b>Time-to-publish:</b> Source Verification now publishes verified text-first stories immediately. Regional, Community, Context, Rights, Visual, and Social work enrich the live edition afterward.</div>
+<div class="run-row"><b>Parallel engine:</b> ON — Major American Press establishes the nationally important lead event first. Black Press, Regional, and Community desks then run together searching for that SAME event through different lenses.</div>
+<div class="run-row"><b>Time-to-publish:</b> Source Verification publishes only a verified national lead cluster. Community voices beside that lead must share its exact eventKey; unrelated stories cannot be used as comparisons.</div>
 <div class="run-row"><b>Activity heartbeat:</b> this page auto-refreshes every 10 seconds and shows elapsed RUNNING time so silence is visible as a timed operation, not a frozen screen.</div>
 <div class="run-row"><b>Stall protection:</b> OpenAI calls hard-timeout server-side; stale RUNNING jobs are cleared automatically.</div>
 </section>
@@ -28,9 +28,9 @@ const nonfatal=new Set(['editor_opening','black_press','major_press','regional_l
 const coreRetryOnce=new Set(['black_press','major_press']);
 const waves=[
   {name:'Opening Desk', agents:['editor_opening'], concurrency:1},
-  {name:'Core Research — First Publish', agents:['black_press','major_press'], concurrency:2},
+  {name:'National Lead Discovery', agents:['major_press'], concurrency:1},
+  {name:'Same-Event Community Lens Research', agents:['black_press','regional_local','community_press'], concurrency:3},
   {name:'Core Verification — Rolling Publish', agents:['source_verification'], concurrency:1},
-  {name:'Supporting Research', agents:['regional_local','community_press'], concurrency:2},
   {name:'Context + Translation', agents:['historical_context','translation'], concurrency:2},
   {name:'Rights Review', agents:['rights_review'], concurrency:1},
   {name:'Exception Control', agents:['discrepancy_exception'], concurrency:1},
