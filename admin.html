@@ -3,9 +3,10 @@
 <title>Agent Newsroom | On This Day</title><link rel="stylesheet" href="styles.css">
 <style>
 .admin-shell{max-width:1180px;margin:0 auto;padding:20px;background:#f8f1e5;min-height:100vh}.admin-top{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#071b30;color:#fff;padding:18px;border-bottom:3px solid #b98933}.admin-top h1{margin:0}.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-input{padding:9px;border:1px solid #baa984;min-width:200px}.agent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.agent-card{background:#fffaf1;border:1px solid #c7b48f;padding:12px;min-height:112px}.agent-card h3{margin:0 0 4px;font-size:15px}.agent-card p{font-size:11px;margin:0;color:#5b5347}.pill{display:inline-block;font:800 8px Arial,sans-serif;text-transform:uppercase;padding:4px 6px;margin-top:8px;background:#102d4d;color:#fff}.pill.error{background:#7c211f}.pill.complete{background:#315d2d}.pill.running{background:#7d5c14}.panel{background:#fffaf1;border:1px solid #c7b48f;padding:14px;margin:12px 0}.panel pre{white-space:pre-wrap;font:11px/1.4 Consolas,monospace;max-height:300px;overflow:auto;background:#101820;color:#eae8e0;padding:12px}.run-row{padding:9px 0;border-bottom:1px solid #ded0b7;font-size:12px}.review-card{border:1px solid #ba8b73;background:#fff8ef;padding:14px;margin:10px 0}.review-card h3{margin:0 0 6px;color:#7c211f}.review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.review-actions button{cursor:pointer}.source-link{word-break:break-all}.success{color:#315d2d}.error-text{color:#7c211f}.progress{font-weight:700;color:#102d4d}@media(max-width:900px){.agent-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.agent-grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}.admin-input{min-width:100%}}
+.pill.queued{background:#e5dfcf;color:#4a4030;border-color:#bbae91}
 </style></head>
 <body><main class="admin-shell">
-<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button red" id="illustratorNow">Run Illustrator Now</button></div></header>
+<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button red" id="illustratorNow">Run Illustrator Now</button><button class="button" id="retryFailed">Retry Failed Research</button></div></header>
 <div id="env" class="panel"></div>
 <div id="progress" class="panel progress">Waiting for status…</div>
 <section class="panel"><h2>Priority & Execution Model</h2>
@@ -23,8 +24,8 @@
 <section class="panel"><h2>Raw Status</h2><pre id="raw">Loading…</pre></section>
 </main>
 <script>
-const order=['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','source_verification','rights_review','discrepancy_exception','editor_producer','visual_archive','illustrator','social_editor','short_form_video','engagement_trends','social_distribution'];
-const nonfatal=new Set(['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','visual_archive','illustrator','social_editor','short_form_video','engagement_trends','social_distribution']);
+const order=['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','source_verification','rights_review','discrepancy_exception','editor_producer','then_now','archive_recipe','visual_archive','illustrator','social_editor','short_form_video','engagement_trends','social_distribution'];
+const nonfatal=new Set(['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','then_now','archive_recipe','visual_archive','illustrator','social_editor','short_form_video','engagement_trends','social_distribution']);
 const coreRetryOnce=new Set(['black_press','major_press']);
 const waves=[
   {name:'Opening Desk', agents:['editor_opening'], concurrency:1},
@@ -35,10 +36,11 @@ const waves=[
   {name:'Rights Review', agents:['rights_review'], concurrency:1},
   {name:'Exception Control', agents:['discrepancy_exception'], concurrency:1},
   {name:'Closing Desk — Enrich Edition', agents:['editor_producer'], concurrency:1},
-  {name:'Post-Publish Production', agents:['visual_archive','illustrator','social_editor','short_form_video','engagement_trends'], concurrency:3},
+  {name:'Post-Publish Features', agents:['then_now','archive_recipe','visual_archive','illustrator','social_editor','short_form_video','engagement_trends'], concurrency:3},
   {name:'Distribution', agents:['social_distribution'], concurrency:1},
 ];
 let latestStatusData=null;
+let retroIllustratorStartedForRun=null;
 
 function pendingStageFor(runId,d){
   const jobs=(d.jobs||[]).filter(j=>j.run_id===runId);
@@ -83,7 +85,7 @@ tokenEl.addEventListener('change',()=>localStorage.setItem('otd_admin_token',tok
 const headers=()=>({Authorization:`Bearer ${tokenEl.value}`,'Content-Type':'application/json'});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-function statusClass(s){return s==='failed'?'error':s==='complete'?'complete':s==='running'?'running':''}
+function statusClass(s){return s==='failed'?'error':s==='complete'?'complete':s==='running'?'running':s==='queued'?'queued':''}
 
 async function publishingStatus(){
   try{
@@ -157,6 +159,27 @@ async function status(){
   }
   await publishingStatus();
   await reviewStatus();
+
+  // Retroactive activation for runs created before queued-job precreation.
+  if(latest && retroIllustratorStartedForRun!==latest.id){
+    const editorJob=jobs
+      .filter(j=>j.agent_key==='editor_producer')
+      .sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||'')))[0];
+    const illustratorJob=jobs
+      .filter(j=>j.agent_key==='illustrator')
+      .sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||'')))[0];
+
+    if(editorJob?.status==='complete' && (!illustratorJob || illustratorJob.status==='queued')){
+      retroIllustratorStartedForRun=latest.id;
+      runStageRequest(latest.id,'illustrator')
+        .then(()=>setTimeout(()=>status().catch(()=>{}),1200))
+        .catch(error=>{
+          document.getElementById('progress').innerHTML=
+            `<span class="error-text"><b>Illustrator auto-activation:</b> ${error.message}</span>`;
+        });
+    }
+  }
+
   return d;
 }
 
@@ -319,6 +342,52 @@ document.getElementById('illustratorNow').onclick=async()=>{
   }finally{
     button.disabled=false;
     button.textContent='Run Illustrator Now';
+  }
+};
+document.getElementById('retryFailed').onclick=async()=>{
+  const button=document.getElementById('retryFailed');
+  button.disabled=true;
+  button.textContent='Repairing…';
+
+  try{
+    const d=await status();
+    const run=d?.runs?.[0];
+    if(!run) throw new Error('No newsroom run exists.');
+
+    const latestByKey=new Map();
+    (d.jobs||[])
+      .filter(j=>j.run_id===run.id)
+      .sort((a,b)=>String(a.started_at||'').localeCompare(String(b.started_at||'')))
+      .forEach(j=>latestByKey.set(j.agent_key,j));
+
+    const repairable=['major_press','black_press','regional_local','community_press']
+      .filter(key=>{
+        const job=latestByKey.get(key);
+        return job?.status==='failed' &&
+          /json|syntax|expected|unterminated|array element|property value/i.test(job?.error||'');
+      });
+
+    if(!repairable.length){
+      document.getElementById('progress').textContent='No failed research agents with JSON-format errors need repair.';
+      return;
+    }
+
+    for(const key of repairable){
+      document.getElementById('progress').innerHTML=`Repairing <b>${key}</b> with hardened JSON recovery…`;
+      const result=await runStageRequest(run.id,key);
+      if(!result.ok && !result.continue){
+        throw new Error(`${key}: ${result.error||'repair failed'}`);
+      }
+      await status();
+    }
+
+    document.getElementById('progress').innerHTML=
+      '<b>Failed research repaired.</b> The corrected agent output is now stored.';
+  }catch(e){
+    document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
+  }finally{
+    button.disabled=false;
+    button.textContent='Retry Failed Research';
   }
 };
 document.getElementById('refresh').onclick=status;

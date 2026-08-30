@@ -123,6 +123,87 @@ function applyGeneratedIllustration(selector, illustration){
   el.dataset.generatedIllustration = 'true';
 }
 
+
+function renderThenNow(data){
+  const section=document.getElementById('thenNowStrip');
+  if(!section) return;
+
+  const valid=Boolean(
+    data &&
+    data.show===true &&
+    text(data.then?.title) &&
+    text(data.now?.title) &&
+    Array.isArray(data.sources) &&
+    data.sources.some(s=>text(s?.url))
+  );
+
+  if(!valid){
+    section.hidden=true;
+    return;
+  }
+
+  setElText(document.getElementById('thenNowThenTitle'),data.then?.title);
+  setElText(document.getElementById('thenNowThenText'),data.then?.text);
+  setElText(document.getElementById('thenNowChangedTitle'),data.changed?.title||'What changed');
+  setElText(document.getElementById('thenNowChangedText'),data.changed?.text);
+  setElText(document.getElementById('thenNowNowTitle'),data.now?.title);
+  setElText(document.getElementById('thenNowNowText'),data.now?.text);
+
+  const sources=document.getElementById('thenNowSources');
+  if(sources){
+    sources.replaceChildren();
+    data.sources.filter(s=>text(s?.url)).slice(0,4).forEach((s,i)=>{
+      if(i) sources.append(document.createTextNode(' • '));
+      const a=document.createElement('a');
+      a.href=s.url;
+      a.target='_blank';
+      a.rel='noopener noreferrer';
+      a.textContent=s.label||'Source';
+      sources.append(a);
+    });
+  }
+  section.hidden=false;
+}
+
+function renderArchiveRecipe(recipe){
+  const section=document.getElementById('archiveRecipe');
+  if(!section) return;
+
+  const valid=Boolean(
+    recipe &&
+    text(recipe.title) &&
+    text(recipe.sourceUrl) &&
+    text(recipe.originalText)
+  );
+
+  if(!valid){
+    section.hidden=true;
+    return;
+  }
+
+  setElText(document.getElementById('recipeTitle'),recipe.title);
+  setElText(
+    document.getElementById('recipeSourceLine'),
+    [recipe.publication,recipe.issueDate,recipe.location,recipe.community].filter(text).join(' • ')
+  );
+  setElText(document.getElementById('recipeOriginal'),recipe.originalText);
+  setElText(document.getElementById('recipeModern'),recipe.modernVersion);
+  setElText(document.getElementById('recipeContext'),recipe.historicalContext);
+  setElText(document.getElementById('recipeCommunity'),recipe.community ? `Community: ${recipe.community}` : '');
+
+  const safety=document.getElementById('recipeSafety');
+  if(safety){
+    safety.textContent=recipe.safetyNote||'';
+    safety.hidden=!text(recipe.safetyNote);
+  }
+
+  const link=document.getElementById('recipeSourceLink');
+  setSourceLink(link,recipe.sourceUrl,'View Original Source →');
+  if(link) link.hidden=!text(recipe.sourceUrl);
+
+  section.hidden=false;
+}
+
 (async function loadPublishedEditionIntoLockedDesign(){
   try{
     const response = await fetch('/api/content/today',{
@@ -266,6 +347,8 @@ function applyGeneratedIllustration(selector, illustration){
     }
 
     rankLockedCommunityTiles();
+    renderThenNow(edition.thenNow);
+    renderArchiveRecipe(edition.archiveRecipe);
   }catch(error){
     console.warn('Published edition unavailable; locked static design retained.',error);
   }

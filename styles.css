@@ -551,3 +551,134 @@ a{color:inherit}
     font-size:14px;
   }
 }
+
+
+/* APPROVED ADDITIONS: THEN & NOW + RECIPE FROM THE ARCHIVES */
+.then-now-strip{
+  padding:16px 18px 18px;
+  background:#f5efe2;
+  border-top:1px solid #c9b993;
+  border-bottom:1px solid #c9b993;
+}
+.then-now-strip[hidden],
+.archive-recipe[hidden]{display:none!important}
+.then-now-heading{
+  margin-bottom:10px;
+  text-align:center;
+  color:#1b2631;
+  font:900 10px Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+}
+.then-now-grid{
+  display:grid;
+  grid-template-columns:1fr auto 1fr auto 1fr;
+  gap:12px;
+  align-items:center;
+}
+.then-now-cell{
+  min-height:126px;
+  padding:12px 14px;
+  background:#fffdf8;
+  border:1px solid #d4c7aa;
+}
+.then-now-label{
+  margin-bottom:6px;
+  color:#8d2c27;
+  font:900 9px Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.11em;
+}
+.then-now-cell h3{
+  margin:0 0 7px;
+  font-size:18px;
+  line-height:1.12;
+}
+.then-now-cell p{
+  margin:0;
+  font-size:14px;
+  line-height:1.48;
+}
+.then-now-arrow{
+  color:#8d2c27;
+  font-size:28px;
+  line-height:1;
+}
+.then-now-sources{
+  margin-top:9px;
+  text-align:center;
+  font:700 9px/1.4 Arial,sans-serif;
+  color:#6e6353;
+}
+.then-now-sources a{color:#8d2c27}
+
+.archive-recipe{
+  padding:22px 18px;
+  background:#fbf7ee;
+  border-top:1px solid #c9b993;
+}
+.archive-recipe .section-heading{
+  max-width:900px;
+  margin:0 auto 15px;
+  text-align:center;
+}
+.archive-recipe .eyebrow{
+  color:#8d2c27;
+  font:900 9px Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.14em;
+}
+.archive-recipe .section-heading h2{
+  margin:5px 0 4px;
+  font-size:30px;
+  line-height:1.08;
+}
+.archive-recipe .section-heading p{
+  margin:0;
+  font-size:13px;
+}
+.recipe-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:14px;
+}
+.recipe-column{
+  padding:14px 15px;
+  background:#fffdf8;
+  border:1px solid #d4c7aa;
+}
+.recipe-column h3{
+  margin:0 0 10px;
+  font-size:17px;
+  line-height:1.15;
+}
+.recipe-original,
+#recipeModern,
+#recipeContext,
+.recipe-community{
+  font-size:14px;
+  line-height:1.5;
+  white-space:pre-line;
+}
+.recipe-safety{
+  margin-top:12px;
+  padding:9px 10px;
+  background:#f4ece0;
+  border-left:3px solid #8d2c27;
+  font-size:12px;
+  line-height:1.45;
+}
+.recipe-community{
+  margin-top:10px;
+  color:#6e6353;
+  font-weight:700;
+}
+.archive-recipe .source-link{
+  display:inline-block;
+  margin-top:12px;
+}
+@media(max-width:760px){
+  .then-now-grid{grid-template-columns:1fr}
+  .then-now-arrow{transform:rotate(90deg);text-align:center}
+  .recipe-grid{grid-template-columns:1fr}
+}

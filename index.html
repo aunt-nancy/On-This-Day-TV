@@ -95,6 +95,31 @@
   </div>
 </section>
 
+
+<section class="then-now-strip" id="thenNowStrip" hidden>
+  <div class="then-now-heading">Then &amp; Now</div>
+  <div class="then-now-grid">
+    <article class="then-now-cell">
+      <div class="then-now-label">Then</div>
+      <h3 id="thenNowThenTitle"></h3>
+      <p id="thenNowThenText"></p>
+    </article>
+    <div class="then-now-arrow" aria-hidden="true">→</div>
+    <article class="then-now-cell">
+      <div class="then-now-label">What Changed</div>
+      <h3 id="thenNowChangedTitle"></h3>
+      <p id="thenNowChangedText"></p>
+    </article>
+    <div class="then-now-arrow" aria-hidden="true">→</div>
+    <article class="then-now-cell">
+      <div class="then-now-label">Now</div>
+      <h3 id="thenNowNowTitle"></h3>
+      <p id="thenNowNowText"></p>
+    </article>
+  </div>
+  <div class="then-now-sources" id="thenNowSources"></div>
+</section>
+
 <section class="real-sources">
  <div class="source-pillar"><b>Real Sources</b><span>Original newspapers and archives</span></div>
  <div class="source-pillar"><b>Multiple Perspectives</b><span>Coverage compared side by side</span></div>
@@ -218,6 +243,35 @@
    <b>Tile ranking rule:</b> Community tiles are ordered by U.S. population significance and relevance to the day’s historical headline. Same-event coverage is preferred; otherwise that community’s leading verified headline for the day is shown.
  </div>
 </section>
+
+<section class="archive-recipe" id="archiveRecipe" hidden>
+  <div class="section-heading">
+    <div class="eyebrow">Recipe From the Archives</div>
+    <h2 id="recipeTitle"></h2>
+    <p id="recipeSourceLine"></p>
+  </div>
+
+  <div class="recipe-grid">
+    <article class="recipe-column">
+      <h3>Original Archive Recipe</h3>
+      <div class="recipe-original" id="recipeOriginal"></div>
+      <a id="recipeSourceLink" class="source-link" target="_blank" rel="noopener noreferrer" hidden>View Original Source →</a>
+    </article>
+
+    <article class="recipe-column">
+      <h3>Modern Kitchen Version</h3>
+      <div id="recipeModern"></div>
+      <div class="recipe-safety" id="recipeSafety" hidden></div>
+    </article>
+
+    <article class="recipe-column">
+      <h3>Historical Context</h3>
+      <p id="recipeContext"></p>
+      <div class="recipe-community" id="recipeCommunity"></div>
+    </article>
+  </div>
+</section>
+
 
 <section class="graphic-showcase">
   <div class="section-heading">
