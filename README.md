@@ -1,38 +1,31 @@
-# On This Day — Community Voices Fallback + Larger Body Text
+# On This Day — 200/75 Major Headline + 14pt Community Body Fix
 
-REQUESTED CHANGES ONLY
+CHANGES
 
-1. Community Press Voices body copy is larger.
-2. The visible phrase "Permanent Center Comparison" is removed.
-3. Related "permanent center comparison" wording is replaced with the actual rule.
-4. Each community tile follows:
-   - FIRST: verified coverage of the same event as the Major American headline.
-   - FALLBACK: if no same-event coverage is verified for that community, show that community press's leading verified headline for the exact historical date.
-5. Fallback headlines are explicitly NOT presented as a point of view on the Major American headline.
-6. The main featured Black Press comparison remains same-event only. Its Community Press Voices tile can use a leading Black Press headline as fallback.
-7. The existing locked Community Press Voices layout/card positions are unchanged.
+1. Community Press Voices body text is now exactly 14pt.
+2. The Major American Press research desk must identify a strong lead headline for:
+   - 200 years ago
+   - 100 years ago
+   - 75 years ago (internal compatibility key remains y76)
+3. Source Verification must verify and rank the strongest lead in each era.
+4. The 200-year and 75-year side tiles now use an importance-weighted lead selector instead of simply taking the highest-confidence story.
+5. Routine local/society items are down-ranked when a more consequential verified headline exists.
 
-FILES TO REPLACE
-- index.html
-- styles.css
-- app.js
-- lib/prompts.js
-- lib/queued-pipeline.js
-
-IMPORTANT
-The included index.html already contains the approved 75 Years Ago correction.
-This package does not reactivate 76 Years Ago.
-
-ILLUSTRATOR STATUS
-The dedicated Illustrator / Visual Placement Agent is NOT activated by this package.
-The existing Visual Archive Agent remains separate and unchanged.
-
-NOT CHANGED
+LOCKED / NOT CHANGED
+- public layout
 - masthead
-- locked grid/layout
-- national-headline selection
-- source verification standards
+- card sizes/positions
+- 100-year same-event community comparison logic
+- Community Press fallback logic
+- 75 Years Ago display
 - Supabase schema
 - API routes
 - Vercel environment
 - DNS
+
+REPLACE ONLY
+- styles.css
+- lib/prompts.js
+- lib/queued-pipeline.js
+
+A NEW RUN is required before the 200-year and 75-year tiles can receive newly researched lead headlines.
