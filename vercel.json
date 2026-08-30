@@ -46,29 +46,5 @@
       "source": "/api/cron/daily",
       "destination": "/api/router?route=cron/daily"
     }
-  ],
-  "headers": [
-    {
-      "source": "/admin.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        },
-        {
-          "key": "Pragma",
-          "value": "no-cache"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0"
-        }
-      ]
-    }
   ]
 }

@@ -3,22 +3,12 @@
 <title>Agent Newsroom | On This Day</title><link rel="stylesheet" href="styles.css">
 <style>
 .admin-shell{max-width:1180px;margin:0 auto;padding:20px;background:#f8f1e5;min-height:100vh}.admin-top{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#071b30;color:#fff;padding:18px;border-bottom:3px solid #b98933}.admin-top h1{margin:0}.admin-actions{display:flex;gap:8px;flex-wrap:wrap}.admin-input{padding:9px;border:1px solid #baa984;min-width:200px}.agent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.agent-card{background:#fffaf1;border:1px solid #c7b48f;padding:12px;min-height:112px}.agent-card h3{margin:0 0 4px;font-size:15px}.agent-card p{font-size:11px;margin:0;color:#5b5347}.pill{display:inline-block;font:800 8px Arial,sans-serif;text-transform:uppercase;padding:4px 6px;margin-top:8px;background:#102d4d;color:#fff}.pill.error{background:#7c211f}.pill.complete{background:#315d2d}.pill.running{background:#7d5c14}.panel{background:#fffaf1;border:1px solid #c7b48f;padding:14px;margin:12px 0}.panel pre{white-space:pre-wrap;font:11px/1.4 Consolas,monospace;max-height:300px;overflow:auto;background:#101820;color:#eae8e0;padding:12px}.run-row{padding:9px 0;border-bottom:1px solid #ded0b7;font-size:12px}.review-card{border:1px solid #ba8b73;background:#fff8ef;padding:14px;margin:10px 0}.review-card h3{margin:0 0 6px;color:#7c211f}.review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.review-actions button{cursor:pointer}.source-link{word-break:break-all}.success{color:#315d2d}.error-text{color:#7c211f}.progress{font-weight:700;color:#102d4d}@media(max-width:900px){.agent-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.agent-grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}.admin-input{min-width:100%}}
-.pill.queued{background:#e5dfcf;color:#4a4030;border-color:#bbae91}
 </style></head>
 <body><main class="admin-shell">
-<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button red" id="illustratorNow">Run Illustrator Now</button><button class="button" id="retryFailed">Retry Failed Research</button></div></header>
-<div id="rosterGuard" style="margin:12px 0;padding:10px 12px;border:1px solid #a69268;background:#f5efe2;font-weight:800">
-  Roster check: waiting for live server…
-</div>
+<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div style="font-weight:800">Stable rollback: Priority-1 • 16 agents • Video reliability fix</div><div>Editor & Producer opens the desk, assigns the research, and returns as closing publisher. Agents are ranked by editorial importance; execution follows dependencies for reliability.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button></div></header>
 <div id="env" class="panel"></div>
 <div id="progress" class="panel progress">Waiting for status…</div>
-<section class="panel"><h2>Priority & Execution Model</h2>
-<div class="run-row"><b>Priority:</b> Editor Opening → Black Press → Major Press → Source Verification → Discrepancy → Regional → Community → Context → Rights → Translation → Visual → Editor Closing → Social.</div>
-<div class="run-row"><b>Parallel engine:</b> ON — Major American Press establishes the nationally important lead event first. Black Press, Regional, and Community desks then run together searching for that SAME event through different lenses.</div>
-<div class="run-row"><b>Time-to-publish:</b> Source Verification publishes only a verified national lead cluster. Community voices beside that lead must share its exact eventKey; unrelated stories cannot be used as comparisons.</div>
-<div class="run-row"><b>Activity heartbeat:</b> this page auto-refreshes every 10 seconds and shows elapsed RUNNING time so silence is visible as a timed operation, not a frozen screen.</div>
-<div class="run-row"><b>Stall protection:</b> OpenAI calls hard-timeout server-side; stale RUNNING jobs are cleared automatically.</div>
-</section>
+<section class="panel"><h2>Priority & Execution Model</h2><div class="run-row"><b>Priority:</b> Editor Opening → Black Press → Major Press → Source Verification → Discrepancy → Regional → Community → Context → Rights → Translation → Visual → Editor Closing → Social.</div><div class="run-row"><b>Execution:</b> dependencies are respected, so verification waits for research; translation auto-skips when no non-English source requires it; visuals wait until stories are verified.</div></section>
 <section><h2>Agent Roster — Ranked by Importance</h2><div id="agents" class="agent-grid"></div></section>
 <section class="panel"><h2>Needs Review</h2><p>Only unresolved disputed items appear here. Approving one story does not hold unrelated articles.</p><div id="reviews">Loading…</div></section>
 <section class="panel"><h2>Publishing Status</h2><div id="publishing">Checking…</div></section>
@@ -27,26 +17,9 @@
 <section class="panel"><h2>Raw Status</h2><pre id="raw">Loading…</pre></section>
 </main>
 <script>
-const EXPECTED_AGENT_COUNT=19;
-const STABLE19_BUILD='2026-08-30.verification-stable19.1';
-const EXPECTED_ROSTER_VERSION='2026-08-30.roster19.1';
-const order=['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','source_verification','rights_review','discrepancy_exception','editor_producer','then_now','archive_recipe','visual_archive','illustrator','social_editor','short_form_video','engagement_trends','social_distribution'];
-const nonfatal=new Set(['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','then_now','archive_recipe','visual_archive','illustrator','social_editor','short_form_video','engagement_trends','social_distribution']);
-const coreRetryOnce=new Set(['black_press','major_press']);
-const waves=[
-  {name:'Opening Desk', agents:['editor_opening'], concurrency:1},
-  {name:'National Lead Discovery', agents:['major_press'], concurrency:1},
-  {name:'Same-Event Community Lens Research', agents:['black_press','regional_local','community_press'], concurrency:3},
-  {name:'Core Verification — Rolling Publish', agents:['source_verification'], concurrency:1},
-  {name:'Context + Translation', agents:['historical_context','translation'], concurrency:2},
-  {name:'Rights Review', agents:['rights_review'], concurrency:1},
-  {name:'Exception Control', agents:['discrepancy_exception'], concurrency:1},
-  {name:'Closing Desk — Enrich Edition', agents:['editor_producer'], concurrency:1},
-  {name:'Post-Publish Features', agents:['then_now','archive_recipe','visual_archive','illustrator','social_editor','short_form_video','engagement_trends'], concurrency:3},
-  {name:'Distribution', agents:['social_distribution'], concurrency:1},
-];
+const order=['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','source_verification','visual_archive','rights_review','discrepancy_exception','editor_producer','social_editor','short_form_video','engagement_trends','social_distribution'];
+const nonfatal=new Set(['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','visual_archive','social_editor','short_form_video','engagement_trends','social_distribution']);
 let latestStatusData=null;
-let retroIllustratorStartedForRun=null;
 
 function pendingStageFor(runId,d){
   const jobs=(d.jobs||[]).filter(j=>j.run_id===runId);
@@ -64,7 +37,7 @@ function pendingStageFor(runId,d){
 
 async function runStageRequest(runId,agentKey){
   const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),190000);
+  const timeout=setTimeout(()=>controller.abort(),210000);
   try{
     const r=await fetch('/api/agents/run-stage',{
       method:'POST',
@@ -78,7 +51,7 @@ async function runStageRequest(runId,agentKey){
     return d;
   }catch(e){
     if(e.name==='AbortError'){
-      throw new Error(`${agentKey} exceeded the browser safety window. Server-side AI timeouts prevent it from remaining RUNNING indefinitely.`);
+      throw new Error(`${agentKey} exceeded 3½ minutes. The run was paused, not restarted. Use Resume Current Run after Refresh Status.`);
     }
     throw e;
   }finally{
@@ -91,7 +64,7 @@ tokenEl.addEventListener('change',()=>localStorage.setItem('otd_admin_token',tok
 const headers=()=>({Authorization:`Bearer ${tokenEl.value}`,'Content-Type':'application/json'});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
-function statusClass(s){return s==='failed'?'error':s==='complete'?'complete':s==='running'?'running':s==='queued'?'queued':''}
+function statusClass(s){return s==='failed'?'error':s==='complete'?'complete':s==='running'?'running':''}
 
 async function publishingStatus(){
   try{
@@ -142,170 +115,63 @@ async function status(){
   const r=await fetch('/api/agents/status',{headers:headers()});
   const d=await r.json();
   latestStatusData=d;
-  const actualRosterCount=Array.isArray(d.agents)?d.agents.length:0;
-  const rosterVersion=d.rosterVersion||'unknown';
-  const expectedFromServer=Number(d.expectedAgentCount||d.roster?.expected||0);
-  const rosterOK=
-    d.ok===true &&
-    actualRosterCount===EXPECTED_AGENT_COUNT &&
-    expectedFromServer===EXPECTED_AGENT_COUNT &&
-    rosterVersion===EXPECTED_ROSTER_VERSION;
-
-  const rosterGuard=document.getElementById('rosterGuard');
-  if(rosterGuard){
-    rosterGuard.innerHTML=rosterOK
-      ? `<span style="color:#1f6a34">LIVE ROSTER VERIFIED: ${actualRosterCount}/${EXPECTED_AGENT_COUNT} agents • ${rosterVersion} • ${STABLE19_BUILD}</span>`
-      : `<span class="error-text">ROSTER MISMATCH: live server reports ${actualRosterCount}/${EXPECTED_AGENT_COUNT} agents • ${rosterVersion}. Do not start a run; the deployment is stale/incomplete.</span>`;
-  }
-
-  const runButton=document.getElementById('run');
-  if(runButton) runButton.disabled=!rosterOK;
   document.getElementById('raw').textContent=JSON.stringify(d,null,2);
   if(!d.ok){document.getElementById('env').textContent=d.error||'Unable to load';return d}
-  document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> rolling publish + bounded parallel waves &nbsp; <b>Model:</b> ${d.environment.model} &nbsp; <b>Illustrator:</b> AUTO AFTER EDITOR + MANUAL OVERRIDE &nbsp; <b>Last checked:</b> ${new Date().toLocaleTimeString()}`;
+  document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> staged Vercel requests &nbsp; <b>Model:</b> ${d.environment.model}`;
   const latest=d.runs[0]||null;
   const jobs=latest?d.jobs.filter(j=>j.run_id===latest.id):[];
   document.getElementById('agents').innerHTML=d.agents.map(a=>{
     const matches=jobs.filter(j=>j.agent_key===a.key).sort((x,y)=>String(y.started_at||'').localeCompare(String(x.started_at||'')));
     const job=matches[0]; const s=job?.status||'ready'; const err=job?.error?`<p class="error-text"><b>Error:</b> ${job.error}</p>`:'';
-    const elapsed=s==='running'&&job?.started_at?Math.max(0,Math.floor((Date.now()-new Date(job.started_at).getTime())/1000)):0;
-    const elapsedText=s==='running'?`<p><b>Elapsed:</b> ${Math.floor(elapsed/60)}m ${elapsed%60}s</p>`:'';
-    return `<div class="agent-card"><h3>#${a.priority||'?'} ${a.name}</h3><p>${a.group} • ${a.phase||'workflow'} • automatic</p><span class="pill ${statusClass(s)}">${s}</span>${elapsedText}${err}</div>`
+    return `<div class="agent-card"><h3>#${a.priority||'?'} ${a.name}</h3><p>${a.group} • ${a.phase||'workflow'} • automatic</p><span class="pill ${statusClass(s)}">${s}</span>${err}</div>`
   }).join('');
   document.getElementById('runs').innerHTML=d.runs.map(x=>`<div class="run-row"><b>${x.edition_date}</b> — ${x.status} — ${x.trigger} — ${x.started_at||''}${x.error?`<br><span class="error-text">${x.error}</span>`:''}</div>`).join('')||'No runs yet.';
   document.getElementById('discrepancies').innerHTML=d.discrepancies.map(x=>`<div class="run-row"><b>${x.severity}</b> — ${x.description}</div>`).join('')||'No open discrepancies.';
   if(latest){
     const complete=new Set(jobs.filter(j=>j.status==='complete').map(j=>j.agent_key));
     const failed=new Set(jobs.filter(j=>j.status==='failed').map(j=>j.agent_key));
-    const running=[...new Set(jobs.filter(j=>j.status==='running').map(j=>j.agent_key))];
-    const active=running.length ? running.join(' + ') : (order.find(k=>!complete.has(k)&&!failed.has(k))||'finished');
-    document.getElementById('progress').innerHTML=`Latest run <b>${latest.edition_date}</b>: ${latest.status}. ${complete.size}/${EXPECTED_AGENT_COUNT} complete. Active/next: <b>${active}</b>.`;
+    const active=order.find(k=>!complete.has(k)&&!failed.has(k))||'finished';
+    document.getElementById('progress').innerHTML=`Latest run <b>${latest.edition_date}</b>: ${latest.status}. ${complete.size}/${order.length} complete. Next/current: <b>${active}</b>.`;
   }
   await publishingStatus();
   await reviewStatus();
-
-  // Retroactive activation for runs created before queued-job precreation.
-  if(latest && retroIllustratorStartedForRun!==latest.id){
-    const editorJob=jobs
-      .filter(j=>j.agent_key==='editor_producer')
-      .sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||'')))[0];
-    const illustratorJob=jobs
-      .filter(j=>j.agent_key==='illustrator')
-      .sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||'')))[0];
-
-    if(editorJob?.status==='complete' && (!illustratorJob || illustratorJob.status==='queued')){
-      retroIllustratorStartedForRun=latest.id;
-      runStageRequest(latest.id,'illustrator')
-        .then(()=>setTimeout(()=>status().catch(()=>{}),1200))
-        .catch(error=>{
-          document.getElementById('progress').innerHTML=
-            `<span class="error-text"><b>Illustrator auto-activation:</b> ${error.message}</span>`;
-        });
-    }
-  }
-
   return d;
 }
 
-function latestJobFor(runId,key,d=latestStatusData){
-  const jobs=(d?.jobs||[]).filter(j=>j.run_id===runId&&j.agent_key===key)
-    .sort((a,b)=>String(b.started_at||'').localeCompare(String(a.started_at||'')));
-  return jobs[0]||null;
-}
-
-function isDoneForPipeline(runId,key,d=latestStatusData){
-  const job=latestJobFor(runId,key,d);
-  if(!job)return false;
-  if(job.status==='complete')return true;
-  if(job.status==='failed'&&nonfatal.has(key))return true;
-  return false;
-}
-
-async function waitForExisting(runId,agentKey){
-  const started=Date.now();
-  while(Date.now()-started<155000){
-    await sleep(2500);
-    const d=await status();
-    const job=latestJobFor(runId,agentKey,d);
-    if(!job||job.status!=='running')return job;
-  }
-  return latestJobFor(runId,agentKey,latestStatusData);
-}
-
-async function executeAgent(runId,agentKey){
-  let d=await runStageRequest(runId,agentKey);
-
-  if(d.inProgress){
-    document.getElementById('progress').innerHTML=`<b>${agentKey}</b> already has a live request. Waiting for that request instead of launching a duplicate…`;
-    const job=await waitForExisting(runId,agentKey);
-    if(job?.status==='complete')return {ok:true,agentKey,reused:true};
-    if(job?.status==='failed')return {ok:false,agentKey,error:job.error||'failed',continue:nonfatal.has(agentKey)};
-    // Server-side stale cleanup will make a subsequent retry safe.
-    d=await runStageRequest(runId,agentKey);
-  }
-
-  if(!d.ok && coreRetryOnce.has(agentKey)){
-    document.getElementById('progress').innerHTML=`${agentKey} did not complete on its first attempt. Retrying this priority research desk once…`;
-    await sleep(900);
-    d=await runStageRequest(runId,agentKey);
-  }
-
-  if(!d.ok && !d.continue){
-    throw new Error(`${agentKey}: ${d.error||'blocking stage failed'}`);
-  }
-
-  return {ok:Boolean(d.ok),agentKey,error:d.error||null,continue:Boolean(d.continue)};
-}
-
-async function runPool(runId,agentKeys,limit,waveName){
-  const pending=agentKeys.filter(key=>!isDoneForPipeline(runId,key));
-  if(!pending.length)return;
-
-  let cursor=0;
-  let blockingError=null;
-
-  async function worker(){
-    while(cursor<pending.length&&!blockingError){
-      const index=cursor++;
-      const key=pending[index];
-      document.getElementById('progress').innerHTML=`<b>${waveName}</b>: running ${key}. Up to ${limit} independent agents may work at once.`;
-      try{
-        const result=await executeAgent(runId,key);
-        if(!result.ok&&!nonfatal.has(key)){
-          blockingError=new Error(`${key}: ${result.error||'failed'}`);
-          return;
-        }
-      }catch(e){
-        blockingError=e;
-        return;
-      }
+async function runAllStages(runId, firstAgent){
+  let agentKey=firstAgent;
+  while(agentKey){
+    const started=Date.now();
+    document.getElementById('progress').innerHTML=`Running <b>${agentKey}</b>… This stage has a 3½-minute safety timeout. Completed agents will not be rerun.`;
+    let d;
+    try{
+      d=await runStageRequest(runId,agentKey);
+    }catch(e){
       await status();
+      document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
+      return;
     }
-  }
 
-  const workers=Array.from({length:Math.min(limit,pending.length)},()=>worker());
-  await Promise.all(workers);
-  if(blockingError)throw blockingError;
-}
-
-async function runParallelPipeline(runId){
-  for(const wave of waves){
-    // Refresh before each dependency wave so a reload/resume skips completed work.
     await status();
-    document.getElementById('progress').innerHTML=`Starting <b>${wave.name}</b>…`;
-    await runPool(runId,wave.agents,wave.concurrency,wave.name);
 
-    if(wave.name==='Core Verification — Rolling Publish'){
-      await publishingStatus();
-      document.getElementById('progress').innerHTML=`<b>Core verification completed.</b> Verified text-first stories have been sent to the live edition. Supporting desks are now enriching the site.`;
+    if(!d.ok && !d.continue){
+      document.getElementById('progress').innerHTML=`<span class="error-text">${agentKey}: ${d.error||'failed'}. The run is paused. Fix the blocking error, then use Resume Current Run.</span>`;
+      return;
     }
-    if(wave.name==='Closing Desk — Enrich Edition'){
-      await publishingStatus();
-      document.getElementById('progress').innerHTML=`<b>Closing Desk enrichment completed.</b> The live edition has been refreshed with any additional verified supporting stories. Optional visual/social agents are continuing.`;
+
+    // Never trust a stale nextAgent blindly. Recompute from Supabase status so
+    // a browser interruption/reload can resume from the first unfinished stage.
+    const s=latestStatusData||{};
+    agentKey=pendingStageFor(runId,s);
+
+    if(agentKey){
+      const elapsed=Math.round((Date.now()-started)/1000);
+      document.getElementById('progress').innerHTML=`Previous stage finished in ${elapsed}s. Next: <b>${agentKey}</b>…`;
+      await sleep(900);
     }
   }
   await status();
-  document.getElementById('progress').innerHTML='Parallel newsroom run reached the end of the workflow.';
+  document.getElementById('progress').innerHTML='Run reached the end of the staged workflow.';
 }
 
 document.getElementById('resume').onclick=async()=>{
@@ -315,120 +181,21 @@ document.getElementById('resume').onclick=async()=>{
     const d=await status();
     const run=d?.runs?.[0];
     if(!run) throw new Error('No run is available to resume.');
-    const unfinished=order.filter(key=>!isDoneForPipeline(run.id,key,d));
-    if(!unfinished.length){
+    const next=pendingStageFor(run.id,d);
+    if(!next){
       document.getElementById('progress').textContent='The latest run has no unfinished stages.';
       return;
     }
     button.textContent='Resuming…';
-    await runParallelPipeline(run.id);
+    await runAllStages(run.id,next);
   }catch(e){
     document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
   }finally{
     button.disabled=false; button.textContent='Resume Current Run';
   }
 };
-document.getElementById('illustratorNow').onclick=async()=>{
-  const button=document.getElementById('illustratorNow');
-  button.disabled=true;
-  button.textContent='Starting Illustrator…';
-
-  try{
-    const d=await status();
-    const run=d?.runs?.[0];
-    if(!run) throw new Error('No newsroom run exists yet.');
-
-    document.getElementById('progress').innerHTML='<b>Illustrator manual override:</b> starting directly on the latest run…';
-
-    let result=await runStageRequest(run.id,'illustrator');
-
-    if(result.inProgress){
-      button.textContent='Illustrator Running…';
-      const job=await waitForExisting(run.id,'illustrator');
-      if(job?.status==='failed'){
-        throw new Error(job.error||'Illustrator failed.');
-      }
-    }else if(!result.ok){
-      throw new Error(result.error||'Illustrator failed to activate.');
-    }
-
-    await status();
-    const job=latestJobFor(run.id,'illustrator',latestStatusData);
-
-    if(job?.status==='complete'){
-      const count=job?.output?.generatedCount||0;
-      document.getElementById('progress').innerHTML=`<b>Illustrator complete:</b> ${count} generated side illustration${count===1?'':'s'}.`;
-    }else if(job?.status==='failed'){
-      throw new Error(job.error||'Illustrator failed.');
-    }
-  }catch(e){
-    document.getElementById('progress').innerHTML=`<span class="error-text"><b>Illustrator:</b> ${e.message}</span>`;
-  }finally{
-    button.disabled=false;
-    button.textContent='Run Illustrator Now';
-  }
-};
-document.getElementById('retryFailed').onclick=async()=>{
-  const button=document.getElementById('retryFailed');
-  button.disabled=true;
-  button.textContent='Repairing…';
-
-  try{
-    const d=await status();
-    const run=d?.runs?.[0];
-    if(!run) throw new Error('No newsroom run exists.');
-
-    const latestByKey=new Map();
-    (d.jobs||[])
-      .filter(j=>j.run_id===run.id)
-      .sort((a,b)=>String(a.started_at||'').localeCompare(String(b.started_at||'')))
-      .forEach(j=>latestByKey.set(j.agent_key,j));
-
-    const repairable=['major_press','black_press','regional_local','community_press']
-      .filter(key=>{
-        const job=latestByKey.get(key);
-        return job?.status==='failed' &&
-          /json|syntax|expected|unterminated|array element|property value/i.test(job?.error||'');
-      });
-
-    if(!repairable.length){
-      document.getElementById('progress').textContent='No failed research agents with JSON-format errors need repair.';
-      return;
-    }
-
-    for(const key of repairable){
-      document.getElementById('progress').innerHTML=`Repairing <b>${key}</b> with hardened JSON recovery…`;
-      const result=await runStageRequest(run.id,key);
-      if(!result.ok && !result.continue){
-        throw new Error(`${key}: ${result.error||'repair failed'}`);
-      }
-      await status();
-    }
-
-    document.getElementById('progress').innerHTML=
-      '<b>Failed research repaired.</b> The corrected agent output is now stored.';
-  }catch(e){
-    document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
-  }finally{
-    button.disabled=false;
-    button.textContent='Retry Failed Research';
-  }
-};
 document.getElementById('refresh').onclick=status;
 document.getElementById('run').onclick=async()=>{
-  const preflight=await status();
-  const liveCount=Array.isArray(preflight?.agents)?preflight.agents.length:0;
-  const liveVersion=preflight?.rosterVersion||'unknown';
-
-  if(
-    preflight?.ok!==true ||
-    liveCount!==EXPECTED_AGENT_COUNT ||
-    liveVersion!==EXPECTED_ROSTER_VERSION
-  ){
-    document.getElementById('progress').innerHTML=
-      `<span class="error-text"><b>Run blocked:</b> live server is ${liveCount}/${EXPECTED_AGENT_COUNT} agents (${liveVersion}). Deploy the full 19-agent bundle first.</span>`;
-    return;
-  }
   const button=document.getElementById('run');
   localStorage.setItem('otd_admin_token',tokenEl.value);
   button.disabled=true; button.textContent='Starting…';
@@ -436,8 +203,8 @@ document.getElementById('run').onclick=async()=>{
     const r=await fetch('/api/agents/run-all',{method:'POST',headers:headers(),body:JSON.stringify({date:document.getElementById('date').value||undefined})});
     const d=await r.json();
     if(!d.ok)throw new Error(d.error||'Unable to create run');
-    button.textContent='Parallel Run Active…';
-    await runParallelPipeline(d.runId);
+    button.textContent='Agents Running…';
+    await runAllStages(d.runId,d.firstAgent);
     await status();
   }catch(e){
     document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
@@ -445,12 +212,5 @@ document.getElementById('run').onclick=async()=>{
     button.disabled=false;button.textContent='Run All Agents';
   }
 };
-let autoRefreshBusy=false;
-setInterval(async()=>{
-  if(autoRefreshBusy)return;
-  autoRefreshBusy=true;
-  try{await status();}catch(e){}
-  finally{autoRefreshBusy=false;}
-},10000);
 status();
 </script></body></html>

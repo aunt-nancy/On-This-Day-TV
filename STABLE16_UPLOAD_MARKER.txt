@@ -1,0 +1,9 @@
+STABLE16 DIRECT OVERWRITE PACKAGE
+Expected live /api/health agentVersion:
+2026-08-30.priority1-video-stable16.1
+
+Expected agent count:
+16
+
+This package intentionally contains ONLY files that control the agent server/admin.
+It does not contain public homepage design files.
