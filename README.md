@@ -1,46 +1,36 @@
-# On This Day — Rolling Publish Engine
+# On This Day — Editorial Homepage Refinement
 
-PURPOSE
-The public site must not remain empty while the full 16-agent newsroom finishes.
+FRONT-END ONLY
 
-NEW PRODUCTIVITY RULE
-1. Editor Opening sets the assignment.
-2. Black Press + Major Press run together.
-3. Source Verification verifies the core stories.
-4. VERIFIED TEXT-FIRST STORIES ARE PUBLISHED IMMEDIATELY.
-5. Regional + Community research then runs in parallel.
-6. Context, Translation, Rights, Discrepancy, and Editor Closing enrich/refine the already-live edition.
-7. Visual and Social work remains post-publication.
+Replace:
+- index.html
+- styles.css
+- app.js
 
-This means the first public articles no longer wait for Regional, Community, Context,
-Rights, Discrepancy, Editor polish, Visual Archive, or Social agents.
-
-SAFETY
-- Only Source Verification output is eligible for rolling publication.
-- Story-specific verification discrepancies hold that specific story.
-- Explicit edition-level verification problems hold the rolling edition.
-- Rolling publication is text-first with original summaries and source links; visuals stay out until later rights/visual work.
-- Supporting Regional/Community stories receive a supplemental verification pass during Editor Closing before being added.
-
-STALL / VISIBILITY CONTROLS
-- OpenAI request hard timeout remains in place.
-- Stale RUNNING cleanup remains in place.
-- Admin page auto-refreshes every 10 seconds.
-- RUNNING cards show elapsed time.
-
-FILES TO REPLACE
+This package does NOT change:
+- agents
+- OpenAI code
+- rolling publishing engine
+- API routes
+- Supabase
+- Vercel environment variables
+- DNS/domain configuration
 - admin.html
-- lib/openai.js
-- lib/queued-pipeline.js
-- lib/routes/agents-run-stage.js
-- lib/routes/agents-run-all.js
-- lib/routes/agents-status.js
+- the locked masthead HTML/CSS
 
-AFTER DEPLOYMENT
-Start a NEW run. Do not resume the old run.
+WHAT CHANGED
+- Removed the oversized AI-generated lead headline from the visible homepage.
+- The public page now leads with the edition date and the actual verified story cards.
+- 100-year comparison remains the dominant center desk.
+- Major American Press and Black Press each receive a clean editorial column.
+- No illustration is used in the center tile.
+- Generic side-tile placeholder illustrations are removed.
+- Story summaries, publication, issue date, archive/page metadata, and direct original-source links are rendered when available.
+- Missing/unverified stories are hidden instead of displaying generic placeholder language.
+- Long headlines automatically receive smaller typography instead of taking over the page.
+- Up to four verified secondary 100-year headlines appear below the featured comparison.
+- If only one center comparison story is available, it expands cleanly rather than leaving an empty fake card.
+- If a side era has no verified story, that entire side card disappears and the layout rebalances.
 
-EXPECTED BEHAVIOR
-The first publication checkpoint is now Source Verification, not Editor Closing.
-There is no guarantee that usable historical sources will always be found within a fixed
-number of minutes, but the software will no longer intentionally keep verified core
-stories off the site while nonessential agents continue.
+IMPORTANT
+The current backend still uses its stabilization-era key y76. This frontend reads the year from the published payload rather than hard-coding the visible year. No 75/76 backend change is included in this visual package.
