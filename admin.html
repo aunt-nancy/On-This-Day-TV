@@ -7,6 +7,9 @@
 </style></head>
 <body><main class="admin-shell">
 <header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button red" id="illustratorNow">Run Illustrator Now</button><button class="button" id="retryFailed">Retry Failed Research</button></div></header>
+<div id="rosterGuard" style="margin:12px 0;padding:10px 12px;border:1px solid #a69268;background:#f5efe2;font-weight:800">
+  Roster check: waiting for live server…
+</div>
 <div id="env" class="panel"></div>
 <div id="progress" class="panel progress">Waiting for status…</div>
 <section class="panel"><h2>Priority & Execution Model</h2>
@@ -24,6 +27,9 @@
 <section class="panel"><h2>Raw Status</h2><pre id="raw">Loading…</pre></section>
 </main>
 <script>
+const EXPECTED_AGENT_COUNT=19;
+const STABLE19_BUILD='2026-08-30.verification-stable19.1';
+const EXPECTED_ROSTER_VERSION='2026-08-30.roster19.1';
 const order=['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','source_verification','rights_review','discrepancy_exception','editor_producer','then_now','archive_recipe','visual_archive','illustrator','social_editor','short_form_video','engagement_trends','social_distribution'];
 const nonfatal=new Set(['editor_opening','black_press','major_press','regional_local','community_press','historical_context','translation','then_now','archive_recipe','visual_archive','illustrator','social_editor','short_form_video','engagement_trends','social_distribution']);
 const coreRetryOnce=new Set(['black_press','major_press']);
@@ -136,6 +142,24 @@ async function status(){
   const r=await fetch('/api/agents/status',{headers:headers()});
   const d=await r.json();
   latestStatusData=d;
+  const actualRosterCount=Array.isArray(d.agents)?d.agents.length:0;
+  const rosterVersion=d.rosterVersion||'unknown';
+  const expectedFromServer=Number(d.expectedAgentCount||d.roster?.expected||0);
+  const rosterOK=
+    d.ok===true &&
+    actualRosterCount===EXPECTED_AGENT_COUNT &&
+    expectedFromServer===EXPECTED_AGENT_COUNT &&
+    rosterVersion===EXPECTED_ROSTER_VERSION;
+
+  const rosterGuard=document.getElementById('rosterGuard');
+  if(rosterGuard){
+    rosterGuard.innerHTML=rosterOK
+      ? `<span style="color:#1f6a34">LIVE ROSTER VERIFIED: ${actualRosterCount}/${EXPECTED_AGENT_COUNT} agents • ${rosterVersion} • ${STABLE19_BUILD}</span>`
+      : `<span class="error-text">ROSTER MISMATCH: live server reports ${actualRosterCount}/${EXPECTED_AGENT_COUNT} agents • ${rosterVersion}. Do not start a run; the deployment is stale/incomplete.</span>`;
+  }
+
+  const runButton=document.getElementById('run');
+  if(runButton) runButton.disabled=!rosterOK;
   document.getElementById('raw').textContent=JSON.stringify(d,null,2);
   if(!d.ok){document.getElementById('env').textContent=d.error||'Unable to load';return d}
   document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> rolling publish + bounded parallel waves &nbsp; <b>Model:</b> ${d.environment.model} &nbsp; <b>Illustrator:</b> AUTO AFTER EDITOR + MANUAL OVERRIDE &nbsp; <b>Last checked:</b> ${new Date().toLocaleTimeString()}`;
@@ -155,7 +179,7 @@ async function status(){
     const failed=new Set(jobs.filter(j=>j.status==='failed').map(j=>j.agent_key));
     const running=[...new Set(jobs.filter(j=>j.status==='running').map(j=>j.agent_key))];
     const active=running.length ? running.join(' + ') : (order.find(k=>!complete.has(k)&&!failed.has(k))||'finished');
-    document.getElementById('progress').innerHTML=`Latest run <b>${latest.edition_date}</b>: ${latest.status}. ${complete.size}/${order.length} complete. Active/next: <b>${active}</b>.`;
+    document.getElementById('progress').innerHTML=`Latest run <b>${latest.edition_date}</b>: ${latest.status}. ${complete.size}/${EXPECTED_AGENT_COUNT} complete. Active/next: <b>${active}</b>.`;
   }
   await publishingStatus();
   await reviewStatus();
@@ -392,6 +416,19 @@ document.getElementById('retryFailed').onclick=async()=>{
 };
 document.getElementById('refresh').onclick=status;
 document.getElementById('run').onclick=async()=>{
+  const preflight=await status();
+  const liveCount=Array.isArray(preflight?.agents)?preflight.agents.length:0;
+  const liveVersion=preflight?.rosterVersion||'unknown';
+
+  if(
+    preflight?.ok!==true ||
+    liveCount!==EXPECTED_AGENT_COUNT ||
+    liveVersion!==EXPECTED_ROSTER_VERSION
+  ){
+    document.getElementById('progress').innerHTML=
+      `<span class="error-text"><b>Run blocked:</b> live server is ${liveCount}/${EXPECTED_AGENT_COUNT} agents (${liveVersion}). Deploy the full 19-agent bundle first.</span>`;
+    return;
+  }
   const button=document.getElementById('run');
   localStorage.setItem('otd_admin_token',tokenEl.value);
   button.disabled=true; button.textContent='Starting…';
