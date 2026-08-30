@@ -1,53 +1,32 @@
-# On This Day — Parallel Newsroom Engine
+# On This Day — Rolling Publish Engine
 
-ROOT CAUSE FIXED
-The prior browser runner was still sequential. Reordering the agents did not make them faster.
-Also, OpenAI requests had no hard server-side timeout, so a browser abort could leave a Vercel
-invocation and its Supabase job showing RUNNING.
+PURPOSE
+The public site must not remain empty while the full 16-agent newsroom finishes.
 
-WHAT THIS BUILD CHANGES
+NEW PRODUCTIVITY RULE
+1. Editor Opening sets the assignment.
+2. Black Press + Major Press run together.
+3. Source Verification verifies the core stories.
+4. VERIFIED TEXT-FIRST STORIES ARE PUBLISHED IMMEDIATELY.
+5. Regional + Community research then runs in parallel.
+6. Context, Translation, Rights, Discrepancy, and Editor Closing enrich/refine the already-live edition.
+7. Visual and Social work remains post-publication.
 
-1. Bounded parallel research
-   - Black Press + Major Press can work at the same time.
-   - As a slot opens, Regional and Community research begin.
-   - Maximum expensive research concurrency is 2 to avoid repeating the earlier 429/TPM problem.
+This means the first public articles no longer wait for Regional, Community, Context,
+Rights, Discrepancy, Editor polish, Visual Archive, or Social agents.
 
-2. Parallel analysis/verification wave
-   - Source Verification, Historical Context, and conditional Translation are scheduled as a wave.
-   - At most 2 model-heavy calls run simultaneously.
+SAFETY
+- Only Source Verification output is eligible for rolling publication.
+- Story-specific verification discrepancies hold that specific story.
+- Explicit edition-level verification problems hold the rolling edition.
+- Rolling publication is text-first with original summaries and source links; visuals stay out until later rights/visual work.
+- Supporting Regional/Community stories receive a supplemental verification pass during Editor Closing before being added.
 
-3. Hard AI request timeout
-   - Each OpenAI HTTP request is hard-stopped server-side at ~80 seconds by default.
-   - It can no longer remain RUNNING indefinitely because only the browser gave up.
-
-4. Stale-job cleanup
-   - A RUNNING agent older than 2.5 minutes is marked failed automatically before retry.
-   - A fresh RUNNING job is polled instead of duplicated.
-
-5. Smaller token reservations
-   - low: 2,800
-   - medium: 4,500
-   - high: 6,500
-   - research is explicitly capped below those defaults where appropriate.
-
-6. No multiplied retries
-   - OpenAI retries only a 429 once.
-   - The newsroom retries only malformed/empty JSON once.
-   - A network timeout is not multiplied into several complete research requests.
-
-7. Discrepancy fast path
-   - If verification/context/translation/rights report no actual issues, the Discrepancy Agent
-     completes deterministically without spending another model call.
-
-8. Publish first
-   - Editor Closing immediately writes a deterministic verified edition to Supabase/public content.
-   - Optional editor prose polishing happens after the verified edition is already published.
-   - Visual Archive and social production no longer block the first public articles.
-
-9. Post-publish production
-   - Visual Archive, Social Editor, Short-Form Video, and Engagement/Trends run after publication,
-     with bounded parallelism.
-   - Social Distribution remains last.
+STALL / VISIBILITY CONTROLS
+- OpenAI request hard timeout remains in place.
+- Stale RUNNING cleanup remains in place.
+- Admin page auto-refreshes every 10 seconds.
+- RUNNING cards show elapsed time.
 
 FILES TO REPLACE
 - admin.html
@@ -57,14 +36,11 @@ FILES TO REPLACE
 - lib/routes/agents-run-all.js
 - lib/routes/agents-status.js
 
-DO NOT CHANGE
-- Supabase schema
-- environment variables
-- DNS/domain
-- masthead
-- landing page
-- API router
-- 75/76-year stabilization setting
-
 AFTER DEPLOYMENT
-Start a NEW run. Do not resume the currently stuck run. createQueuedRun will supersede its DB state.
+Start a NEW run. Do not resume the old run.
+
+EXPECTED BEHAVIOR
+The first publication checkpoint is now Source Verification, not Editor Closing.
+There is no guarantee that usable historical sources will always be found within a fixed
+number of minutes, but the software will no longer intentionally keep verified core
+stories off the site while nonessential agents continue.

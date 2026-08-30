@@ -10,8 +10,9 @@
 <div id="progress" class="panel progress">Waiting for status…</div>
 <section class="panel"><h2>Priority & Execution Model</h2>
 <div class="run-row"><b>Priority:</b> Editor Opening → Black Press → Major Press → Source Verification → Discrepancy → Regional → Community → Context → Rights → Translation → Visual → Editor Closing → Social.</div>
-<div class="run-row"><b>Parallel engine:</b> ON — up to 2 expensive research/verification requests run at once. Independent work no longer waits in a single-file line.</div>
-<div class="run-row"><b>Time-to-publish:</b> verified safe articles are written to the public edition before optional editorial polish, visual research, or social production.</div>
+<div class="run-row"><b>Parallel engine:</b> ON — Black Press and Major Press run together. Supporting research runs after the first public edition is started.</div>
+<div class="run-row"><b>Time-to-publish:</b> Source Verification now publishes verified text-first stories immediately. Regional, Community, Context, Rights, Visual, and Social work enrich the live edition afterward.</div>
+<div class="run-row"><b>Activity heartbeat:</b> this page auto-refreshes every 10 seconds and shows elapsed RUNNING time so silence is visible as a timed operation, not a frozen screen.</div>
 <div class="run-row"><b>Stall protection:</b> OpenAI calls hard-timeout server-side; stale RUNNING jobs are cleared automatically.</div>
 </section>
 <section><h2>Agent Roster — Ranked by Importance</h2><div id="agents" class="agent-grid"></div></section>
@@ -27,11 +28,13 @@ const nonfatal=new Set(['editor_opening','black_press','major_press','regional_l
 const coreRetryOnce=new Set(['black_press','major_press']);
 const waves=[
   {name:'Opening Desk', agents:['editor_opening'], concurrency:1},
-  {name:'Research Desk', agents:['black_press','major_press','regional_local','community_press'], concurrency:2},
-  {name:'Analysis + Verification', agents:['source_verification','historical_context','translation'], concurrency:2},
+  {name:'Core Research — First Publish', agents:['black_press','major_press'], concurrency:2},
+  {name:'Core Verification — Rolling Publish', agents:['source_verification'], concurrency:1},
+  {name:'Supporting Research', agents:['regional_local','community_press'], concurrency:2},
+  {name:'Context + Translation', agents:['historical_context','translation'], concurrency:2},
   {name:'Rights Review', agents:['rights_review'], concurrency:1},
   {name:'Exception Control', agents:['discrepancy_exception'], concurrency:1},
-  {name:'Closing Desk — Publish', agents:['editor_producer'], concurrency:1},
+  {name:'Closing Desk — Enrich Edition', agents:['editor_producer'], concurrency:1},
   {name:'Post-Publish Production', agents:['visual_archive','social_editor','short_form_video','engagement_trends'], concurrency:3},
   {name:'Distribution', agents:['social_distribution'], concurrency:1},
 ];
@@ -133,13 +136,15 @@ async function status(){
   latestStatusData=d;
   document.getElementById('raw').textContent=JSON.stringify(d,null,2);
   if(!d.ok){document.getElementById('env').textContent=d.error||'Unable to load';return d}
-  document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> bounded parallel waves &nbsp; <b>Model:</b> ${d.environment.model}`;
+  document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> rolling publish + bounded parallel waves &nbsp; <b>Model:</b> ${d.environment.model} &nbsp; <b>Last checked:</b> ${new Date().toLocaleTimeString()}`;
   const latest=d.runs[0]||null;
   const jobs=latest?d.jobs.filter(j=>j.run_id===latest.id):[];
   document.getElementById('agents').innerHTML=d.agents.map(a=>{
     const matches=jobs.filter(j=>j.agent_key===a.key).sort((x,y)=>String(y.started_at||'').localeCompare(String(x.started_at||'')));
     const job=matches[0]; const s=job?.status||'ready'; const err=job?.error?`<p class="error-text"><b>Error:</b> ${job.error}</p>`:'';
-    return `<div class="agent-card"><h3>#${a.priority||'?'} ${a.name}</h3><p>${a.group} • ${a.phase||'workflow'} • automatic</p><span class="pill ${statusClass(s)}">${s}</span>${err}</div>`
+    const elapsed=s==='running'&&job?.started_at?Math.max(0,Math.floor((Date.now()-new Date(job.started_at).getTime())/1000)):0;
+    const elapsedText=s==='running'?`<p><b>Elapsed:</b> ${Math.floor(elapsed/60)}m ${elapsed%60}s</p>`:'';
+    return `<div class="agent-card"><h3>#${a.priority||'?'} ${a.name}</h3><p>${a.group} • ${a.phase||'workflow'} • automatic</p><span class="pill ${statusClass(s)}">${s}</span>${elapsedText}${err}</div>`
   }).join('');
   document.getElementById('runs').innerHTML=d.runs.map(x=>`<div class="run-row"><b>${x.edition_date}</b> — ${x.status} — ${x.trigger} — ${x.started_at||''}${x.error?`<br><span class="error-text">${x.error}</span>`:''}</div>`).join('')||'No runs yet.';
   document.getElementById('discrepancies').innerHTML=d.discrepancies.map(x=>`<div class="run-row"><b>${x.severity}</b> — ${x.description}</div>`).join('')||'No open discrepancies.';
@@ -243,11 +248,13 @@ async function runParallelPipeline(runId){
     document.getElementById('progress').innerHTML=`Starting <b>${wave.name}</b>…`;
     await runPool(runId,wave.agents,wave.concurrency,wave.name);
 
-    // Critical product rule: publication is complete at the Closing Desk.
-    if(wave.name==='Closing Desk — Publish'){
+    if(wave.name==='Core Verification — Rolling Publish'){
       await publishingStatus();
-      const pub=document.getElementById('publishing').textContent||'';
-      document.getElementById('progress').innerHTML=`<b>Closing Desk completed.</b> Verified safe articles have been sent to Publishing Status. Optional post-publish agents are continuing.`;
+      document.getElementById('progress').innerHTML=`<b>Core verification completed.</b> Verified text-first stories have been sent to the live edition. Supporting desks are now enriching the site.`;
+    }
+    if(wave.name==='Closing Desk — Enrich Edition'){
+      await publishingStatus();
+      document.getElementById('progress').innerHTML=`<b>Closing Desk enrichment completed.</b> The live edition has been refreshed with any additional verified supporting stories. Optional visual/social agents are continuing.`;
     }
   }
   await status();
@@ -292,5 +299,12 @@ document.getElementById('run').onclick=async()=>{
     button.disabled=false;button.textContent='Run All Agents';
   }
 };
+let autoRefreshBusy=false;
+setInterval(async()=>{
+  if(autoRefreshBusy)return;
+  autoRefreshBusy=true;
+  try{await status();}catch(e){}
+  finally{autoRefreshBusy=false;}
+},10000);
 status();
 </script></body></html>
