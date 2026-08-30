@@ -13,3 +13,8 @@ This package restores the approved landing-page structure:
 
 All files are flat at repository root to simplify manual GitHub upload.
 Upload/overwrite all files in the repository root. Vercel will redeploy automatically after the GitHub commit.
+
+## Width rebalance
+- Side era tiles widened substantially.
+- 100-year center remains dominant but no longer consumes ~60% of the board.
+- Desktop ratio is approximately 27% / 46% / 27%.
