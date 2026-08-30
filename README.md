@@ -28,3 +28,16 @@ Upload/overwrite all files in the repository root. Vercel will redeploy automati
   - relevance/strength of that day's historical headline (45%)
 - Agent workflows can update `data-headline-weight` daily.
 - Black Press never moves from the center.
+
+
+## Graphics fill update
+- Added decorative historical graphics to fill open visual areas across the site.
+- Side and center landing papers now include visual art blocks.
+- Added a homepage graphic showcase section.
+- Added visual bands to all inner pages.
+- Added reusable SVG artwork files:
+  - art-press.svg
+  - art-frontpage.svg
+  - art-map.svg
+  - art-voices.svg
+  - art-archive.svg

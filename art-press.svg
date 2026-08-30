@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+<rect width="800" height="500" fill="#f7eedc"/>
+<rect x="35" y="35" width="730" height="430" rx="18" fill="#efe2c6" stroke="#b39154" stroke-width="8"/>
+<g stroke="#2a2116" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity=".95">
+  <rect x="250" y="120" width="300" height="220" rx="8"/>
+  <path d="M310 110v-45h180v45"/>
+  <path d="M400 65v-35"/>
+  <path d="M195 350h410"/>
+  <path d="M250 145h300"/>
+  <path d="M290 340v80M510 340v80"/>
+  <circle cx="235" cy="395" r="45"/><circle cx="565" cy="395" r="45"/>
+  <path d="M210 395h50M235 370v50"/>
+  <path d="M540 395h50M565 370v50"/>
+  <path d="M340 220h120v40H340z"/>
+  <path d="M250 275h300"/>
+</g>
+<text x="400" y="455" font-family="Georgia,serif" font-size="34" text-anchor="middle" fill="#7c211f">Historic Printing Press</text>
+</svg>

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+<rect width="800" height="500" fill="#f5ecda"/>
+<rect x="35" y="35" width="730" height="430" rx="18" fill="#efe2c6" stroke="#b39154" stroke-width="8"/>
+<path d="M85 210l70-60 85 20 58-45 70 18 64-20 54 38 63-18 70 65-28 46 18 62-70 40-125 10-88 35-87-18-70 8-46-46-68-6-24-74z"
+fill="#d9c29a" stroke="#3a2d1b" stroke-width="5"/>
+<g fill="#7c211f" font-family="Arial" font-size="20" font-weight="700">
+<text x="150" y="145">WEST</text><text x="315" y="110">MIDWEST</text><text x="520" y="135">NORTHEAST</text><text x="440" y="325">SOUTH</text>
+</g>
+<text x="400" y="455" font-family="Georgia,serif" font-size="34" text-anchor="middle" fill="#3d5723">Regional & Local Reporting</text>
+</svg>
