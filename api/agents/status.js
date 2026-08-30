@@ -16,6 +16,7 @@ export default async function handler(req, res) {
     const latestJobs = latestRun ? jobs.filter(j => j.run_id === latestRun.id) : [];
 
     json(res, 200, {
+      architecture: 'staged_requests',
       ok: true,
       environment: environmentStatus(),
       agents: AGENTS,
