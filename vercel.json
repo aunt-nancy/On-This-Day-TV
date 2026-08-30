@@ -4,7 +4,7 @@
     "api/**/*.js": {
       "maxDuration": 300
     },
-    "api/queues/agent.js": {
+    "api/queue-worker.js": {
       "maxDuration": 300,
       "experimentalTriggers": [
         {
