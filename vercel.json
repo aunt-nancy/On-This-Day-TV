@@ -1,7 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "functions": {
-    "api/agents/queue-worker.js": {
+    "api/**/*.js": {
+      "maxDuration": 300
+    },
+    "api/queues/agent.js": {
       "maxDuration": 300,
       "experimentalTriggers": [
         {
