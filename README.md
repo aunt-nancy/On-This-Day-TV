@@ -56,3 +56,7 @@ Upload/overwrite all files in the repository root. Vercel will redeploy automati
 - Removed the comparison subtitle beneath the center headline area.
 - Supporting illustrations were reduced and placed only in side tiles and small page/card headers.
 - Interior visual bands and showcase cards were scaled down so articles and source links remain dominant.
+
+
+## ALL AGENTS ENABLED
+This package adds 16 operational agents, Vercel API functions, daily cron automation, Supabase persistence, discrepancy-only human review, live edition binding, social post generation/queueing, and an admin dashboard. See SETUP_AGENTS.md.

@@ -71,3 +71,27 @@ window.OnThisDay.setMajorHeadline = function(headline){
     el.textContent = headline || "Today’s Leading Verified Headline";
   });
 };
+
+
+// Live agent-published edition binding. Static placeholders remain as a graceful fallback.
+(async function loadAgentEdition(){
+  try {
+    const response = await fetch('/api/content/today', { headers: { Accept: 'application/json' } });
+    const result = await response.json();
+    const edition = result?.edition?.payload;
+    if (!edition) return;
+    const set = (selector, value) => { if (value) document.querySelectorAll(selector).forEach(el => el.textContent = value); };
+    set('[data-major-headline]', edition.leadHeadline);
+    const stories = edition.stories || {};
+    set('[data-y200-headline]', stories.y200?.title);
+    set('[data-y200-publication]', stories.y200?.publication);
+    set('[data-y100-major-headline]', stories.y100?.major?.title);
+    set('[data-y100-major-publication]', stories.y100?.major?.publication);
+    set('[data-y100-black-headline]', stories.y100?.black?.title);
+    set('[data-y100-black-publication]', stories.y100?.black?.publication);
+    set('[data-y76-headline]', stories.y76?.title);
+    set('[data-y76-publication]', stories.y76?.publication);
+  } catch (error) {
+    console.warn('Agent edition unavailable; using static fallback.', error);
+  }
+})();
