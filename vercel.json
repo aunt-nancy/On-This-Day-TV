@@ -53,6 +53,10 @@
     {
       "source": "/api/cron/daily",
       "destination": "/api/router?route=cron/daily"
+    },
+    {
+      "source": "/api/cron/newsroom",
+      "destination": "/api/router?route=cron/newsroom"
     }
   ],
   "headers": [
@@ -77,6 +81,12 @@
           "value": "no-store, max-age=0"
         }
       ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron/newsroom",
+      "schedule": "*/2 * * * *"
     }
   ]
 }

@@ -10,6 +10,7 @@ import adminFillSideHeadlines from '../lib/routes/admin-fill-side-headlines.js';
 import contentToday from '../lib/routes/content-today.js';
 import socialQueue from '../lib/routes/social-queue.js';
 import cronDaily from '../lib/routes/cron-daily.js';
+import cronNewsroom from '../lib/routes/cron-newsroom.js';
 
 const ROUTES = {
   'health': health,
@@ -24,10 +25,11 @@ const ROUTES = {
   'content/today': contentToday,
   'social/queue': socialQueue,
   'cron/daily': cronDaily,
+  'cron/newsroom': cronNewsroom,
 };
 
 export default async function handler(req, res) {
-  res.setHeader('X-OTD-Build', '2026-08-30.19agent-site-date-pacific.1');
+  res.setHeader('X-OTD-Build', '2026-08-31.19agent-real-automatic-scheduler.1');
   res.setHeader('Cache-Control', 'no-store');
   const url = new URL(req.url, 'https://www.onthisday.tv');
   const route = String(req.query?.route || url.searchParams.get('route') || '')
