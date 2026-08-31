@@ -1,33 +1,68 @@
-<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Approvals | On This Day TV</title><link rel="stylesheet" href="styles.css"></head><body class="inner-page">
-<header class="masthead-lock"><div class="site-nav"><a class="brand-lock" href="index.html"><b>ON THIS DAY</b><span>HISTORY AS IT HAPPENED</span></a><nav class="nav-links"><a href="index.html">Public Site</a><a href="sources.html">Sources & Method</a></nav></div></header>
-<main class="page-shell"><div class="page-kicker">Automatic Newsroom</div><h1 class="page-title">Operations & Approvals</h1><p class="page-intro">The newsroom starts, advances, retries, publishes, and prepares distribution automatically. This page does not contain normal run/resume controls. Human action is limited to genuine approval decisions.</p>
-<div class="admin-token"><input id="token" type="password" placeholder="Admin token"><button id="saveToken">Open Approvals</button><span id="authState" class="muted"></span></div>
-<div id="opsSummary" class="ops-summary"></div>
-<h2>Needs Approval</h2><div id="approvals"><div class="empty-state">Enter the admin token to load approval items.</div></div>
-<h2>Latest Agent Activity</h2><div id="agentOps" class="agent-ops"></div>
-<h2>Recent Runs</h2><div id="runs"></div>
-</main><footer class="footer-simple">Normal operating rule: automatic newsroom • manual approvals only</footer>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Newsroom | On This Day TV</title><link rel="stylesheet" href="styles.css">
+<style>
+.admin-shell{max-width:1180px;margin:0 auto;padding:20px;background:#f8f1e5;min-height:100vh}.admin-top{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#071b30;color:#fff;padding:18px;border-bottom:3px solid #b98933}.admin-top h1{margin:0;font-family:Georgia,serif}.admin-top p{margin:5px 0 0;color:#e9dfc9;max-width:720px}.admin-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.admin-input{padding:9px;border:1px solid #baa984;min-width:220px}.button{padding:9px 12px;border:1px solid #b98933;background:#f7f0e3;color:#102d4d;font-weight:800;cursor:pointer}.button.red{background:#7c211f;color:#fff;border-color:#7c211f}.agent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}.agent-card{background:#fffaf1;border:1px solid #c7b48f;padding:12px;min-height:112px}.agent-card h3{margin:0 0 4px;font-size:15px}.agent-card p{font-size:11px;margin:4px 0;color:#5b5347}.pill{display:inline-block;font:800 9px Arial,sans-serif;text-transform:uppercase;padding:4px 7px;margin-top:8px;background:#102d4d;color:#fff}.pill.error,.pill.failed{background:#7c211f}.pill.complete{background:#315d2d}.pill.running{background:#7d5c14}.pill.queued{background:#e5dfcf;color:#4a4030;border:1px solid #bbae91}.panel{background:#fffaf1;border:1px solid #c7b48f;padding:14px;margin:12px 0}.panel h2{font-family:Georgia,serif;color:#102d4d;margin-top:0}.panel pre{white-space:pre-wrap;font:11px/1.4 Consolas,monospace;max-height:320px;overflow:auto;background:#101820;color:#eae8e0;padding:12px}.run-row{padding:9px 0;border-bottom:1px solid #ded0b7;font-size:12px}.review-card{border:1px solid #ba8b73;background:#fff8ef;padding:14px;margin:10px 0}.review-card h3{margin:0 0 6px;color:#7c211f}.review-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.source-link{word-break:break-all}.success{color:#315d2d}.error-text{color:#7c211f}.progress{font-weight:700;color:#102d4d}.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.summary-box{background:#fffaf1;border:1px solid #c7b48f;padding:12px}.summary-box span{display:block;font:700 10px Arial,sans-serif;text-transform:uppercase;color:#786c58}.summary-box b{display:block;font-size:18px;color:#102d4d;margin-top:4px}.small-note{font-size:12px;color:#5b5347}.auth-state{font-size:12px;font-weight:700}.auth-state.ok{color:#dcefcf}.auth-state.bad{color:#ffd1cb}.top-link{color:#fff;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.45);font-size:12px}.roster-guard{margin:12px 0;padding:10px 12px;border:1px solid #a69268;background:#f5efe2;font-weight:800}@media(max-width:900px){.agent-grid{grid-template-columns:repeat(2,1fr)}.summary-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.agent-grid,.summary-grid{grid-template-columns:1fr}.admin-top{align-items:flex-start;flex-direction:column}.admin-input{min-width:100%}.admin-actions{width:100%}}
+</style></head>
+<body><main class="admin-shell">
+<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><p>Automatic newsroom. Research, verification, editing, publishing, enrichment, and distribution advance without routine human operation. Human intervention is limited to genuine approval decisions.</p></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><button class="button" id="refresh">Refresh Status</button><span id="authState" class="auth-state"></span><a class="top-link" href="index.html">Public Site</a></div></header>
+<div id="rosterGuard" class="roster-guard">Roster check: waiting for live server…</div>
+<div id="env" class="panel">Waiting for environment status…</div>
+<div id="progress" class="panel progress">Waiting for newsroom status…</div>
+<div id="summary" class="summary-grid"></div>
+<section class="panel"><h2>Priority & Execution Model</h2>
+<div class="run-row"><b>Operating rule:</b> Automatic by default. No normal Start, Resume, Reset, or Run-All action is required from the administrator.</div>
+<div class="run-row"><b>Core path:</b> Opening Desk → Black Press + Major Press → Source Verification → Discrepancy Control → Regional/Local + Community Press → Context / Rights / Translation / Visual sourcing → Closing Desk → post-publish features → social distribution.</div>
+<div class="run-row"><b>Approval isolation:</b> A disputed source is held at the item level whenever it can be identified. Unrelated verified stories continue through the newsroom and can publish normally.</div>
+<div class="run-row"><b>Publishing rule:</b> Only verified source-backed stories may enter the public edition. OCR and machine translation accelerate discovery; they do not replace source verification or required human language review.</div>
+<div class="run-row"><b>Automatic continuation:</b> Approval or rejection queues the necessary downstream refresh automatically. There is no manual resume step after a decision.</div>
+</section>
+<section><h2>Agent Roster — Ranked by Importance</h2><div id="agents" class="agent-grid"></div></section>
+<section class="panel"><h2>Needs Review</h2><p class="small-note">Only unresolved items requiring human judgment appear here. Approving or rejecting one item does not hold unrelated articles.</p><div id="reviews">Loading…</div></section>
+<section class="panel"><h2>Publishing Status</h2><div id="publishing">Checking…</div></section>
+<section class="panel"><h2>Recent Runs</h2><div id="runs">Loading…</div></section>
+<section class="panel"><h2>Open Discrepancies</h2><div id="discrepancies">Loading…</div></section>
+<section class="panel"><h2>Raw Status</h2><pre id="raw">Loading…</pre></section>
+</main>
 <script>
-const tokenEl=document.getElementById('token'); tokenEl.value=localStorage.getItem('otd_admin_token')||'';
+const EXPECTED_AGENT_COUNT=19;
+const tokenEl=document.getElementById('token');
+tokenEl.value=localStorage.getItem('otd_admin_token')||'';
+tokenEl.addEventListener('change',()=>localStorage.setItem('otd_admin_token',tokenEl.value));
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
 const headers=()=>({Authorization:`Bearer ${tokenEl.value}`,'Content-Type':'application/json'});
-function pill(s){const c=s==='complete'?'complete':s==='failed'?'failed':s==='running'?'running':'';return `<span class="status-pill ${c}">${esc(s||'ready')}</span>`}
+function statusClass(s){return s==='failed'?'failed':s==='complete'?'complete':s==='running'?'running':s==='queued'?'queued':''}
+function pill(s){return `<span class="pill ${statusClass(s)}">${esc(s||'ready')}</span>`}
+function newestJobs(jobs){const m=new Map();[...(jobs||[])].sort((a,b)=>String(a.started_at||a.created_at||'').localeCompare(String(b.started_at||b.created_at||''))).forEach(j=>m.set(j.agent_key,j));return m}
+function editionStoryCount(edition){const p=edition?.payload||{};const s=p.stories||{};let n=0;for(const era of Object.values(s)){if(!era||typeof era!=='object')continue;for(const v of Object.values(era)){if(v&&typeof v==='object'&&(v.title||v.headline||v.sourceUrl||v.source_url))n++}}if(Array.isArray(p.communityTiles))n+=p.communityTiles.length;return n}
 async function review(id,action){
+  const question=action==='approve'?'Approve this item and allow automatic republishing?':'Reject this item and keep it excluded from publication?';
+  if(!confirm(question))return;
   const note=prompt(action==='approve'?'Optional approval note:':'Optional rejection note:')||'';
-  const r=await fetch('/api/admin/review',{method:'PATCH',headers:headers(),body:JSON.stringify({id,action,note})}); const d=await r.json();
-  if(!d.ok){alert(d.error||'Review failed');return} alert(d.message); await load();
+  const r=await fetch('/api/admin/review',{method:'PATCH',headers:headers(),body:JSON.stringify({id,action,note})});
+  const d=await r.json(); if(!d.ok){alert(d.error||'Review failed');return} alert(d.message||'Decision saved.'); await load();
 }
+window.review=review;
 async function load(){
-  if(!tokenEl.value)return; localStorage.setItem('otd_admin_token',tokenEl.value);
+  if(!tokenEl.value){document.getElementById('authState').textContent='Enter admin token';document.getElementById('authState').className='auth-state bad';return}
+  localStorage.setItem('otd_admin_token',tokenEl.value);
   const r=await fetch('/api/admin/status',{headers:headers(),cache:'no-store'}); const d=await r.json();
-  if(!d.ok){document.getElementById('authState').textContent=d.error||'Unable to load';return}
-  document.getElementById('authState').textContent='Connected';
-  const latest=d.latest||{}; const approvals=d.approvals||[]; const jobs=d.jobs||[];
-  document.getElementById('opsSummary').innerHTML=`<div class="ops-box"><span>Latest date</span><b>${esc(latest.edition_date||'—')}</b></div><div class="ops-box"><span>Run status</span><b>${esc(latest.status||'—')}</b></div><div class="ops-box"><span>Current stage</span><b>${esc(latest.stage||'—')}</b></div><div class="ops-box"><span>Pending approvals</span><b>${approvals.length}</b></div>`;
-  document.getElementById('approvals').innerHTML=approvals.length?approvals.map(a=>`<article class="editorial-card approval-card"><div class="meta">${esc(a.category)} • ${esc(a.scope)}</div><h3>${esc(a.reason)}</h3>${a.payload?.title?`<p><b>${esc(a.payload.title)}</b></p>`:''}${a.payload?.publication?`<p>${esc(a.payload.publication)}</p>`:''}${a.source_url?`<p><a target="_blank" rel="noopener" href="${esc(a.source_url)}">Open source →</a></p>`:''}<div class="approval-actions"><button onclick="review('${a.id}','approve')">Approve</button><button class="reject" onclick="review('${a.id}','reject')">Reject</button></div></article>`).join(''):'<div class="empty-state">No items need approval. The newsroom is continuing automatically.</div>';
-  const latestByKey=new Map(); jobs.forEach(j=>latestByKey.set(j.agent_key,j));
-  document.getElementById('agentOps').innerHTML=(d.agents||[]).map(a=>{const j=latestByKey.get(a.key);return `<div class="agent-op"><h4>#${a.priority} ${esc(a.name)}</h4>${pill(j?.status||'ready')}${j?.error?`<p>${esc(j.error)}</p>`:''}</div>`}).join('');
-  document.getElementById('runs').innerHTML=(d.runs||[]).map(x=>`<div class="archive-row"><b>${esc(x.edition_date)}</b><span>${pill(x.status)} • ${esc(x.stage)}</span><span>${x.error?esc(x.error):''}</span></div>`).join('');
+  document.getElementById('raw').textContent=JSON.stringify(d,null,2);
+  if(!d.ok){document.getElementById('authState').textContent=d.error||'Unable to load';document.getElementById('authState').className='auth-state bad';document.getElementById('env').innerHTML=`<span class="error-text">${esc(d.error||'Unable to load')}</span>`;return}
+  document.getElementById('authState').textContent='Connected';document.getElementById('authState').className='auth-state ok';
+  const latest=d.latest||null, jobs=d.jobs||[], approvals=d.approvals||[], edition=d.edition||null, agents=d.agents||[];
+  const rosterOK=agents.length===EXPECTED_AGENT_COUNT;
+  document.getElementById('rosterGuard').innerHTML=rosterOK?`<span class="success">LIVE ROSTER VERIFIED: ${agents.length}/${EXPECTED_AGENT_COUNT} automatic agents</span>`:`<span class="error-text">ROSTER MISMATCH: live server reports ${agents.length}/${EXPECTED_AGENT_COUNT} agents.</span>`;
+  const env=d.environment||{}; const req=env.required||{}; const missing=Object.entries(req).filter(([,v])=>!v).map(([k])=>k);
+  document.getElementById('env').innerHTML=`<b>Core ready:</b> ${env.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> consolidated automatic newsroom &nbsp; <b>Build:</b> ${esc(env.build||'—')} &nbsp; <b>Timezone:</b> ${esc(env.timeZone||'—')} &nbsp; <b>Missing:</b> ${missing.length?esc(missing.join(', ')):'none'} &nbsp; <b>Last checked:</b> ${esc(new Date().toLocaleTimeString())}`;
+  const latestMap=newestJobs(jobs); const complete=[...latestMap.values()].filter(j=>j.status==='complete').length; const running=[...latestMap.values()].filter(j=>j.status==='running').map(j=>j.agent_key); const failed=[...latestMap.values()].filter(j=>j.status==='failed').map(j=>j.agent_key);
+  document.getElementById('progress').innerHTML=latest?`Latest run <b>${esc(latest.edition_date)}</b>: <b>${esc(latest.status)}</b>. ${complete}/${EXPECTED_AGENT_COUNT} complete. ${running.length?`Active: <b>${esc(running.join(' + '))}</b>.`:failed.length?`Latest failures: <b>${esc(failed.join(', '))}</b>.`:'No agent is currently running.'}`:'No newsroom run has been created yet.';
+  document.getElementById('summary').innerHTML=`<div class="summary-box"><span>Latest date</span><b>${esc(latest?.edition_date||'—')}</b></div><div class="summary-box"><span>Run status</span><b>${esc(latest?.status||'—')}</b></div><div class="summary-box"><span>Current stage</span><b>${esc(latest?.stage||'—')}</b></div><div class="summary-box"><span>Pending approvals</span><b>${approvals.length}</b></div>`;
+  document.getElementById('agents').innerHTML=agents.map(a=>{const j=latestMap.get(a.key);const s=j?.status||'ready';const elapsed=s==='running'&&j?.started_at?Math.max(0,Math.floor((Date.now()-new Date(j.started_at).getTime())/1000)):0;return `<div class="agent-card"><h3>#${esc(a.priority||'?')} ${esc(a.name)}</h3><p>${esc(a.group)} • ${esc(a.phase||'workflow')} • automatic</p>${pill(s)}${s==='running'?`<p><b>Elapsed:</b> ${Math.floor(elapsed/60)}m ${elapsed%60}s</p>`:''}${j?.error?`<p class="error-text"><b>Error:</b> ${esc(j.error)}</p>`:''}</div>`}).join('');
+  document.getElementById('reviews').innerHTML=approvals.length?approvals.map(a=>{const payload=a.payload||{};const source=a.source_url||payload.sourceUrl||payload.source_url||'';const event=a.event_key||payload.eventKey||payload.event_key||'';return `<article class="review-card"><h3>Review Required: ${esc(a.category||'editorial')}</h3><p>${esc(a.reason||'Human decision required.')}</p>${payload.title?`<p><b>${esc(payload.title)}</b></p>`:''}${payload.publication?`<p>${esc(payload.publication)}</p>`:''}${event?`<p><b>Story/Event:</b> ${esc(event)}</p>`:''}${source?`<p><b>Source:</b> <a class="source-link" target="_blank" rel="noopener" href="${esc(source)}">${esc(source)}</a></p>`:''}<div class="review-actions"><button class="button" onclick="review('${esc(a.id)}','approve')">Approve & Publish</button><button class="button red" onclick="review('${esc(a.id)}','reject')">Reject & Hold</button></div></article>`}).join(''):'No articles currently require human review. The newsroom is continuing automatically.';
+  const storyCount=editionStoryCount(edition);document.getElementById('publishing').innerHTML=edition?`<b>${esc(edition.edition_date)}</b> — edition: <b>${esc(edition.status)}</b> — assembled story items: <b>${storyCount}</b> — public publication time: <b>${esc(edition.published_at||'pending')}</b>`:'No edition created for the latest run yet.';
+  document.getElementById('runs').innerHTML=(d.runs||[]).map(x=>`<div class="run-row"><b>${esc(x.edition_date)}</b> — ${pill(x.status)} — stage: ${esc(x.stage||'—')} — trigger: ${esc(x.trigger||'—')}${x.error?`<br><span class="error-text">${esc(x.error)}</span>`:''}</div>`).join('')||'No runs yet.';
+  document.getElementById('discrepancies').innerHTML=approvals.length?approvals.map(a=>`<div class="run-row"><b>${esc(a.category||'review')}</b> — ${esc(a.reason||'Human decision required.')} ${a.source_url?`<br><a class="source-link" target="_blank" rel="noopener" href="${esc(a.source_url)}">${esc(a.source_url)}</a>`:''}</div>`).join(''):'No open discrepancies.';
 }
-document.getElementById('saveToken').onclick=load; window.review=review; if(tokenEl.value)load(); setInterval(()=>{if(tokenEl.value)load().catch(()=>{})},30000);
+document.getElementById('refresh').onclick=load;if(tokenEl.value)load();setInterval(()=>{if(tokenEl.value)load().catch(()=>{})},10000);
 </script></body></html>

@@ -36,6 +36,7 @@ assert.ok(lock.includes('Normal newsroom operation is automatic'),'Build lock mu
 assert.ok(lock.includes('Do not reintroduce the legacy y76 data key')||lock.includes('Do not reintroduce the legacy `y76` data key'),'Build lock must forbid the old y76 data key.');
 const admin=fs.readFileSync(path.join(root,'admin.html'),'utf8').toLowerCase();
 for(const forbidden of ['run all agents','resume current run','start new run']) assert.ok(!admin.includes(forbidden),`Admin must not expose normal manual runner control: ${forbidden}`);
+for(const required of ['on this day agent newsroom','priority & execution model','agent roster — ranked by importance','needs review','publishing status','recent runs','open discrepancies','raw status']) assert.ok(admin.includes(required),`Admin regression: missing approved newsroom section: ${required}`);
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 assert.ok(index.indexOf('class="real-sources"') < index.indexOf('class="community-home"'),'Community Press Voices must immediately follow the source/perspective strip.');
 assert.ok(index.includes('communityPriorityGrid'),'Locked public Community Press Voices grid must be preserved.');
