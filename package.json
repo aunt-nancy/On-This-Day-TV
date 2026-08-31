@@ -1,6 +1,6 @@
 {
   "name": "on-this-day-agent-newsroom",
-  "version": "3.1.16",
+  "version": "3.4.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -8,7 +8,9 @@
   },
   "scripts": {
     "dev": "vercel dev",
-    "check": "node --check api/router.js && node --check lib/queued-pipeline.js && node --check lib/openai.js"
+    "check": "node --check api/router.js && node --check lib/agents.js && node --check lib/queued-pipeline.js && node --check lib/openai.js && node --check lib/routes/agents-run-all.js && node --check lib/routes/agents-status.js && node --check lib/routes/health.js"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@vercel/functions": "3.9.5"
+  }
 }
