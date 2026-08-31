@@ -6,7 +6,7 @@
 .pill.queued{background:#e5dfcf;color:#4a4030;border-color:#bbae91}
 </style></head>
 <body><main class="admin-shell">
-<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button" id="forceReset">Force Reset Current Run</button><button class="button red" id="illustratorNow">Run Illustrator Now</button><button class="button" id="retryFailed">Retry Failed Research</button></div></header>
+<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button" id="forceReset">Force Reset Current Run</button><button class="button red" id="illustratorNow">Run Illustrator Now</button><button class="button" id="retryFailed">Retry Failed Research</button><button class="button red" id="fillSideHeadlines">Fill 200/75 Headlines</button></div></header>
 <div id="rosterGuard" style="margin:12px 0;padding:10px 12px;border:1px solid #a69268;background:#f5efe2;font-weight:800">
   Roster check: waiting for live server…
 </div>
@@ -476,6 +476,40 @@ document.getElementById('forceReset').onclick=async()=>{
   }finally{
     button.disabled=false;
     button.textContent='Force Reset Current Run';
+  }
+};
+document.getElementById('fillSideHeadlines').onclick=async()=>{
+  const button=document.getElementById('fillSideHeadlines');
+  button.disabled=true;
+  button.textContent='Finding 200/75…';
+
+  try{
+    const response=await fetch('/api/admin/fill-side-headlines',{
+      method:'POST',
+      headers:headers(),
+      body:JSON.stringify({date:document.getElementById('date').value||undefined}),
+      cache:'no-store'
+    });
+
+    const raw=await response.text();
+    let data;
+    try{data=JSON.parse(raw);}
+    catch{throw new Error(`Repair returned HTTP ${response.status}: ${raw.slice(0,240)}`);}
+
+    if(!data.ok){
+      throw new Error(data.error||data.message||`Repair incomplete (HTTP ${response.status}).`);
+    }
+
+    document.getElementById('progress').innerHTML=
+      `<span class="success"><b>200/75 populated.</b> `+
+      `${data.years?.y200||''} and ${data.years?.y75||''} now have verified exact-date headlines. Reload the public site.</span>`;
+    await status();
+  }catch(error){
+    document.getElementById('progress').innerHTML=
+      `<span class="error-text"><b>200/75 repair:</b> ${error.message}</span>`;
+  }finally{
+    button.disabled=false;
+    button.textContent='Fill 200/75 Headlines';
   }
 };
 document.getElementById('refresh').onclick=status;

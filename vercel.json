@@ -39,6 +39,10 @@
       "destination": "/api/router?route=admin/reset-run"
     },
     {
+      "source": "/api/admin/fill-side-headlines",
+      "destination": "/api/router?route=admin/fill-side-headlines"
+    },
+    {
       "source": "/api/content/today",
       "destination": "/api/router?route=content/today"
     },
