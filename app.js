@@ -1,15 +1,20 @@
 (function(){
   const now = new Date();
-  const month = new Intl.DateTimeFormat('en-US',{month:'long'}).format(now);
-  const fullDate = `${month} ${now.getDate()}, ${now.getFullYear()}`;
-  const monthDay = `${month} ${now.getDate()}`;
+  const timeZone = 'America/Los_Angeles';
+  const parts = new Intl.DateTimeFormat('en-US',{timeZone,year:'numeric',month:'long',day:'numeric'}).formatToParts(now);
+  const part = type => parts.find(p=>p.type===type)?.value || '';
+  const month = part('month');
+  const day = Number(part('day'));
+  const year = Number(part('year'));
+  const fullDate = `${month} ${day}, ${year}`;
+  const monthDay = `${month} ${day}`;
 
   document.querySelectorAll('[data-current-date]').forEach(el => el.textContent = fullDate);
   document.querySelectorAll('[data-current-monthday]').forEach(el => el.textContent = monthDay);
-  document.querySelectorAll('[data-current-year]').forEach(el => el.textContent = String(now.getFullYear()));
+  document.querySelectorAll('[data-current-year]').forEach(el => el.textContent = String(year));
   document.querySelectorAll('[data-year-offset]').forEach(el => {
     const offset = parseInt(el.getAttribute('data-year-offset'),10) || 0;
-    el.textContent = String(now.getFullYear() - offset);
+    el.textContent = String(year - offset);
   });
 
   const search = document.getElementById('archiveSearch');
@@ -85,21 +90,13 @@ function paperParts(paper){
   };
 }
 function bindPaper(paper,story,linkLabel){
-  if(!paper) return;
+  if(!paper || !story || !text(story.title)) return;
   const p = paperParts(paper);
-
-  if(!story || !text(story.title) || !text(story.sourceUrl)){
-    if(p.headline) p.headline.textContent='Headline pending verification';
-    if(p.link) p.link.hidden=true;
-    return;
-  }
-
   setElText(p.name, story.publication || story.archive);
   setElText(p.date, story.issueDate);
   setElText(p.headline, story.title);
   setElText(p.copy, story.summary || story.evidenceNotes);
   setSourceLink(p.link, story.sourceUrl, linkLabel);
-  if(p.link) p.link.hidden=false;
 }
 function normalizeCommunity(value){
   const s = text(value).toLowerCase();
@@ -228,7 +225,7 @@ function renderArchiveRecipe(recipe){
     const y200 = stories.y200 || null;
     const major = stories.y100?.major || null;
     const black = stories.y100?.black || null;
-    const y76 = stories.y76 || null;
+    const y75 = stories.y75 || null;
 
     // LOCKED EDITORIAL ORDER:
     // American headline is the anchor. Community voices then show what those
@@ -254,8 +251,8 @@ function renderArchiveRecipe(recipe){
       'View Black Press Source →'
     );
     bindPaper(
-      document.querySelector('.era-76 .paper'),
-      y76,
+      document.querySelector('.era-75 .paper'),
+      y75,
       'View Original Source →'
     );
 
@@ -266,8 +263,8 @@ function renderArchiveRecipe(recipe){
       edition?.illustrations?.y200
     );
     applyGeneratedIllustration(
-      '.era-76 .paper-illustration',
-      edition?.illustrations?.y76
+      '.era-75 .paper-illustration',
+      edition?.illustrations?.y75
     );
 
     // The pre-approved Community Press Voices cards remain exactly where and

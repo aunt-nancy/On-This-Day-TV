@@ -1,16 +1,11 @@
 {
-  "name": "on-this-day-agent-newsroom",
-  "version": "3.4.0",
+  "name": "on-this-day-consolidated-automatic-newsroom",
+  "version": "1.0.0-rc1",
   "private": true,
   "type": "module",
-  "engines": {
-    "node": ">=20"
-  },
+  "engines": { "node": ">=20" },
   "scripts": {
-    "dev": "vercel dev",
-    "check": "node --check api/router.js && node --check lib/agents.js && node --check lib/queued-pipeline.js && node --check lib/openai.js && node --check lib/routes/agents-run-all.js && node --check lib/routes/agents-status.js && node --check lib/routes/health.js"
-  },
-  "dependencies": {
-    "@vercel/functions": "3.9.5"
+    "check": "node --check api/router.js && node --check lib/engine.js && node --check lib/prompts.js && node --check lib/openai.js && node --check lib/routes/cron-newsroom.js && node --check lib/routes/admin-review.js && node --check lib/routes/content-today.js",
+    "test": "node test/architecture.test.js"
   }
 }
