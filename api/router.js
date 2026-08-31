@@ -29,7 +29,7 @@ const ROUTES = {
 };
 
 export default async function handler(req, res) {
-  res.setHeader('X-OTD-Build', '2026-08-31.19agent-real-automatic-scheduler.1');
+  res.setHeader('X-OTD-Build', '2026-08-31.19agent-scheduler-catchup.1');
   res.setHeader('Cache-Control', 'no-store');
   const url = new URL(req.url, 'https://www.onthisday.tv');
   const route = String(req.query?.route || url.searchParams.get('route') || '')
