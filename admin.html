@@ -88,6 +88,16 @@ async function runStageRequest(runId,agentKey){
 const tokenEl=document.getElementById('token');
 tokenEl.value=localStorage.getItem('otd_admin_token')||'';
 tokenEl.addEventListener('change',()=>localStorage.setItem('otd_admin_token',tokenEl.value));
+const dateEl=document.getElementById('date');
+function browserLocalISODate(){
+  const now=new Date();
+  const y=now.getFullYear();
+  const m=String(now.getMonth()+1).padStart(2,'0');
+  const d=String(now.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+if(dateEl && !dateEl.value) dateEl.value=browserLocalISODate();
+
 const headers=()=>({Authorization:`Bearer ${tokenEl.value}`,'Content-Type':'application/json'});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 
@@ -185,7 +195,7 @@ async function status(){
 
   document.getElementById('raw').textContent=JSON.stringify(d,null,2);
   if(!d.ok){document.getElementById('env').textContent=d.error||'Unable to load';return d}
-  document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> rolling publish + bounded parallel waves &nbsp; <b>Model:</b> ${d.environment.model} &nbsp; <b>Illustrator:</b> AUTO AFTER EDITOR + MANUAL OVERRIDE &nbsp; <b>Last checked:</b> ${new Date().toLocaleTimeString()}`;
+  document.getElementById('env').innerHTML=`<b>Site date:</b> ${dateEl?.value||browserLocalISODate()} (Admin local) &nbsp; <b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> rolling publish + bounded parallel waves &nbsp; <b>Model:</b> ${d.environment.model} &nbsp; <b>Illustrator:</b> AUTO AFTER EDITOR + MANUAL OVERRIDE &nbsp; <b>Last checked:</b> ${new Date().toLocaleTimeString()}`;
   const latest=d.runs[0]||null;
   const jobs=latest?d.jobs.filter(j=>j.run_id===latest.id):[];
   document.getElementById('agents').innerHTML=d.agents.map(a=>{
@@ -487,7 +497,7 @@ document.getElementById('fillSideHeadlines').onclick=async()=>{
     const response=await fetch('/api/admin/fill-side-headlines',{
       method:'POST',
       headers:headers(),
-      body:JSON.stringify({date:document.getElementById('date').value||undefined}),
+      body:JSON.stringify({date:dateEl.value||browserLocalISODate()}),
       cache:'no-store'
     });
 
@@ -535,7 +545,7 @@ document.getElementById('run').onclick=async()=>{
       method:'POST',
       headers:headers(),
       body:JSON.stringify({
-        date:document.getElementById('date').value||undefined
+        date:dateEl.value||browserLocalISODate()
       }),
       cache:'no-store'
     });
