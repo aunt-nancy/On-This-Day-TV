@@ -6,7 +6,7 @@
 .pill.queued{background:#e5dfcf;color:#4a4030;border-color:#bbae91}
 </style></head>
 <body><main class="admin-shell">
-<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button" id="clearStuck">Clear Stuck Jobs</button><button class="button red" id="illustratorNow">Run Illustrator Now</button><button class="button" id="retryFailed">Retry Failed Research</button></div></header>
+<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button" id="forceReset">Force Reset Current Run</button><button class="button red" id="illustratorNow">Run Illustrator Now</button><button class="button" id="retryFailed">Retry Failed Research</button></div></header>
 <div id="rosterGuard" style="margin:12px 0;padding:10px 12px;border:1px solid #a69268;background:#f5efe2;font-weight:800">
   Roster check: waiting for live server…
 </div>
@@ -64,7 +64,7 @@ function pendingStageFor(runId,d){
 
 async function runStageRequest(runId,agentKey){
   const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),190000);
+  const timeout=setTimeout(()=>controller.abort(),120000);
   try{
     const r=await fetch('/api/agents/run-stage',{
       method:'POST',
@@ -452,58 +452,74 @@ document.getElementById('retryFailed').onclick=async()=>{
     button.textContent='Retry Failed Research';
   }
 };
-document.getElementById('clearStuck').onclick=async()=>{
-  const button=document.getElementById('clearStuck');
+document.getElementById('forceReset').onclick=async()=>{
+  const button=document.getElementById('forceReset');
   button.disabled=true;
-  button.textContent='Checking…';
+  button.textContent='Resetting…';
 
   try{
-    const d=await status();
-    const reset=Array.isArray(d?.staleJobsReset)?d.staleJobsReset:[];
+    const r=await fetch('/api/admin/reset-run',{
+      method:'POST',
+      headers:headers(),
+      cache:'no-store'
+    });
+    const d=await r.json();
+    if(!d.ok) throw new Error(d.error||'Unable to reset current run');
 
-    if(reset.length){
-      document.getElementById('progress').innerHTML=
-        `<span class="success"><b>Cleared:</b> ${reset.map(j=>j.agent_key).join(', ')}. You can now Resume Current Run or start a new run.</span>`;
-    }else{
-      document.getElementById('progress').innerHTML=
-        'No RUNNING jobs older than 4 minutes remain. If a prior Run button is still disabled in this browser tab, reload this Admin page; server state is no longer blocked.';
-    }
+    document.getElementById('progress').innerHTML=
+      d.reset
+        ? `<span class="success"><b>Run reset:</b> ${d.runId}. All unfinished RUNNING/QUEUED jobs were closed. You can start a new run now.</span>`
+        : 'No active run needed resetting.';
+
+    await status();
   }catch(e){
     document.getElementById('progress').innerHTML=
       `<span class="error-text">${e.message}</span>`;
   }finally{
     button.disabled=false;
-    button.textContent='Clear Stuck Jobs';
+    button.textContent='Force Reset Current Run';
   }
 };
 document.getElementById('refresh').onclick=status;
 document.getElementById('run').onclick=async()=>{
   const preflight=await status();
   const liveCount=Array.isArray(preflight?.agents)?preflight.agents.length:0;
-  const liveVersion=preflight?.rosterVersion||'unknown';
 
-  if(
-    preflight?.ok!==true ||
-    liveCount!==EXPECTED_AGENT_COUNT
-  ){
+  if(preflight?.ok!==true || liveCount!==EXPECTED_AGENT_COUNT){
     document.getElementById('progress').innerHTML=
-      `<span class="error-text"><b>Run blocked:</b> live server is ${liveCount}/${EXPECTED_AGENT_COUNT} agents (${liveVersion}). Deploy the full 19-agent bundle first.</span>`;
+      `<span class="error-text"><b>Run blocked:</b> live server reports ${liveCount}/${EXPECTED_AGENT_COUNT} agents.</span>`;
     return;
   }
+
   const button=document.getElementById('run');
   localStorage.setItem('otd_admin_token',tokenEl.value);
-  button.disabled=true; button.textContent='Starting…';
+  button.disabled=true;
+  button.textContent='Starting…';
+
   try{
-    const r=await fetch('/api/agents/run-all',{method:'POST',headers:headers(),body:JSON.stringify({date:document.getElementById('date').value||undefined})});
+    const r=await fetch('/api/agents/run-all',{
+      method:'POST',
+      headers:headers(),
+      body:JSON.stringify({date:document.getElementById('date').value||undefined}),
+      cache:'no-store'
+    });
     const d=await r.json();
-    if(!d.ok)throw new Error(d.error||'Unable to create run');
-    button.textContent='Parallel Run Active…';
-    await runParallelPipeline(d.runId);
-    await status();
+    if(!d.ok) throw new Error(d.error||'Unable to create run');
+
+    document.getElementById('progress').innerHTML=
+      `<b>New run ${d.runId} started.</b> The Run All button is released immediately; the bounded-parallel pipeline is continuing.`;
+
+    // IMPORTANT: do not await the entire pipeline. A slow request can no
+    // longer leave the Run All button disabled for the life of the run.
+    runParallelPipeline(d.runId).catch(e=>{
+      document.getElementById('progress').innerHTML=
+        `<span class="error-text"><b>Pipeline:</b> ${e.message}</span>`;
+    });
   }catch(e){
     document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
   }finally{
-    button.disabled=false;button.textContent='Run All Agents';
+    button.disabled=false;
+    button.textContent='Run All Agents';
   }
 };
 let autoRefreshBusy=false;
