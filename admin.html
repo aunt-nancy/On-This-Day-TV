@@ -180,11 +180,9 @@ async function status(){
   if(rosterGuard){
     rosterGuard.innerHTML=rosterOK
       ? `<span style="color:#1f6a34">LIVE ROSTER VERIFIED: ${actualRosterCount}/${EXPECTED_AGENT_COUNT} agents • ${rosterVersion} • ${STABLE19_BUILD}</span>`
-      : `<span class="error-text">ROSTER MISMATCH: live server reports ${actualRosterCount}/${EXPECTED_AGENT_COUNT} agents • ${rosterVersion}. Do not start a run; the deployment is stale/incomplete.</span>`;
+      : `<span class="error-text">ROSTER MISMATCH: live server reports ${actualRosterCount}/${EXPECTED_AGENT_COUNT} agents • ${rosterVersion}. Roster check warning only. Run All will ask the server directly; the server is authoritative.</span>`;
   }
 
-  const runButton=document.getElementById('run');
-  if(runButton) runButton.disabled=!rosterOK;
   document.getElementById('raw').textContent=JSON.stringify(d,null,2);
   if(!d.ok){document.getElementById('env').textContent=d.error||'Unable to load';return d}
   document.getElementById('env').innerHTML=`<b>Core ready:</b> ${d.environment.ready?'YES':'NO'} &nbsp; <b>Architecture:</b> rolling publish + bounded parallel waves &nbsp; <b>Model:</b> ${d.environment.model} &nbsp; <b>Illustrator:</b> AUTO AFTER EDITOR + MANUAL OVERRIDE &nbsp; <b>Last checked:</b> ${new Date().toLocaleTimeString()}`;
@@ -482,42 +480,68 @@ document.getElementById('forceReset').onclick=async()=>{
 };
 document.getElementById('refresh').onclick=status;
 document.getElementById('run').onclick=async()=>{
-  const preflight=await status();
-  const liveCount=Array.isArray(preflight?.agents)?preflight.agents.length:0;
+  const button=document.getElementById('run');
+  const token=String(tokenEl.value||'').trim();
 
-  if(preflight?.ok!==true || liveCount!==EXPECTED_AGENT_COUNT){
+  // The browser has exactly one local prerequisite: an admin token.
+  // All roster/environment validation belongs to the server endpoint.
+  if(!token){
     document.getElementById('progress').innerHTML=
-      `<span class="error-text"><b>Run blocked:</b> live server reports ${liveCount}/${EXPECTED_AGENT_COUNT} agents.</span>`;
+      '<span class="error-text"><b>Admin token required.</b></span>';
+    tokenEl.focus();
     return;
   }
 
-  const button=document.getElementById('run');
-  localStorage.setItem('otd_admin_token',tokenEl.value);
+  localStorage.setItem('otd_admin_token',token);
   button.disabled=true;
   button.textContent='Starting…';
 
   try{
-    const r=await fetch('/api/agents/run-all',{
+    const response=await fetch('/api/agents/run-all',{
       method:'POST',
       headers:headers(),
-      body:JSON.stringify({date:document.getElementById('date').value||undefined}),
+      body:JSON.stringify({
+        date:document.getElementById('date').value||undefined
+      }),
       cache:'no-store'
     });
-    const d=await r.json();
-    if(!d.ok) throw new Error(d.error||'Unable to create run');
+
+    const raw=await response.text();
+    let data;
+    try{
+      data=JSON.parse(raw);
+    }catch{
+      throw new Error(
+        `Run All returned HTTP ${response.status} with non-JSON output: ${raw.slice(0,240)}`
+      );
+    }
+
+    if(!response.ok || data.ok!==true){
+      throw new Error(
+        data.error ||
+        `Run All was refused by the server (HTTP ${response.status}).`
+      );
+    }
 
     document.getElementById('progress').innerHTML=
-      `<b>New run ${d.runId} started.</b> The Run All button is released immediately; the bounded-parallel pipeline is continuing.`;
+      `<span class="success"><b>New run created:</b> ${data.runId}. `+
+      `The 19-agent bounded-parallel pipeline is starting now.</span>`;
 
-    // IMPORTANT: do not await the entire pipeline. A slow request can no
-    // longer leave the Run All button disabled for the life of the run.
-    runParallelPipeline(d.runId).catch(e=>{
-      document.getElementById('progress').innerHTML=
-        `<span class="error-text"><b>Pipeline:</b> ${e.message}</span>`;
-    });
-  }catch(e){
-    document.getElementById('progress').innerHTML=`<span class="error-text">${e.message}</span>`;
+    // Fire-and-forget by design:
+    // the button is never coupled to the lifetime of the newsroom pipeline.
+    Promise.resolve()
+      .then(()=>runParallelPipeline(data.runId))
+      .catch(error=>{
+        document.getElementById('progress').innerHTML=
+          `<span class="error-text"><b>Pipeline error:</b> ${error.message}. `+
+          `Run All remains available.</span>`;
+      });
+
+  }catch(error){
+    document.getElementById('progress').innerHTML=
+      `<span class="error-text"><b>Run All failed:</b> ${error.message}</span>`;
   }finally{
+    // This always executes after the short create-run request.
     button.disabled=false;
     button.textContent='Run All Agents';
   }
