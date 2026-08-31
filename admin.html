@@ -6,7 +6,7 @@
 .pill.queued{background:#e5dfcf;color:#4a4030;border-color:#bbae91}
 </style></head>
 <body><main class="admin-shell">
-<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button red" id="illustratorNow">Run Illustrator Now</button><button class="button" id="retryFailed">Retry Failed Research</button></div></header>
+<header class="admin-top"><div><h1>On This Day Agent Newsroom</h1><div>Editor & Producer opens the desk and closes the edition. Independent agents run in bounded parallel waves; publication no longer waits for visual or social work.</div></div><div class="admin-actions"><input id="token" class="admin-input" type="password" placeholder="ADMIN_TOKEN"><input id="date" class="admin-input" type="date"><button class="button red" id="run">Run All Agents</button><button class="button" id="resume">Resume Current Run</button><button class="button" id="refresh">Refresh Status</button><button class="button" id="clearStuck">Clear Stuck Jobs</button><button class="button red" id="illustratorNow">Run Illustrator Now</button><button class="button" id="retryFailed">Retry Failed Research</button></div></header>
 <div id="rosterGuard" style="margin:12px 0;padding:10px 12px;border:1px solid #a69268;background:#f5efe2;font-weight:800">
   Roster check: waiting for live server…
 </div>
@@ -17,7 +17,7 @@
 <div class="run-row"><b>Parallel engine:</b> ON — Black Press and Major American Press start together. Regional/Local and Community Press fill the two bounded research slots as they become available. A slow noncritical research agent cannot hold the other desks in line.</div>
 <div class="run-row"><b>Time-to-publish:</b> Source Verification publishes the 200-year lead, 100-year lead/community comparison, 75-year lead, and conditional Then & Now before later enrichment agents. Community voices beside that lead must share its exact eventKey; unrelated stories cannot be used as comparisons.</div>
 <div class="run-row"><b>Activity heartbeat:</b> this page auto-refreshes every 10 seconds and shows elapsed RUNNING time so silence is visible as a timed operation, not a frozen screen.</div>
-<div class="run-row"><b>Stall protection:</b> Critical editorial stages are protected; noncritical production/social errors never stop the remaining agents. Agent #17 now uses the verified edition locally and makes no external generation call.</div>
+<div class="run-row"><b>Stall protection:</b> RUNNING jobs older than 4 minutes are auto-reset on every status refresh.  Critical editorial stages are protected; noncritical production/social errors never stop the remaining agents. Agent #17 now uses the verified edition locally and makes no external generation call.</div>
 </section>
 <section><h2>Agent Roster — Ranked by Importance</h2><div id="agents" class="agent-grid"></div></section>
 <section class="panel"><h2>Needs Review</h2><p>Only unresolved disputed items appear here. Approving one story does not hold unrelated articles.</p><div id="reviews">Loading…</div></section>
@@ -156,6 +156,11 @@ async function status(){
   ]);
   const d=await statusResponse.json();
   latestStatusData=d;
+  if(Array.isArray(d.staleJobsReset) && d.staleJobsReset.length){
+    const names=d.staleJobsReset.map(j=>j.agent_key).join(', ');
+    document.getElementById('progress').innerHTML=
+      `<span class="success"><b>Auto-reset stale job${d.staleJobsReset.length===1?'':'s'}:</b> ${names}. These ghost RUNNING states will no longer block the pipeline.</span>`;
+  }
   const actualRosterCount=Array.isArray(d.agents)?d.agents.length:
     (Array.isArray(health?.agents)?health.agents.length:0);
   const rosterVersion=d.rosterVersion||health?.rosterVersion||'unknown';
@@ -243,7 +248,7 @@ function isDoneForPipeline(runId,key,d=latestStatusData){
 
 async function waitForExisting(runId,agentKey){
   const started=Date.now();
-  while(Date.now()-started<155000){
+  while(Date.now()-started<30000){
     await sleep(2500);
     const d=await status();
     const job=latestJobFor(runId,agentKey,d);
@@ -260,7 +265,7 @@ async function executeAgent(runId,agentKey){
     const job=await waitForExisting(runId,agentKey);
     if(job?.status==='complete')return {ok:true,agentKey,reused:true};
     if(job?.status==='failed')return {ok:false,agentKey,error:job.error||'failed',continue:nonfatal.has(agentKey)};
-    // Server-side stale cleanup will make a subsequent retry safe.
+    // Status auto-reset + server-side stale cleanup make this retry safe.
     d=await runStageRequest(runId,agentKey);
   }
 
@@ -445,6 +450,30 @@ document.getElementById('retryFailed').onclick=async()=>{
   }finally{
     button.disabled=false;
     button.textContent='Retry Failed Research';
+  }
+};
+document.getElementById('clearStuck').onclick=async()=>{
+  const button=document.getElementById('clearStuck');
+  button.disabled=true;
+  button.textContent='Checking…';
+
+  try{
+    const d=await status();
+    const reset=Array.isArray(d?.staleJobsReset)?d.staleJobsReset:[];
+
+    if(reset.length){
+      document.getElementById('progress').innerHTML=
+        `<span class="success"><b>Cleared:</b> ${reset.map(j=>j.agent_key).join(', ')}. You can now Resume Current Run or start a new run.</span>`;
+    }else{
+      document.getElementById('progress').innerHTML=
+        'No RUNNING jobs older than 4 minutes remain. If a prior Run button is still disabled in this browser tab, reload this Admin page; server state is no longer blocked.';
+    }
+  }catch(e){
+    document.getElementById('progress').innerHTML=
+      `<span class="error-text">${e.message}</span>`;
+  }finally{
+    button.disabled=false;
+    button.textContent='Clear Stuck Jobs';
   }
 };
 document.getElementById('refresh').onclick=status;

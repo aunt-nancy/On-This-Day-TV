@@ -23,7 +23,7 @@ const ROUTES = {
 };
 
 export default async function handler(req, res) {
-  res.setHeader('X-OTD-Build', '2026-08-30.19agent-bounded-nonblocking.1');
+  res.setHeader('X-OTD-Build', '2026-08-30.19agent-stale-reset.1');
   res.setHeader('Cache-Control', 'no-store');
   const url = new URL(req.url, 'https://www.onthisday.tv');
   const route = String(req.query?.route || url.searchParams.get('route') || '')
