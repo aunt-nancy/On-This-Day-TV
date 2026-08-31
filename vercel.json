@@ -1,19 +1,60 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "functions": { "api/router.js": { "maxDuration": 300 } },
+  "functions": {
+    "api/router.js": {
+      "maxDuration": 300
+    }
+  },
   "rewrites": [
-    {"source":"/api/health","destination":"/api/router?route=health"},
-    {"source":"/api/cron/newsroom","destination":"/api/router?route=cron/newsroom"},
-    {"source":"/api/content/today","destination":"/api/router?route=content/today"},
-    {"source":"/api/content/archive","destination":"/api/router?route=content/archive"},
-    {"source":"/api/admin/status","destination":"/api/router?route=admin/status"},
-    {"source":"/api/admin/review","destination":"/api/router?route=admin/review"}
+    {
+      "source": "/api/health",
+      "destination": "/api/router?route=health"
+    },
+    {
+      "source": "/api/cron/newsroom",
+      "destination": "/api/router?route=cron/newsroom"
+    },
+    {
+      "source": "/api/content/today",
+      "destination": "/api/router?route=content/today"
+    },
+    {
+      "source": "/api/content/archive",
+      "destination": "/api/router?route=content/archive"
+    },
+    {
+      "source": "/api/admin/status",
+      "destination": "/api/router?route=admin/status"
+    },
+    {
+      "source": "/api/admin/review",
+      "destination": "/api/router?route=admin/review"
+    }
   ],
   "crons": [
-    {"path":"/api/cron/newsroom","schedule":"*/2 * * * *"}
+    {
+      "path": "/api/cron/newsroom",
+      "schedule": "* * * * *"
+    }
   ],
   "headers": [
-    {"source":"/api/(.*)","headers":[{"key":"Cache-Control","value":"no-store, max-age=0"}]},
-    {"source":"/admin.html","headers":[{"key":"Cache-Control","value":"no-store, max-age=0"}]}
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/admin.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
+    }
   ]
 }

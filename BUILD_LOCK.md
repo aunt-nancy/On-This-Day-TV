@@ -21,3 +21,11 @@
 - Canonical era keys: y200, y100, y75. Do not reintroduce the legacy y76 data key.
 - Published stories must retain a real source URL and source metadata.
 - OCR/translation may aid discovery; publication claims must come from verified source evidence.
+
+
+## AUTOMATIC SCHEDULER CONTRACT — RC4
+- Vercel Cron is registered at `/api/cron/newsroom` every minute.
+- Production MUST have an environment variable named exactly `CRON_SECRET`.
+- `OTD_CRON_SECRET` alone does not count as scheduler-ready because Vercel does not use that variable name to populate its Authorization header.
+- The newsroom admin must visibly report scheduler BLOCKED instead of showing a misleading healthy state when `CRON_SECRET` is absent.
+- There are no normal manual Start/Resume/Run-All controls. The cron tick creates and advances the daily run automatically.

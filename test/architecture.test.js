@@ -59,3 +59,17 @@ assert.ok(!fs.readFileSync(path.join(root,'lib/prompts.js'),'utf8').includes('si
 const vercel=JSON.parse(fs.readFileSync(path.join(root,'vercel.json'),'utf8'));
 assert.ok(Array.isArray(vercel.crons)&&vercel.crons.some(c=>c.path==='/api/cron/newsroom'),'The automatic newsroom must have a scheduler route.');
 console.log('ARCHITECTURE_TESTS_PASS');
+
+// RC4 scheduler regression: the automatic newsroom must bind to Vercel's exact
+// CRON_SECRET contract instead of treating OTD_CRON_SECRET as sufficient.
+const configJs=fs.readFileSync(path.join(root,'lib/config.js'),'utf8');
+const httpJs=fs.readFileSync(path.join(root,'lib/http.js'),'utf8');
+assert.ok(configJs.includes("CRON_SECRET: Boolean(process.env.CRON_SECRET)"),'Core readiness must require Vercel CRON_SECRET by exact name.');
+assert.ok(configJs.includes('legacyAliasPresent'),'Legacy OTD_CRON_SECRET may be diagnosed but cannot silently mark the scheduler ready.');
+assert.ok(httpJs.includes('const configured = process.env.CRON_SECRET'),'Cron authentication must use Vercel CRON_SECRET by exact name.');
+assert.ok(!httpJs.includes("process.env.OTD_CRON_SECRET || process.env.CRON_SECRET"),'Do not prefer the legacy alias over Vercel CRON_SECRET.');
+assert.equal(vercel.crons.find(c=>c.path==='/api/cron/newsroom')?.schedule,'* * * * *','Automatic newsroom should receive a production tick every minute.');
+const adminRc4=fs.readFileSync(path.join(root,'admin.html'),'utf8');
+assert.ok(adminRc4.includes('Scheduler:'),'Admin must expose scheduler readiness instead of only idle READY agent cards.');
+assert.ok(adminRc4.includes('Automatic scheduler is blocked'),'Admin must explain why READY agents are not starting when cron is unavailable.');
+console.log('SCHEDULER_REGRESSION_TESTS_PASS');
