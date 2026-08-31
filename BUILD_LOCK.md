@@ -29,3 +29,5 @@
 - `OTD_CRON_SECRET` alone does not count as scheduler-ready because Vercel does not use that variable name to populate its Authorization header.
 - The newsroom admin must visibly report scheduler BLOCKED instead of showing a misleading healthy state when `CRON_SECRET` is absent.
 - There are no normal manual Start/Resume/Run-All controls. The cron tick creates and advances the daily run automatically.
+
+- **Major Press split-era reliability is locked:** the y100 lead is researched first; y200 and y75 run as bounded side-era subdesks; the results merge automatically into Major American Press. Do not restore one oversized three-era web-search call.

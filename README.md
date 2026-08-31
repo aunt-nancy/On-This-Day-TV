@@ -22,9 +22,13 @@ The internal newsroom is a single automatic pipeline. Vercel Cron wakes `/api/cr
 Do not replace the public site with a new design during newsroom work. Public changes are limited to live verified content, date/year accuracy, and source links.
 
 
-## AUTOMATIC SCHEDULER CONTRACT — RC4
+## AUTOMATIC SCHEDULER CONTRACT — RC5
 - Vercel Cron is registered at `/api/cron/newsroom` every minute.
 - Production MUST have an environment variable named exactly `CRON_SECRET`.
 - `OTD_CRON_SECRET` alone does not count as scheduler-ready because Vercel does not use that variable name to populate its Authorization header.
 - The newsroom admin must visibly report scheduler BLOCKED instead of showing a misleading healthy state when `CRON_SECRET` is absent.
 - There are no normal manual Start/Resume/Run-All controls. The cron tick creates and advances the daily run automatically.
+
+
+## RC5 — Major Press timeout hardening
+The Major American Press desk no longer performs one three-era web-search request. It automatically runs y100 first, then y200+y75 as a bounded pair, persists each subdesk separately, and merges the results into the canonical major_press output. Timeout retries occur automatically on the next-minute scheduler cadence. Existing RC1 schema remains valid; no new SQL is required.

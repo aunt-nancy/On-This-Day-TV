@@ -73,3 +73,20 @@ const adminRc4=fs.readFileSync(path.join(root,'admin.html'),'utf8');
 assert.ok(adminRc4.includes('Scheduler:'),'Admin must expose scheduler readiness instead of only idle READY agent cards.');
 assert.ok(adminRc4.includes('Automatic scheduler is blocked'),'Admin must explain why READY agents are not starting when cron is unavailable.');
 console.log('SCHEDULER_REGRESSION_TESTS_PASS');
+
+
+// RC5 major-press timeout regression: do not put all three historical eras into
+// one long web-search request. The automatic newsroom splits the Major Press
+// desk into bounded subdesks and merges them back into the canonical agent.
+const promptsJs=fs.readFileSync(path.join(root,'lib/prompts.js'),'utf8');
+const openaiJs=fs.readFileSync(path.join(root,'lib/openai.js'),'utf8');
+assert.ok(promptsJs.includes('majorPressEraPrompt'),'Major Press must have a split-era research prompt.');
+assert.ok(engineJs.includes("const MAJOR_SUBDESKS = ['y100','y200','y75']"),'Major Press must split into the three locked eras.');
+assert.ok(engineJs.includes("major_press_${eraKey}"),'Split-era progress must persist independently so successful eras are not rerun after another era times out.');
+assert.ok(engineJs.includes("if(!(await majorSubdeskDone(run.id,'y100')))"),'The 100-year national lead must complete before side-era research.');
+assert.ok(engineJs.includes("const sideEras=['y200','y75']"),'The two side eras should run as a bounded pair after the center lead.');
+assert.ok(engineJs.includes("strategy:'split_era_v1'"),'Completed split-era research must merge into the canonical major_press output.');
+assert.ok(engineJs.includes('timeoutMs:60000'),'Split-era web research must use a bounded request timeout shorter than the old 80-second monolith.');
+assert.ok(engineJs.includes('const waitMinutes=isTimeout?1:'),'Timeout recovery must retry automatically on the next-minute cadence, not wait through the old long backoff.');
+assert.ok(openaiJs.includes('requestTimeoutMs(timeoutMs)'),'The OpenAI wrapper must accept a per-stage timeout budget.');
+console.log('MAJOR_PRESS_TIMEOUT_REGRESSION_TESTS_PASS');
