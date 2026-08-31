@@ -85,13 +85,21 @@ function paperParts(paper){
   };
 }
 function bindPaper(paper,story,linkLabel){
-  if(!paper || !story || !text(story.title)) return;
+  if(!paper) return;
   const p = paperParts(paper);
+
+  if(!story || !text(story.title) || !text(story.sourceUrl)){
+    if(p.headline) p.headline.textContent='Headline pending verification';
+    if(p.link) p.link.hidden=true;
+    return;
+  }
+
   setElText(p.name, story.publication || story.archive);
   setElText(p.date, story.issueDate);
   setElText(p.headline, story.title);
   setElText(p.copy, story.summary || story.evidenceNotes);
   setSourceLink(p.link, story.sourceUrl, linkLabel);
+  if(p.link) p.link.hidden=false;
 }
 function normalizeCommunity(value){
   const s = text(value).toLowerCase();
