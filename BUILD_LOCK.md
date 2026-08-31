@@ -31,3 +31,7 @@
 - There are no normal manual Start/Resume/Run-All controls. The cron tick creates and advances the daily run automatically.
 
 - **Major Press split-era reliability is locked:** the y100 lead is researched first; y200 and y75 run as bounded side-era subdesks; the results merge automatically into Major American Press. Do not restore one oversized three-era web-search call.
+
+
+## Verification execution lock
+Source Verification must remain bounded and resumable. Do not collapse all source candidates back into one long web-search call. Hidden verification batch jobs are implementation details and must not inflate the visible 19-agent completion count.

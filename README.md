@@ -22,7 +22,7 @@ The internal newsroom is a single automatic pipeline. Vercel Cron wakes `/api/cr
 Do not replace the public site with a new design during newsroom work. Public changes are limited to live verified content, date/year accuracy, and source links.
 
 
-## AUTOMATIC SCHEDULER CONTRACT — RC5
+## AUTOMATIC SCHEDULER CONTRACT — RC6
 - Vercel Cron is registered at `/api/cron/newsroom` every minute.
 - Production MUST have an environment variable named exactly `CRON_SECRET`.
 - `OTD_CRON_SECRET` alone does not count as scheduler-ready because Vercel does not use that variable name to populate its Authorization header.
@@ -30,5 +30,14 @@ Do not replace the public site with a new design during newsroom work. Public ch
 - There are no normal manual Start/Resume/Run-All controls. The cron tick creates and advances the daily run automatically.
 
 
-## RC5 — Major Press timeout hardening
+## RC6 — Major Press timeout hardening
 The Major American Press desk no longer performs one three-era web-search request. It automatically runs y100 first, then y200+y75 as a bounded pair, persists each subdesk separately, and merges the results into the canonical major_press output. Timeout retries occur automatically on the next-minute scheduler cadence. Existing RC1 schema remains valid; no new SQL is required.
+
+
+## RC6 verification timeout hardening
+- Source Verification is no longer one monolithic web-search request.
+- Candidates are verified in persisted batches of at most three items.
+- Up to two verification batches run per scheduler tick.
+- Successful batches are retained and are not rerun when another batch times out.
+- The canonical Source Verification Agent remains RUNNING while batches execute and becomes COMPLETE only after all batches merge.
+- Admin completion counts now include only the 19 canonical agents, not hidden split-work jobs.

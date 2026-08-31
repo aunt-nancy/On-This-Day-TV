@@ -90,3 +90,19 @@ assert.ok(engineJs.includes('timeoutMs:60000'),'Split-era web research must use 
 assert.ok(engineJs.includes('const waitMinutes=isTimeout?1:'),'Timeout recovery must retry automatically on the next-minute cadence, not wait through the old long backoff.');
 assert.ok(openaiJs.includes('requestTimeoutMs(timeoutMs)'),'The OpenAI wrapper must accept a per-stage timeout budget.');
 console.log('MAJOR_PRESS_TIMEOUT_REGRESSION_TESTS_PASS');
+
+
+// RC6 source-verification timeout regression: verification is bounded, persisted,
+// resumable, and must not inflate the visible 19-agent roster count.
+const engineRc6=fs.readFileSync(path.join(root,'lib/engine.js'),'utf8');
+const promptsRc6=fs.readFileSync(path.join(root,'lib/prompts.js'),'utf8');
+const adminRc6=fs.readFileSync(path.join(root,'admin.html'),'utf8');
+assert.ok(promptsRc6.includes('verificationBatchPrompt'),'Source Verification must have a bounded batch prompt.');
+assert.ok(engineRc6.includes('const VERIFY_BATCH_SIZE = 3'),'Verification batches must remain small enough for serverless web-search execution.');
+assert.ok(engineRc6.includes('source_verification_${batch.eraKey}_${hash}'),'Verification batch progress must persist independently.');
+assert.ok(engineRc6.includes('timeoutMs:55000'),'Verification web-search calls must have a bounded timeout below the old 80-second monolith.');
+assert.ok(engineRc6.includes("const chosen=pending.slice(0,2)"),'At most two verification batches may run in one scheduler tick.');
+assert.ok(engineRc6.includes("strategy:'bounded_candidate_batches_v1'"),'Verification batches must merge into one canonical Source Verification output.');
+assert.ok(engineRc6.includes("await runSourceVerification(current,context"),'The verification stage must use the bounded coordinator, not the generic monolithic runner.');
+assert.ok(adminRc6.includes('const rosterKeys=new Set(agents.map(a=>a.key))'),'Admin completion counts must exclude hidden split-work jobs.');
+console.log('SOURCE_VERIFICATION_TIMEOUT_REGRESSION_TESTS_PASS');
