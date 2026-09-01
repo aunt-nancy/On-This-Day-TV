@@ -73,7 +73,7 @@ function bindPaper(paper,story,linkLabel){
   if(!paper) return;
   const p = paperParts(paper);
   if(!story || !text(story.title) || !text(story.sourceUrl)){
-    if(p.headline) p.headline.textContent='Headline pending verification';
+    if(p.headline) p.headline.textContent='Headline pending exact-date verification';
     if(p.link) p.link.hidden=true;
     return;
   }
@@ -83,6 +83,23 @@ function bindPaper(paper,story,linkLabel){
   setElText(p.copy, story.summary || story.evidenceNotes);
   setSourceLink(p.link, story.sourceUrl, linkLabel);
   if(p.link) p.link.hidden=false;
+}
+function resetPublishedEditionDisplay(){
+  window.OnThisDay.setMajorHeadline('Exact-date edition being prepared');
+  const resetPaper=(paper,name,copy)=>{
+    if(!paper) return;
+    const p=paperParts(paper);
+    if(p.name) p.name.textContent=name;
+    if(p.headline) p.headline.textContent='Headline pending exact-date verification';
+    if(p.copy) p.copy.textContent=copy;
+    if(p.link){p.link.hidden=true;p.link.removeAttribute('href');}
+  };
+  resetPaper(document.querySelector('.era-200 .paper'),'Original Newspaper','The September 1, 1826 lead is being verified against the exact newspaper issue.');
+  resetPaper(document.querySelector('.era-center .center-paper:not(.black)'),'Major American Press','The September 1, 1926 lead is being verified against the exact newspaper issue and circulation record.');
+  resetPaper(document.querySelector('.era-center .center-paper.black'),'Black American Press','Same-event Black Press coverage will appear after the September 1 national lead is verified.');
+  resetPaper(document.querySelector('.era-76 .paper'),'Original Newspaper','The September 1, 1951 lead is being verified against the exact newspaper issue.');
+  const thenNow=document.getElementById('thenNowStrip'); if(thenNow) thenNow.hidden=true;
+  const recipe=document.getElementById('archiveRecipe'); if(recipe) recipe.hidden=true;
 }
 function normalizeCommunity(value){
   const s = text(value).toLowerCase();
@@ -137,8 +154,9 @@ function renderArchiveRecipe(recipe){
 }
 
 (async function loadPublishedEditionIntoLockedDesign(){
+  resetPublishedEditionDisplay();
   try{
-    const response = await fetch('/api/content/today',{headers:{Accept:'application/json'},cache:'no-store'});
+    const response = await fetch(`/api/content/today?_=${Date.now()}`,{headers:{Accept:'application/json','Cache-Control':'no-cache'},cache:'no-store'});
     if(!response.ok) return;
     const result = await response.json();
     const edition = result?.edition?.payload;
@@ -169,5 +187,5 @@ function renderArchiveRecipe(recipe){
       if(key==='black'){const mini=card.querySelector('.black-compare-mini');if(mini)mini.style.display=story.comparisonType==='same_event'?'':'none';}else card.dataset.headlineWeight=story.comparisonType==='same_event'?'100':'70';
     }
     rankLockedCommunityTiles(); renderThenNow(edition.thenNow); renderArchiveRecipe(edition.archiveRecipe);
-  }catch(error){console.warn('Published edition unavailable; locked static design retained.',error);}
+  }catch(error){console.warn('Published edition unavailable; exact-date placeholders retained.',error);}
 })();
