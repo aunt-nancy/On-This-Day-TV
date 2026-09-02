@@ -1,0 +1,109 @@
+/* Historical scene vignette layer
+   Visual reference: earlier On This Day renderings with sepia period scenes.
+   These are atmospheric scene panels, not mandatory illustrations for each story. */
+
+/* Side-era source evidence stays accessible through the source link, while the
+   visible panel becomes a period scene instead of a newspaper screenshot. */
+.era-200 .paper-illustration,
+.era-76 .paper-illustration{
+  position:relative!important;
+  overflow:hidden!important;
+  background-color:#e7d7ba!important;
+  background-repeat:no-repeat!important;
+  background-position:center!important;
+  background-size:cover!important;
+  border:1px solid #a98e64!important;
+  box-shadow:inset 0 0 18px rgba(67,46,24,.18)!important;
+}
+.era-200 .paper-illustration{
+  background-image:linear-gradient(rgba(244,233,213,.07),rgba(223,201,165,.08)),url('scene-early-america.svg')!important;
+}
+.era-76 .paper-illustration{
+  background-image:linear-gradient(rgba(244,233,213,.05),rgba(223,201,165,.08)),url('scene-midcentury-america.svg')!important;
+}
+.era-200 .paper-illustration .period-visual-frame,
+.era-76 .paper-illustration .period-visual-frame,
+.era-200 .paper-illustration .period-visual-fallback,
+.era-76 .paper-illustration .period-visual-fallback{
+  display:none!important;
+}
+.era-200 .paper-illustration::after,
+.era-76 .paper-illustration::after{
+  content:"PERIOD SCENE"!important;
+  right:6px!important;
+  bottom:5px!important;
+  background:rgba(58,42,26,.72)!important;
+  color:#f2e4ca!important;
+}
+
+/* Then & Now gets atmospheric historical scenes rather than archive/file icons. */
+.then-now-visual.then{
+  background-image:linear-gradient(rgba(16,45,77,.04),rgba(16,45,77,.04)),url('scene-1920s-city.svg')!important;
+}
+.then-now-visual.changed{
+  background-image:linear-gradient(rgba(90,68,41,.06),rgba(90,68,41,.06)),url('scene-midcentury-america.svg')!important;
+}
+.then-now-visual.now{
+  background-image:linear-gradient(rgba(124,33,31,.04),rgba(124,33,31,.04)),url('scene-community-life.svg')!important;
+}
+.then-now-visual{
+  filter:saturate(.76) sepia(.14);
+}
+
+/* Lower page: replace flat pictograms with the kind of historical scene
+   vignettes used in the earlier approved renderings. */
+.graphic-showcase .showcase-art.frontpage{
+  background-image:linear-gradient(rgba(246,237,218,.04),rgba(246,237,218,.04)),url('scene-early-america.svg')!important;
+}
+.graphic-showcase .showcase-art.archive{
+  background-image:linear-gradient(rgba(246,237,218,.04),rgba(246,237,218,.04)),url('scene-1920s-city.svg')!important;
+}
+.graphic-showcase .showcase-art.map{
+  background-image:linear-gradient(rgba(246,237,218,.04),rgba(246,237,218,.04)),url('scene-midcentury-america.svg')!important;
+}
+.graphic-showcase .showcase-art.voices{
+  background-image:linear-gradient(rgba(246,237,218,.04),rgba(246,237,218,.04)),url('scene-community-life.svg')!important;
+}
+.graphic-showcase .showcase-art{
+  filter:saturate(.72) sepia(.2) contrast(1.02);
+}
+
+/* Recipe section: a domestic/community scene reads more naturally than an archive drawer. */
+.recipe-illustration-banner{
+  background-image:linear-gradient(90deg,rgba(250,242,224,.55),rgba(250,242,224,.17)),url('scene-community-life.svg')!important;
+  background-position:center 58%!important;
+}
+
+/* The historical scene vocabulary can also soften unused open zones without
+   adding a fake article image. */
+.history-board{
+  position:relative;
+}
+.history-board::before,
+.history-board::after{
+  content:"";
+  position:absolute;
+  top:6px;
+  width:105px;
+  height:68px;
+  opacity:.17;
+  pointer-events:none;
+  background-repeat:no-repeat;
+  background-size:cover;
+  filter:sepia(.55) grayscale(.15);
+}
+.history-board::before{
+  left:7px;
+  background-image:url('scene-early-america.svg');
+  background-position:left center;
+}
+.history-board::after{
+  right:7px;
+  background-image:url('scene-midcentury-america.svg');
+  background-position:right center;
+}
+
+@media(max-width:700px){
+  .history-board::before,.history-board::after{display:none}
+  .era-200 .paper-illustration,.era-76 .paper-illustration{background-position:center 55%!important}
+}
