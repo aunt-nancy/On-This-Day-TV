@@ -1,25 +1,26 @@
 /* Historical scene vignette layer
    Visual reference: earlier On This Day renderings with sepia period scenes.
-   These are atmospheric scene panels, not mandatory illustrations for each story. */
+   These are atmospheric page-framing scenes, not mandatory illustrations for each story. */
 
-/* Side-era source evidence stays accessible through the source link, while the
-   visible panel becomes a period scene instead of a newspaper screenshot. */
+/* Side-era panels use period scenes, while source scans remain behind source links only. */
 .era-200 .paper-illustration,
 .era-76 .paper-illustration{
   position:relative!important;
   overflow:hidden!important;
+  height:116px!important;
+  min-height:116px!important;
   background-color:#e7d7ba!important;
   background-repeat:no-repeat!important;
   background-position:center!important;
   background-size:cover!important;
   border:1px solid #a98e64!important;
-  box-shadow:inset 0 0 18px rgba(67,46,24,.18)!important;
+  box-shadow:inset 0 0 18px rgba(67,46,24,.16)!important;
 }
 .era-200 .paper-illustration{
-  background-image:linear-gradient(rgba(244,233,213,.07),rgba(223,201,165,.08)),url('scene-early-america.svg')!important;
+  background-image:linear-gradient(rgba(244,233,213,.02),rgba(223,201,165,.04)),url('scene-early-america.svg')!important;
 }
 .era-76 .paper-illustration{
-  background-image:linear-gradient(rgba(244,233,213,.05),rgba(223,201,165,.08)),url('scene-midcentury-america.svg')!important;
+  background-image:linear-gradient(rgba(244,233,213,.02),rgba(223,201,165,.04)),url('scene-midcentury-america.svg')!important;
 }
 .era-200 .paper-illustration .period-visual-frame,
 .era-76 .paper-illustration .period-visual-frame,
@@ -28,82 +29,137 @@
   display:none!important;
 }
 .era-200 .paper-illustration::after,
-.era-76 .paper-illustration::after{
-  content:"PERIOD SCENE"!important;
-  right:6px!important;
-  bottom:5px!important;
-  background:rgba(58,42,26,.72)!important;
-  color:#f2e4ca!important;
-}
+.era-76 .paper-illustration::after{display:none!important}
 
-/* Then & Now gets atmospheric historical scenes rather than archive/file icons. */
-.then-now-visual.then{
-  background-image:linear-gradient(rgba(16,45,77,.04),rgba(16,45,77,.04)),url('scene-1920s-city.svg')!important;
-}
-.then-now-visual.changed{
-  background-image:linear-gradient(rgba(90,68,41,.06),rgba(90,68,41,.06)),url('scene-midcentury-america.svg')!important;
-}
-.then-now-visual.now{
-  background-image:linear-gradient(rgba(124,33,31,.04),rgba(124,33,31,.04)),url('scene-community-life.svg')!important;
-}
-.then-now-visual{
-  filter:saturate(.76) sepia(.14);
-}
-
-/* Lower page: replace flat pictograms with the kind of historical scene
-   vignettes used in the earlier approved renderings. */
-.graphic-showcase .showcase-art.frontpage{
-  background-image:linear-gradient(rgba(246,237,218,.04),rgba(246,237,218,.04)),url('scene-early-america.svg')!important;
-}
-.graphic-showcase .showcase-art.archive{
-  background-image:linear-gradient(rgba(246,237,218,.04),rgba(246,237,218,.04)),url('scene-1920s-city.svg')!important;
-}
-.graphic-showcase .showcase-art.map{
-  background-image:linear-gradient(rgba(246,237,218,.04),rgba(246,237,218,.04)),url('scene-midcentury-america.svg')!important;
-}
-.graphic-showcase .showcase-art.voices{
-  background-image:linear-gradient(rgba(246,237,218,.04),rgba(246,237,218,.04)),url('scene-community-life.svg')!important;
-}
-.graphic-showcase .showcase-art{
-  filter:saturate(.72) sepia(.2) contrast(1.02);
-}
-
-/* Recipe section: a domestic/community scene reads more naturally than an archive drawer. */
-.recipe-illustration-banner{
-  background-image:linear-gradient(90deg,rgba(250,242,224,.55),rgba(250,242,224,.17)),url('scene-community-life.svg')!important;
-  background-position:center 58%!important;
-}
-
-/* The historical scene vocabulary can also soften unused open zones without
-   adding a fake article image. */
-.history-board{
-  position:relative;
-}
+/* TOP DEAD SPACE: large, visible period scenes framing the main headline. */
+.history-board{position:relative;isolation:isolate}
+.history-board > *{position:relative;z-index:2}
 .history-board::before,
 .history-board::after{
   content:"";
   position:absolute;
-  top:6px;
-  width:105px;
-  height:68px;
-  opacity:.17;
+  z-index:1;
+  top:10px;
+  width:176px;
+  height:105px;
+  opacity:.48;
   pointer-events:none;
   background-repeat:no-repeat;
   background-size:cover;
-  filter:sepia(.55) grayscale(.15);
+  filter:sepia(.48) grayscale(.1) contrast(.96);
+  border-bottom:1px solid rgba(131,102,61,.23);
 }
 .history-board::before{
-  left:7px;
-  background-image:url('scene-early-america.svg');
-  background-position:left center;
+  left:18px;
+  background-image:linear-gradient(90deg,rgba(248,241,225,.05),rgba(248,241,225,.64)),url('scene-early-america.svg');
+  background-position:42% center;
 }
 .history-board::after{
-  right:7px;
-  background-image:url('scene-midcentury-america.svg');
+  right:18px;
+  background-image:linear-gradient(270deg,rgba(248,241,225,.05),rgba(248,241,225,.64)),url('scene-midcentury-america.svg');
+  background-position:58% center;
+}
+
+/* LOWER LEFT / LOWER RIGHT DEAD SPACE: stretch the side eras to the center-card height
+   and use only the unused lower area for atmospheric scenes. */
+.era-layout{align-items:stretch!important}
+.era-side{
+  display:flex!important;
+  flex-direction:column!important;
+  position:relative;
+}
+.era-side .era-body{flex:0 0 auto}
+.era-side::after{
+  content:"";
+  display:block;
+  flex:1 1 auto;
+  min-height:96px;
+  margin:6px 9px 9px;
+  border-top:1px solid #d1bea0;
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:center;
+  opacity:.78;
+  filter:sepia(.24) saturate(.72) contrast(.97);
+}
+.era-200::after{
+  background-image:linear-gradient(rgba(255,250,241,.22),rgba(255,250,241,.22)),url('scene-early-america.svg');
+  background-position:center 62%;
+}
+.era-76::after{
+  background-image:linear-gradient(rgba(255,250,241,.18),rgba(255,250,241,.18)),url('scene-midcentury-america.svg');
+  background-position:center 56%;
+}
+
+/* Then & Now uses period environment vignettes, not archive/file icons. */
+.then-now-visual.then{
+  background-image:linear-gradient(rgba(16,45,77,.04),rgba(16,45,77,.04)),url('scene-1920s-city.svg')!important;
+}
+.then-now-visual.changed{
+  background-image:linear-gradient(rgba(90,68,41,.04),rgba(90,68,41,.04)),url('scene-midcentury-america.svg')!important;
+}
+.then-now-visual.now{
+  background-image:linear-gradient(rgba(124,33,31,.03),rgba(124,33,31,.03)),url('scene-community-life.svg')!important;
+}
+.then-now-visual{filter:saturate(.76) sepia(.14)}
+
+/* COMMUNITY HEADING DEAD SPACE: use small scene vignettes as page framing, not card art. */
+.community-home{position:relative;isolation:isolate}
+.community-home > *{position:relative;z-index:2}
+.community-home::before,
+.community-home::after{
+  content:"";
+  position:absolute;
+  z-index:1;
+  top:14px;
+  width:122px;
+  height:74px;
+  opacity:.31;
+  pointer-events:none;
+  background-repeat:no-repeat;
+  background-size:cover;
+  filter:sepia(.46) grayscale(.12);
+}
+.community-home::before{
+  left:20px;
+  background-image:linear-gradient(90deg,rgba(251,245,233,.05),rgba(251,245,233,.73)),url('scene-community-life.svg');
+  background-position:left center;
+}
+.community-home::after{
+  right:20px;
+  background-image:linear-gradient(270deg,rgba(251,245,233,.05),rgba(251,245,233,.73)),url('scene-1920s-city.svg');
   background-position:right center;
 }
 
+/* Lower page scene cards now use historical environments instead of flat pictograms. */
+.graphic-showcase .showcase-art.frontpage{
+  background-image:linear-gradient(rgba(246,237,218,.02),rgba(246,237,218,.02)),url('scene-early-america.svg')!important;
+}
+.graphic-showcase .showcase-art.archive{
+  background-image:linear-gradient(rgba(246,237,218,.02),rgba(246,237,218,.02)),url('scene-1920s-city.svg')!important;
+}
+.graphic-showcase .showcase-art.map{
+  background-image:linear-gradient(rgba(246,237,218,.02),rgba(246,237,218,.02)),url('scene-midcentury-america.svg')!important;
+}
+.graphic-showcase .showcase-art.voices{
+  background-image:linear-gradient(rgba(246,237,218,.02),rgba(246,237,218,.02)),url('scene-community-life.svg')!important;
+}
+.graphic-showcase .showcase-art{filter:saturate(.72) sepia(.2) contrast(1.02)}
+
+/* Recipe section gets one domestic/community scene, not a source-scan image. */
+.recipe-illustration-banner{
+  background-image:linear-gradient(90deg,rgba(250,242,224,.45),rgba(250,242,224,.12)),url('scene-community-life.svg')!important;
+  background-position:center 58%!important;
+}
+
+@media(max-width:930px){
+  .history-board::before,.history-board::after{width:120px;height:78px;opacity:.32}
+  .community-home::before,.community-home::after{width:88px;height:58px;opacity:.22}
+  .era-side::after{min-height:74px}
+}
 @media(max-width:700px){
-  .history-board::before,.history-board::after{display:none}
+  .history-board::before,.history-board::after,
+  .community-home::before,.community-home::after{display:none}
   .era-200 .paper-illustration,.era-76 .paper-illustration{background-position:center 55%!important}
+  .era-side::after{min-height:84px;margin:5px 9px 9px}
 }
