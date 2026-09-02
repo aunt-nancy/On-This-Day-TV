@@ -1,6 +1,6 @@
 import { BUILD_ID } from '../lib/config.js';
 import health from '../lib/routes/health.js';
-import cronNewsroom from '../lib/routes/cron-newsroom.js';
+import cronNewsroom from '../lib/routes/cron-newsroom-daily.js';
 import contentToday from '../lib/routes/content-today.js';
 import contentArchive from '../lib/routes/content-archive.js';
 import adminStatus from '../lib/routes/admin-status.js';
