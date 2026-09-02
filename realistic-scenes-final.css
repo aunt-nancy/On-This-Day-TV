@@ -1,0 +1,69 @@
+/* FINAL HOMEPAGE HISTORICAL SCENE LAYER — realistic JPG scenes only */
+html body .site .era-200 .paper-illustration,
+html body .site .era-76 .paper-illustration{
+  position:relative!important;overflow:hidden!important;height:116px!important;min-height:116px!important;
+  background-repeat:no-repeat!important;background-position:center!important;background-size:cover!important;
+  border:1px solid #a98e64!important;box-shadow:inset 0 0 18px rgba(67,46,24,.16)!important;
+}
+html body .site .era-200 .paper-illustration{background-image:url('vignette-printshop.jpg?realistic=2')!important}
+html body .site .era-76 .paper-illustration{background-image:url('vignette-midcentury.jpg?realistic=2')!important}
+html body .site .era-200 .paper-illustration .period-visual-frame,
+html body .site .era-76 .paper-illustration .period-visual-frame,
+html body .site .era-200 .paper-illustration .period-visual-fallback,
+html body .site .era-76 .paper-illustration .period-visual-fallback{display:none!important}
+html body .site .era-200 .paper-illustration::after,
+html body .site .era-76 .paper-illustration::after{display:none!important}
+
+html body .site .history-board{position:relative!important;isolation:isolate!important}
+html body .site .history-board>*{position:relative;z-index:2}
+html body .site .history-board::before,
+html body .site .history-board::after{
+ content:""!important;position:absolute!important;z-index:1!important;top:10px!important;width:180px!important;height:108px!important;
+ opacity:.72!important;pointer-events:none!important;background-repeat:no-repeat!important;background-size:cover!important;
+ filter:sepia(.12) saturate(.86) contrast(1.02)!important;border-bottom:1px solid rgba(131,102,61,.25)!important;
+}
+html body .site .history-board::before{left:18px!important;background-image:linear-gradient(90deg,rgba(248,241,225,.00),rgba(248,241,225,.48)),url('vignette-printshop.jpg?realistic=2')!important;background-position:center!important}
+html body .site .history-board::after{right:18px!important;background-image:linear-gradient(270deg,rgba(248,241,225,.00),rgba(248,241,225,.48)),url('vignette-1920s-street.jpg?realistic=2')!important;background-position:center!important}
+
+html body .site .era-layout{align-items:stretch!important}
+html body .site .era-side{display:flex!important;flex-direction:column!important;position:relative!important}
+html body .site .era-side .era-body{flex:0 0 auto!important}
+html body .site .era-side::after{
+ content:""!important;display:block!important;flex:1 1 auto!important;min-height:100px!important;margin:6px 9px 9px!important;
+ border-top:1px solid #d1bea0!important;background-repeat:no-repeat!important;background-size:cover!important;background-position:center!important;
+ opacity:.95!important;filter:sepia(.12) saturate(.84) contrast(1.01)!important;
+}
+html body .site .era-200::after{background-image:url('vignette-printshop.jpg?realistic=2')!important;background-position:center 54%!important}
+html body .site .era-76::after{background-image:url('vignette-midcentury.jpg?realistic=2')!important;background-position:center 52%!important}
+
+html body .site .then-now-visual.then{background-image:url('vignette-1920s-street.jpg?realistic=2')!important}
+html body .site .then-now-visual.changed{background-image:url('vignette-midcentury.jpg?realistic=2')!important}
+html body .site .then-now-visual.now{background-image:url('vignette-community.jpg?realistic=2')!important}
+html body .site .then-now-visual{filter:sepia(.1) saturate(.86) contrast(1.02)!important;background-size:cover!important;background-position:center!important}
+
+html body .site .community-home{position:relative!important;isolation:isolate!important}
+html body .site .community-home>*{position:relative;z-index:2}
+html body .site .community-home::before,
+html body .site .community-home::after{
+ content:""!important;position:absolute!important;z-index:1!important;top:14px!important;width:136px!important;height:80px!important;opacity:.5!important;
+ pointer-events:none!important;background-repeat:no-repeat!important;background-size:cover!important;filter:sepia(.12) saturate(.82) contrast(1.01)!important;
+}
+html body .site .community-home::before{left:20px!important;background-image:linear-gradient(90deg,rgba(251,245,233,.00),rgba(251,245,233,.58)),url('vignette-community.jpg?realistic=2')!important;background-position:left center!important}
+html body .site .community-home::after{right:20px!important;background-image:linear-gradient(270deg,rgba(251,245,233,.00),rgba(251,245,233,.58)),url('vignette-1920s-street.jpg?realistic=2')!important;background-position:right center!important}
+
+html body .site .graphic-showcase .showcase-art.frontpage{background-image:url('vignette-printshop.jpg?realistic=2')!important}
+html body .site .graphic-showcase .showcase-art.archive{background-image:url('vignette-1920s-street.jpg?realistic=2')!important}
+html body .site .graphic-showcase .showcase-art.map{background-image:url('vignette-midcentury.jpg?realistic=2')!important}
+html body .site .graphic-showcase .showcase-art.voices{background-image:url('vignette-community.jpg?realistic=2')!important}
+html body .site .graphic-showcase .showcase-art{filter:sepia(.1) saturate(.86) contrast(1.02)!important;background-size:cover!important;background-position:center!important}
+
+html body .site .recipe-illustration-banner{background-image:url('vignette-community.jpg?realistic=2')!important;background-position:center 55%!important;background-size:cover!important}
+
+@media(max-width:930px){
+ html body .site .history-board::before,html body .site .history-board::after{width:122px!important;height:80px!important;opacity:.48!important}
+ html body .site .community-home::before,html body .site .community-home::after{width:90px!important;height:60px!important;opacity:.34!important}
+}
+@media(max-width:700px){
+ html body .site .history-board::before,html body .site .history-board::after,
+ html body .site .community-home::before,html body .site .community-home::after{display:none!important}
+}
