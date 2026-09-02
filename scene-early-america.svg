@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620">
+<defs>
+  <pattern id="h" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><line x1="0" y1="0" x2="0" y2="10" stroke="#7a6549" stroke-width="1" opacity=".22"/></pattern>
+  <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5ead3"/><stop offset="1" stop-color="#e3cfaa"/></linearGradient>
+</defs>
+<rect width="1200" height="620" fill="url(#paper)"/>
+<rect width="1200" height="620" fill="url(#h)" opacity=".48"/>
+<g stroke="#564531" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M0 470 Q150 430 300 452 T620 448 T900 455 T1200 440"/>
+  <path d="M80 325 l95-88 105 88 v138 H80z"/><path d="M100 325h160M140 463v-78h64v78"/><path d="M112 355h50v44h-50zm91 0h45v44h-45"/>
+  <path d="M300 295 l120-104 128 104 v168 H300z"/><path d="M322 295h205M355 463v-92h78v92"/><path d="M340 326h52v47h-52zm104 0h53v47h-53"/>
+  <path d="M870 320 l110-95 125 95 v143H870z"/><path d="M891 320h191M914 355h52v45h-52zm91 0h52v45h-52"/>
+  <path d="M640 315h155v148H640zM660 295h115l20 20H640z"/><path d="M670 350h95M670 379h95M670 408h95"/>
+  <path d="M489 463 q38-92 80-92 q42 0 82 92"/>
+  <circle cx="570" cy="350" r="23"/><path d="M570 373v67M545 395l25 19 29-22M553 440l-17 35M590 440l16 35"/>
+  <circle cx="724" cy="354" r="22"/><path d="M724 376v64M700 398l24 17 29-21M708 439l-18 34M744 439l18 34"/>
+  <path d="M370 476h183l35-68h105l28 68"/>
+  <circle cx="424" cy="478" r="35"/><circle cx="650" cy="478" r="35"/>
+  <path d="M592 411q35-66 100-45q52 15 70 66M750 432q44-13 72 0"/>
+  <path d="M825 438q12-62 55-82q48-22 92 26"/>
+  <path d="M101 456q50-50 103-33M250 444q38-35 72-19M1020 451q50-41 91-20"/>
+</g>
+<g stroke="#7a6549" stroke-width="1.5" opacity=".42">
+  <path d="M46 503h270M355 522h268M690 505h210M930 521h230"/>
+  <path d="M96 248l55 55M113 233l56 54M327 213l74 66M348 196l72 67M893 250l72 62M918 231l67 59"/>
+</g>
+<text x="55" y="82" font-family="Georgia,serif" font-size="42" fill="#4e3f2d" letter-spacing="3">EARLY REPUBLIC • STREET &amp; PRINT CULTURE</text>
+</svg>
