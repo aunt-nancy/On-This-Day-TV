@@ -6,100 +6,24 @@
     }
   },
   "rewrites": [
-    {
-      "source": "/api/health",
-      "destination": "/api/router?route=health"
-    },
-    {
-      "source": "/api/cron/newsroom",
-      "destination": "/api/router?route=cron/newsroom"
-    },
-    {
-      "source": "/api/content/today",
-      "destination": "/api/router?route=content/today"
-    },
-    {
-      "source": "/api/content/archive",
-      "destination": "/api/router?route=content/archive"
-    },
-    {
-      "source": "/api/admin/status",
-      "destination": "/api/router?route=admin/status"
-    },
-    {
-      "source": "/api/admin/review",
-      "destination": "/api/router?route=admin/review"
-    }
+    {"source":"/api/health","destination":"/api/router?route=health"},
+    {"source":"/api/cron/newsroom","destination":"/api/router?route=cron/newsroom"},
+    {"source":"/api/content/today","destination":"/api/router?route=content/today"},
+    {"source":"/api/content/archive","destination":"/api/router?route=content/archive"},
+    {"source":"/api/admin/status","destination":"/api/router?route=admin/status"},
+    {"source":"/api/admin/review","destination":"/api/router?route=admin/review"}
   ],
   "crons": [
-    {
-      "path": "/api/cron/newsroom",
-      "schedule": "* * * * *"
-    }
+    {"path":"/api/cron/newsroom","schedule":"* * * * *"}
   ],
   "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/admin.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/index.html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/app.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/realistic-scenes-final.css",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/vignette-(.*).jpg",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, max-age=0, must-revalidate"
-        }
-      ]
-    }
+    {"source":"/api/(.*)","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
+    {"source":"/admin.html","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
+    {"source":"/","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
+    {"source":"/index.html","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
+    {"source":"/app.js","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
+    {"source":"/illustration-pass.js","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
+    {"source":"/dynamic-scenes.css","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
+    {"source":"/homepage-enhancements.css","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]}
   ]
 }
