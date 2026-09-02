@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 620">
+<defs>
+  <pattern id="h3" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(16)"><line x1="0" y1="0" x2="0" y2="9" stroke="#6b5942" stroke-width="1" opacity=".16"/></pattern>
+  <linearGradient id="p3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6ead4"/><stop offset="1" stop-color="#dcc6a1"/></linearGradient>
+</defs>
+<rect width="1200" height="620" fill="url(#p3)"/><rect width="1200" height="620" fill="url(#h3)"/>
+<g stroke="#51412f" fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M0 477h1200"/>
+  <path d="M70 335l120-86 125 86v142H70zM92 335h200M115 371h48v43h-48zm78 0h48v43h-48M146 477v-76h70v76"/>
+  <path d="M345 300l98-71 105 71v177H345zM365 300h163M382 340h50v44h-50zm71 0h49v44h-49M415 477v-88h68v88"/>
+  <path d="M828 264h285v213H828zM858 300h225M858 334h225M858 368h225"/>
+  <path d="M866 409h78v68h-78M967 409h78v68h-78"/>
+  <path d="M562 477q18-93 99-93q77 0 109 93"/>
+  <circle cx="607" cy="476" r="30"/><circle cx="724" cy="476" r="30"/>
+  <path d="M608 386l34-53h73l31 53"/>
+  <path d="M779 477q17-67 70-67q53 0 83 67"/>
+  <circle cx="810" cy="476" r="24"/><circle cx="899" cy="476" r="24"/>
+  <circle cx="289" cy="410" r="20"/><path d="M289 430v47M267 446l22 14 24-17M274 476l-12 26M303 476l13 26"/>
+  <circle cx="541" cy="408" r="19"/><path d="M541 427v50M521 444l20 14 22-16M527 476l-11 26M555 476l12 26"/>
+  <path d="M934 242v-82h42v82M955 160v-54M912 205h87"/>
+  <path d="M100 249q52-42 106-31M367 228q47-33 89-25M1002 255q48-31 85-19"/>
+</g>
+<g stroke="#77634a" stroke-width="1.4" opacity=".4">
+  <path d="M32 511h283M341 529h250M614 511h266M911 530h252"/>
+  <path d="M82 348l67 48M105 328l66 48M357 313l57 49M382 293l56 50M842 278l64 53M870 258l65 52"/>
+</g>
+<text x="62" y="76" font-family="Georgia,serif" font-size="41" fill="#4c3d2c" letter-spacing="3">MID-CENTURY AMERICA • HOMES, CARS, CIVIC LIFE &amp; TELEVISION</text>
+</svg>
