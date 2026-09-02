@@ -1,0 +1,222 @@
+/* On This Day TV — targeted homepage enhancements
+   Built on the 2026-09-01 working-publication checkpoint.
+   This file intentionally does not alter the masthead, three-era structure, or core palette. */
+
+/* THEN & NOW: make this a distinct editorial feature rather than another card row. */
+.then-now-strip{
+  margin:28px 18px 22px;
+  padding:22px 20px 18px;
+  position:relative;
+  overflow:hidden;
+  border:2px solid #b98933;
+  outline:1px solid rgba(7,27,48,.38);
+  outline-offset:-7px;
+  background:
+    linear-gradient(135deg,rgba(7,27,48,.98) 0 49.5%,rgba(124,33,31,.97) 49.5% 100%);
+  box-shadow:0 10px 26px rgba(7,15,25,.18);
+}
+.then-now-strip::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.13;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.22) 0 1px,transparent 1px 5px);
+}
+.then-now-heading{
+  position:relative;
+  z-index:1;
+  margin:0 0 18px;
+  text-align:center;
+  color:#f6dfad;
+  font-size:clamp(44px,7vw,82px);
+  font-weight:900;
+  font-variant:small-caps;
+  letter-spacing:.055em;
+  line-height:.86;
+  text-transform:uppercase;
+  text-shadow:0 2px 0 #050b11,0 5px 16px rgba(0,0,0,.32);
+}
+.then-now-heading::before,.then-now-heading::after{
+  content:"";
+  display:inline-block;
+  vertical-align:middle;
+  width:min(10vw,105px);
+  height:2px;
+  margin:0 14px 8px;
+  background:#d9b665;
+}
+.then-now-grid{
+  position:relative;
+  z-index:1;
+  display:grid;
+  grid-template-columns:1fr 38px 1fr 38px 1fr;
+  gap:10px;
+  align-items:stretch;
+}
+.then-now-cell{
+  padding:16px 15px 15px;
+  min-height:190px;
+  border:1px solid #c8b17f;
+  background:rgba(255,250,239,.97);
+  box-shadow:0 4px 12px rgba(0,0,0,.14);
+}
+.then-now-cell:nth-of-type(1){border-top:7px solid #102d4d}
+.then-now-cell:nth-of-type(2){border-top:7px solid #b98933}
+.then-now-cell:nth-of-type(3){border-top:7px solid #7c211f}
+.then-now-label{
+  color:#7c211f;
+  font:900 11px Arial,sans-serif;
+  letter-spacing:.11em;
+  text-transform:uppercase;
+  margin-bottom:8px;
+}
+.then-now-cell h3{
+  margin:0 0 8px;
+  color:#071b30;
+  font-size:21px;
+  line-height:1.04;
+}
+.then-now-cell p{
+  margin:0;
+  color:#39352e;
+  font-size:12px;
+  line-height:1.5;
+}
+.then-now-arrow{
+  color:#f6dfad;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font:900 30px Georgia,serif;
+  text-shadow:0 2px 5px rgba(0,0,0,.35);
+}
+.then-now-sources{
+  position:relative;
+  z-index:1;
+  margin-top:14px;
+  padding-top:10px;
+  border-top:1px solid rgba(246,223,173,.55);
+  text-align:center;
+  color:#f8ecda;
+  font:700 10px Arial,sans-serif;
+}
+.then-now-sources a{color:#f6dfad;text-decoration:none}
+.then-now-sources a:hover{text-decoration:underline}
+
+/* PERIOD VISUALS: these slots always have a visible archival treatment, even
+   when a remote archive cannot render an embeddable page image. */
+.paper-illustration{
+  min-height:118px;
+  margin:7px 0 10px;
+  position:relative;
+  overflow:hidden;
+  border:1px solid #b9a47b;
+  background:
+    radial-gradient(circle at 22% 28%,rgba(101,72,39,.18) 0 2px,transparent 3px),
+    repeating-linear-gradient(0deg,rgba(83,62,39,.06) 0 1px,transparent 1px 4px),
+    linear-gradient(145deg,#e8dcc2,#cdbb98);
+  box-shadow:inset 0 0 18px rgba(55,38,20,.15);
+}
+.paper-illustration::after{
+  content:"ARCHIVAL VIEW";
+  position:absolute;
+  right:6px;
+  bottom:5px;
+  z-index:3;
+  padding:3px 5px;
+  background:rgba(7,27,48,.82);
+  color:#f3ddb1;
+  font:800 7px Arial,sans-serif;
+  letter-spacing:.08em;
+}
+.period-visual-frame{
+  position:absolute;
+  inset:0;
+  overflow:hidden;
+  background:#d8c9aa;
+}
+.period-visual-frame iframe,
+.period-visual-frame object,
+.period-visual-frame img{
+  width:100%;
+  height:100%;
+  border:0;
+  object-fit:cover;
+  object-position:top center;
+  filter:sepia(.68) contrast(1.06) brightness(.92);
+  pointer-events:none;
+}
+.period-visual-shade{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:2;
+  box-shadow:inset 0 0 25px rgba(42,27,12,.25);
+  background:linear-gradient(180deg,transparent 55%,rgba(35,23,12,.14));
+}
+.period-visual-fallback{
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:12px;
+  color:#4c3d2b;
+}
+.period-visual-fallback strong{font-size:16px;line-height:1.05}
+.period-visual-fallback span{font:800 8px Arial,sans-serif;text-transform:uppercase;letter-spacing:.07em;margin-top:5px}
+
+/* COMMUNITY PRESS: Black Press stays permanent; every other card is created
+   from the verified 100-year community package for that day's edition. */
+.community-priority-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  align-items:stretch;
+}
+.community-card.dynamic-community{
+  min-height:175px;
+  border-top:6px solid var(--navy);
+  background:linear-gradient(180deg,#fffaf1,#f7efe1);
+}
+.community-card.dynamic-community[data-community-mode="same_event"]{border-top-color:var(--gold)}
+.community-card.dynamic-community[data-community-mode="community_lead"]{border-top-color:var(--green)}
+.community-card .community-mode{
+  margin:0 0 6px;
+  color:#7c211f;
+  font:900 8px Arial,sans-serif;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.community-card .community-publication{
+  display:block;
+  margin-top:5px;
+  color:#62584a;
+  font:800 8px Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+.community-card.black-center{
+  grid-column:auto;
+  grid-row:auto;
+  min-height:175px;
+}
+.community-card.black-center .community-mode{color:#7c211f}
+.community-empty-note{
+  color:#6b6255;
+  font-style:italic;
+}
+.ranking-note{display:none!important}
+
+@media(max-width:930px){
+  .then-now-grid{grid-template-columns:1fr}
+  .then-now-arrow{transform:rotate(90deg);min-height:24px}
+  .community-priority-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:700px){
+  .then-now-strip{margin:20px 10px;padding:18px 12px 15px}
+  .then-now-heading{font-size:44px;line-height:.95}
+  .then-now-heading::before,.then-now-heading::after{width:32px;margin-left:8px;margin-right:8px}
+  .then-now-cell{min-height:0}
+  .community-priority-grid{grid-template-columns:1fr}
+}
