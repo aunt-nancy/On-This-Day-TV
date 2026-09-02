@@ -1,122 +1,43 @@
-/* On This Day TV — richer illustration pass
-   Layered above the locked core design and working publication checkpoint. */
+/* On This Day TV — homepage space-balance pass
+   Built above the working publication checkpoint.
+   Goal: reduce empty space without forcing a visual onto every story. */
 
-/* Restore meaningful visual weight to the 100-year center without changing its structure. */
-.featured-period-illustration{
+/* Keep the two side-era illustrations meaningful and substantial, but not dominant. */
+.era-side .paper-illustration{
   display:block!important;
-  position:relative;
-  height:150px;
-  margin:8px 0 11px;
-  overflow:hidden;
-  border:1px solid #bda77d;
-  background:#e7dbc1;
-  box-shadow:inset 0 0 22px rgba(58,40,20,.16),0 3px 8px rgba(0,0,0,.08);
+  height:112px!important;
+  min-height:112px!important;
+  margin:7px 0 10px!important;
+  opacity:1!important;
+  background-size:cover!important;
+  background-position:center!important;
 }
-.featured-period-illustration iframe,
-.featured-period-illustration img{
-  width:100%;
-  height:100%;
-  border:0;
-  object-fit:cover;
-  object-position:top center;
-  filter:sepia(.64) contrast(1.08) brightness(.91);
-  pointer-events:none;
-}
-.featured-period-illustration::after{
-  content:attr(data-caption);
-  position:absolute;
-  left:7px;
-  right:7px;
-  bottom:7px;
-  padding:5px 7px;
-  background:rgba(7,27,48,.88);
-  color:#f3ddb1;
-  font:800 8px/1.2 Arial,sans-serif;
-  letter-spacing:.04em;
-  text-transform:uppercase;
-}
-.featured-period-illustration.editorial-fallback{
-  background:
-    linear-gradient(rgba(242,231,209,.32),rgba(242,231,209,.32)),
-    url('art-frontpage.svg') center/cover no-repeat;
-}
-.featured-period-illustration.black-press-visual{
-  background:
-    linear-gradient(rgba(124,33,31,.12),rgba(124,33,31,.12)),
-    url('art-voices.svg') center/cover no-repeat;
-}
-.era-center .center-paper{padding-top:7px!important}
 
-/* Turn the three Then & Now cells into illustrated editorial panels. */
+/* THEN & NOW keeps visual rhythm, but these are section-level context panels rather than story art. */
 .then-now-visual{
-  height:92px;
-  margin:-3px 0 12px;
+  height:78px;
+  margin:-2px 0 10px;
   position:relative;
   overflow:hidden;
   border:1px solid #bca77c;
   background:#eadfc8 center/cover no-repeat;
-  box-shadow:inset 0 0 16px rgba(57,39,18,.15);
+  box-shadow:inset 0 0 14px rgba(57,39,18,.13);
 }
-.then-now-visual.then{background-image:linear-gradient(rgba(16,45,77,.09),rgba(16,45,77,.09)),url('art-archive.svg')}
-.then-now-visual.changed{background-image:linear-gradient(rgba(185,137,51,.09),rgba(185,137,51,.09)),url('art-map.svg')}
-.then-now-visual.now{background-image:linear-gradient(rgba(124,33,31,.09),rgba(124,33,31,.09)),url('art-frontpage.svg')}
+.then-now-visual.then{background-image:linear-gradient(rgba(16,45,77,.07),rgba(16,45,77,.07)),url('art-archive.svg')}
+.then-now-visual.changed{background-image:linear-gradient(rgba(185,137,51,.07),rgba(185,137,51,.07)),url('art-map.svg')}
+.then-now-visual.now{background-image:linear-gradient(rgba(124,33,31,.06),rgba(124,33,31,.06)),url('art-voices.svg')}
 .then-now-visual span{
   position:absolute;
-  left:8px;
-  right:8px;
-  bottom:7px;
-  padding:5px 7px;
-  background:rgba(255,250,239,.9);
-  border-top:1px solid rgba(99,80,47,.25);
+  left:7px;right:7px;bottom:6px;
+  padding:4px 6px;
+  background:rgba(255,250,239,.91);
   color:#372f25;
-  font:800 8px/1.25 Arial,sans-serif;
+  font:800 7px/1.2 Arial,sans-serif;
   text-transform:uppercase;
   letter-spacing:.055em;
 }
 
-/* Give each Community Press card a visible publication masthead illustration. */
-.community-masthead-visual{
-  height:72px;
-  margin:-2px 0 10px;
-  padding:9px 10px 8px;
-  position:relative;
-  display:flex;
-  align-items:flex-end;
-  overflow:hidden;
-  border:1px solid #c6b189;
-  background:
-    linear-gradient(90deg,rgba(255,250,240,.87),rgba(255,250,240,.55)),
-    url('art-voices.svg') right center/115px auto no-repeat,
-    #eee2ca;
-}
-.community-masthead-visual::before{
-  content:"COMMUNITY NEWSPAPER";
-  position:absolute;
-  left:10px;
-  top:8px;
-  color:#7c211f;
-  font:900 7px Arial,sans-serif;
-  letter-spacing:.1em;
-}
-.community-masthead-visual strong{
-  position:relative;
-  z-index:1;
-  max-width:78%;
-  color:#071b30;
-  font-size:15px;
-  line-height:1;
-  text-shadow:0 1px 0 #fff8ec;
-}
-.community-card.black-center .community-masthead-visual{
-  background:
-    linear-gradient(90deg,rgba(250,238,226,.88),rgba(250,238,226,.52)),
-    url('art-voices.svg') right center/125px auto no-repeat,
-    #ead5c4;
-  border-color:#b98e76;
-}
-.community-card::after{display:none!important}
-
-/* More Major Headlines becomes an illustrated mini-front-page row. */
+/* More Major Headlines: use editorial text cards, not newspaper-page stand-ins. */
 .more-headline-visual-grid{
   display:grid;
   grid-template-columns:repeat(3,minmax(0,1fr));
@@ -124,73 +45,286 @@
   margin:0 0 10px;
 }
 .more-headline-visual{
-  min-height:80px;
-  padding:8px;
+  min-height:92px;
+  padding:10px;
   position:relative;
   overflow:hidden;
   border:1px solid #c9b58d;
-  background:
-    linear-gradient(rgba(255,250,240,.86),rgba(255,250,240,.86)),
-    url('art-frontpage.svg') right bottom/78px auto no-repeat;
+  border-top:4px solid var(--gold);
+  background:#fffaf1;
   text-align:left;
 }
+.more-headline-visual:nth-child(2){border-top-color:var(--navy)}
+.more-headline-visual:nth-child(3){border-top-color:var(--red)}
 .more-headline-visual b{
   display:block;
   color:#071b30;
   font-size:11px;
-  line-height:1.08;
+  line-height:1.12;
 }
 .more-headline-visual span{
   display:block;
-  margin-top:5px;
+  margin-top:7px;
   color:#7c211f;
   font:800 7px Arial,sans-serif;
   text-transform:uppercase;
   letter-spacing:.045em;
 }
 
-/* Recipe feature gets a full-width archival illustration header. */
+/* A three-era context band fills the page with useful information from the edition itself. */
+.daily-context-band{
+  margin:0;
+  padding:15px 18px 17px;
+  border-top:1px solid #c9b690;
+  border-bottom:1px solid #c9b690;
+  background:
+    linear-gradient(rgba(244,235,217,.96),rgba(248,241,228,.97)),
+    repeating-linear-gradient(0deg,rgba(78,56,29,.03) 0 1px,transparent 1px 4px);
+}
+.daily-context-heading{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:0 0 10px;
+  color:#071b30;
+  font:900 10px Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+}
+.daily-context-heading::before,.daily-context-heading::after{
+  content:"";
+  height:1px;
+  flex:1;
+  background:#b98933;
+}
+.daily-context-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+}
+.context-era-card{
+  min-height:132px;
+  padding:11px 12px;
+  position:relative;
+  overflow:hidden;
+  border:1px solid #c7b38c;
+  background:#fffaf1;
+}
+.context-era-card[data-era="y200"]{border-left:5px solid var(--navy)}
+.context-era-card[data-era="y100"]{border-left:5px solid var(--red)}
+.context-era-card[data-era="y75"]{border-left:5px solid var(--green)}
+.context-era-label{
+  color:#7c211f;
+  font:900 8px Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.075em;
+}
+.context-era-card h3{
+  margin:5px 0 6px;
+  color:#071b30;
+  font-size:16px;
+  line-height:1.06;
+}
+.context-era-card p{
+  margin:0;
+  color:#4e473d;
+  font-size:10.5px;
+  line-height:1.4;
+}
+.context-era-source{
+  display:block;
+  margin-top:8px;
+  color:#6a5d4b;
+  font:800 7px Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.04em;
+}
+
+/* Community Press must consume the available width rather than leaving empty grid columns. */
+.community-priority-grid{
+  width:100%;
+}
+.community-priority-grid[data-card-count="1"]{
+  grid-template-columns:1fr!important;
+  max-width:900px;
+  margin:0 auto;
+}
+.community-priority-grid[data-card-count="2"]{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+.community-priority-grid[data-card-count="3"]{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+.community-priority-grid[data-card-count="4"]{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+.community-card{
+  min-height:0!important;
+}
+.community-card.black-center{
+  grid-column:auto!important;
+  grid-row:auto!important;
+}
+.community-priority-grid[data-card-count="1"] .black-center{
+  display:grid;
+  grid-template-columns:minmax(0,1.55fr) minmax(240px,.75fr);
+  gap:18px;
+  align-items:center;
+  padding:16px 18px;
+}
+.community-priority-grid[data-card-count="1"] .black-center > a{
+  grid-column:1;
+  justify-self:start;
+}
+.community-desk-note{
+  border-left:1px solid #c8ae86;
+  padding:10px 0 10px 18px;
+  color:#50473b;
+  font-size:10.5px;
+  line-height:1.45;
+}
+.community-desk-note b{
+  display:block;
+  margin-bottom:4px;
+  color:#7c211f;
+  font:900 8px Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.075em;
+}
+
+/* Source trail adds density using real publication metadata, not filler copy. */
+.source-trail-band{
+  padding:14px 18px 17px;
+  border-top:1px solid #c8b58e;
+  border-bottom:1px solid #c8b58e;
+  background:#efe4d0;
+}
+.source-trail-head{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:9px;
+}
+.source-trail-head h2{
+  margin:0;
+  color:#071b30;
+  font-size:22px;
+}
+.source-trail-head span{
+  color:#796b56;
+  font:800 7px Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.065em;
+}
+.source-trail-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+}
+.source-trail-card{
+  min-height:90px;
+  padding:10px 11px;
+  border:1px solid #c3ae87;
+  background:#fffaf1;
+}
+.source-trail-card b{
+  display:block;
+  color:#071b30;
+  font-size:13px;
+  line-height:1.05;
+}
+.source-trail-card p{
+  margin:5px 0 0;
+  color:#584f42;
+  font-size:9.5px;
+  line-height:1.35;
+}
+.source-trail-card a{
+  display:inline-block;
+  margin-top:7px;
+  color:#7c211f;
+  font:800 7px Arial,sans-serif;
+  text-decoration:none;
+  text-transform:uppercase;
+}
+
+/* Recipe feature gets one section-level archival illustration, not an image per story. */
 .recipe-illustration-banner{
-  height:105px;
-  margin:0 0 14px;
+  height:86px;
+  margin:0 0 12px;
   position:relative;
   overflow:hidden;
   border:1px solid #c6b189;
   background:
-    linear-gradient(90deg,rgba(250,242,224,.72),rgba(250,242,224,.35)),
+    linear-gradient(90deg,rgba(250,242,224,.7),rgba(250,242,224,.36)),
     url('art-archive.svg') center/cover no-repeat;
 }
 .recipe-illustration-banner::after{
   content:attr(data-caption);
   position:absolute;
-  left:12px;
-  bottom:10px;
+  left:10px;
+  bottom:8px;
   max-width:70%;
-  padding:5px 8px;
-  background:rgba(7,27,48,.85);
+  padding:4px 7px;
+  background:rgba(7,27,48,.84);
   color:#f4dfb5;
-  font:800 8px Arial,sans-serif;
+  font:800 7px Arial,sans-serif;
   letter-spacing:.05em;
   text-transform:uppercase;
 }
 
-/* Reverse the old minimal-showcase restriction for this homepage only. */
-.graphic-showcase .showcase-card{min-height:220px!important}
+/* Lower feature illustrations remain, but newspaper-page art is not used as generic story art. */
+.graphic-showcase{
+  padding-top:12px!important;
+}
+.graphic-showcase .showcase-card{
+  min-height:205px!important;
+}
 .graphic-showcase .showcase-art{
-  height:122px!important;
+  height:108px!important;
   background-size:cover!important;
   background-position:center!important;
   opacity:.96;
 }
+.graphic-showcase .showcase-art.frontpage{
+  background-image:url('art-press.svg')!important;
+}
+
+/* Make section transitions feel deliberate instead of like blank gaps. */
+.community-home,.graphic-showcase{
+  border-top:0;
+}
+.community-home .section-heading,.graphic-showcase .section-heading{
+  position:relative;
+  padding-bottom:8px;
+}
+.community-home .section-heading::after,.graphic-showcase .section-heading::after{
+  content:"";
+  display:block;
+  width:84px;
+  height:2px;
+  margin:9px auto 0;
+  background:var(--gold);
+}
 
 @media(max-width:930px){
-  .featured-period-illustration{height:132px}
+  .daily-context-grid,.source-trail-grid{grid-template-columns:1fr 1fr}
+  .daily-context-grid .context-era-card:last-child,.source-trail-grid .source-trail-card:last-child{grid-column:1/-1}
   .more-headline-visual-grid{grid-template-columns:1fr 1fr}
 }
 @media(max-width:700px){
-  .featured-period-illustration{height:126px}
-  .then-now-visual{height:78px}
-  .community-masthead-visual{height:64px}
+  .era-side .paper-illustration{height:96px!important;min-height:96px!important}
+  .then-now-visual{height:64px}
+  .daily-context-band,.source-trail-band{padding:12px 10px 14px}
+  .daily-context-grid,.source-trail-grid{grid-template-columns:1fr}
+  .daily-context-grid .context-era-card:last-child,.source-trail-grid .source-trail-card:last-child{grid-column:auto}
+  .community-priority-grid[data-card-count="2"],
+  .community-priority-grid[data-card-count="3"],
+  .community-priority-grid[data-card-count="4"]{grid-template-columns:1fr!important}
+  .community-priority-grid[data-card-count="1"] .black-center{display:flex;grid-template-columns:none;gap:0;padding:14px}
+  .community-desk-note{border-left:0;border-top:1px solid #c8ae86;padding:10px 0 0;margin-top:10px}
   .more-headline-visual-grid{grid-template-columns:1fr}
-  .recipe-illustration-banner{height:88px}
+  .recipe-illustration-banner{height:72px}
+  .graphic-showcase .showcase-art{height:94px!important}
 }
