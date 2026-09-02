@@ -1,29 +1,38 @@
 (function(){
+  // Daily fallback pool. edition.visuals and illustrator placements always win.
+  // Every fallback below is a digitized Library of Congress image with a record
+  // stating no known restrictions on publication.
   const FALLBACKS=[
-    {id:'early-bank-1800',eraKey:'y200',visualType:'engraving',url:'https://cdn.loc.gov/service/pnp/cph/3b50000/3b52000/3b52000/3b52049r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2002718879/'},
-    {id:'early-high-street-1800',eraKey:'y200',visualType:'engraving',url:'https://cdn.loc.gov/service/pnp/cph/3b50000/3b52000/3b52000/3b52042r.jpg',sourceUrl:'https://www.loc.gov/item/2002718872/'},
-    {id:'washington-street-1924',eraKey:'y100',visualType:'photograph',url:'https://tile.loc.gov/storage-services/service/pnp/npcc/12400/12476v.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2016838745/'},
-    {id:'new-orleans-street-1920s',eraKey:'y100',visualType:'photograph',url:'https://tile.loc.gov/storage-services/service/pnp/agc/7a02000/7a02900/7a02922v.jpg',sourceUrl:'https://www.loc.gov/item/2018705846/'},
-    {id:'times-square-1952',eraKey:'y75',visualType:'photograph',url:'https://tile.loc.gov/storage-services/service/pnp/ppmsca/71200/71278v.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2021636503/'},
-    {id:'new-york-street-1954',eraKey:'y75',visualType:'photograph',url:'https://tile.loc.gov/storage-services/service/pnp/ppmsca/69800/69835v.jpg',sourceUrl:'https://www.loc.gov/resource/ppmsca.69835/'},
-    {id:'community-georgia-1900',eraKey:'community',visualType:'photograph',url:'https://tile.loc.gov/storage-services/service/pnp/ppmsca/08700/08770v.jpg',sourceUrl:'https://www.loc.gov/pictures/item/99472447/'},
-    {id:'harlem-street-1943',eraKey:'community',visualType:'photograph',url:'https://tile.loc.gov/storage-services/service/pnp/fsa/8d28000/8d28500/8d28511v.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2017851517/'}
+    {id:'lee-engraving-1820s',eraKey:'y200',visualType:'engraving',url:'https://cdn.loc.gov/service/pnp/ppmsca/31100/31152r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2010631739/'},
+    {id:'pioneer-life-1820',eraKey:'y200',visualType:'engraving',url:'https://cdn.loc.gov/service/pnp/cph/3b10000/3b16000/3b16400/3b16468r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2004671661/'},
+
+    {id:'washington-street-1918-1920',eraKey:'y100',visualType:'photograph',url:'https://cdn.loc.gov/service/pnp/npcc/00300/00398r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2016819656/'},
+    {id:'white-house-crowd-1920',eraKey:'y100',visualType:'photograph',url:'https://cdn.loc.gov/service/pnp/npcc/29500/29585r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2016852329/'},
+    {id:'wall-street-curb-brokers-1920',eraKey:'y100',visualType:'photograph',url:'https://cdn.loc.gov/service/pnp/cph/3b40000/3b40000/3b40200/3b40299r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/92519195/'},
+    {id:'new-orleans-public-life-1920s',eraKey:'y100',visualType:'photograph',url:'https://cdn.loc.gov/service/pnp/agc/7a03000/7a03300/7a03301r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2018705978/'},
+
+    {id:'los-angeles-downtown-1942',eraKey:'y75',visualType:'photograph',url:'https://cdn.loc.gov/service/pnp/fsa/8d28000/8d28100/8d28149r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2017850406/'},
+    {id:'los-angeles-street-1942',eraKey:'y75',visualType:'photograph',url:'https://cdn.loc.gov/service/pnp/fsa/8d28000/8d28100/8d28141r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2017850397/'},
+    {id:'washington-street-1935-1942',eraKey:'y75',visualType:'photograph',url:'https://cdn.loc.gov/service/pnp/fsa/8b31000/8b31500/8b31567r.jpg',sourceUrl:'https://www.loc.gov/pictures/item/2017769454/'},
+    {id:'black-public-life-new-york-1942',eraKey:'community',visualType:'photograph',url:'https://cdn.loc.gov/service/pnp/fsa/8d21000/8d21600/8d21601r.jpg',sourceUrl:'https://www.loc.gov/pictures/collection/fsa/item/2017834567/'}
   ];
 
+  // Most important dead-space zones first. Secondary showcase slots fill only
+  // after the page-framing areas have distinct images.
   const SLOT_ORDER=[
     {name:'--scene-y200',era:'y200'},
-    {name:'--scene-y75',era:'y75'},
     {name:'--scene-head-left',era:'y100'},
     {name:'--scene-head-right',era:'y100'},
+    {name:'--scene-y75',era:'y75'},
     {name:'--scene-community-left',era:'community'},
-    {name:'--scene-community-right',era:'community'},
-    {name:'--scene-then',era:null},
-    {name:'--scene-changed',era:null},
-    {name:'--scene-now',era:null},
+    {name:'--scene-community-right',era:'y100'},
     {name:'--scene-showcase-1',era:'y200'},
     {name:'--scene-showcase-2',era:'y100'},
     {name:'--scene-showcase-3',era:'y75'},
-    {name:'--scene-showcase-4',era:'community'},
+    {name:'--scene-showcase-4',era:'y75'},
+    {name:'--scene-then',era:null},
+    {name:'--scene-changed',era:null},
+    {name:'--scene-now',era:null},
     {name:'--scene-recipe',era:'community'}
   ];
 
@@ -36,8 +45,8 @@
     return new Promise(resolve=>{
       const img=new Image();let done=false;
       const finish=ok=>{if(done)return;done=true;clearTimeout(timer);resolve(ok?candidate:null);};
-      const timer=setTimeout(()=>finish(false),5000);
-      img.onload=()=>finish(img.naturalWidth>40&&img.naturalHeight>40);
+      const timer=setTimeout(()=>finish(false),6500);
+      img.onload=()=>finish(img.naturalWidth>80&&img.naturalHeight>80);
       img.onerror=()=>finish(false);
       img.referrerPolicy='no-referrer';img.src=candidate.url;
     });
@@ -52,10 +61,11 @@
     }catch{}
     const seed=hash(editionDate||new Date().toISOString().slice(0,10));
     const checked=(await Promise.all(FALLBACKS.map(validate))).filter(Boolean);
-    if(!checked.length)return;
+    if(!checked.length){document.documentElement.dataset.sceneFallbackStatus='no-valid-fallbacks';return;}
 
     const used=new Set(SLOT_ORDER.map(s=>extractUrl(current(s.name))).filter(Boolean));
     let order=rotated(checked,seed);
+    const applied=[];
     for(const slot of SLOT_ORDER){
       if(hasImage(current(slot.name)))continue;
       let candidates=order.filter(x=>!used.has(x.url)&&(slot.era?x.eraKey===slot.era:true));
@@ -64,11 +74,15 @@
       const pick=candidates[0];
       document.documentElement.style.setProperty(slot.name,cssUrl(pick.url));
       used.add(pick.url);
+      applied.push({slot:slot.name,id:pick.id,sourceUrl:pick.sourceUrl});
       order=order.filter(x=>x.url!==pick.url);
     }
-    document.documentElement.dataset.sceneFallbackCount=String(used.size);
+    window.OnThisDay=window.OnThisDay||{};
+    window.OnThisDay.sceneFallbackAttribution=applied;
+    document.documentElement.dataset.sceneFallbackCount=String(applied.length);
+    document.documentElement.dataset.sceneFallbackStatus=applied.length?'applied':'not-needed';
   }
 
-  const run=()=>setTimeout(fill,1500);
+  const run=()=>setTimeout(fill,1650);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 })();
