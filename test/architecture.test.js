@@ -4,6 +4,8 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { AGENTS } from '../lib/agents.js';
 import { STAGES, siteDate, validateEdition, filterSafeVerified } from '../lib/engine.js';
+import { requestTimeoutMs } from '../lib/openai.js';
+import healthHandler from '../api/health.js';
 
 assert.equal(AGENTS.length,19,'The consolidated roster must contain exactly 19 automatic newsroom roles.');
 assert.equal(new Set(AGENTS.map(a=>a.key)).size,19,'Agent keys must be unique.');
@@ -30,6 +32,18 @@ assert.equal(heldEventFallback.verifiedStories.length,0,'Event fallback may excl
 
 const root=path.resolve(new URL('..',import.meta.url).pathname);
 for(const f of ['index.html','today.html','archive.html','community.html','regional.html','sources.html','about.html','admin.html','schema.sql','vercel.json','masthead-readers.jpg','BUILD_LOCK.md','art-frontpage.svg','art-archive.svg','art-map.svg','art-voices.svg']) assert.ok(fs.existsSync(path.join(root,f)),`Missing required build file: ${f}`);
+function jsFiles(directory){
+  return fs.readdirSync(directory,{withFileTypes:true}).flatMap(entry=>{
+    const full=path.join(directory,entry.name);
+    return entry.isDirectory()?jsFiles(full):(entry.name.endsWith('.js')?[path.relative(root,full).replaceAll('\\','/')]:[]);
+  });
+}
+assert.deepEqual(jsFiles(path.join(root,'api')).sort(),[
+  'api/admin/review.js',
+  'api/content/today.js',
+  'api/health.js',
+  'api/router.js',
+],'Only canonical API entrypoints may deploy; retired manual-run and queue functions must not return.');
 const lock=fs.readFileSync(path.join(root,'BUILD_LOCK.md'),'utf8');
 assert.ok(lock.includes('Public site — LOCKED'),'Build lock must protect the public design.');
 assert.ok(lock.includes('Normal newsroom operation is automatic'),'Build lock must preserve automatic operation.');
@@ -88,7 +102,9 @@ assert.ok(engineJs.includes("const sideEras=['y200','y75']"),'The two side eras 
 assert.ok(engineJs.includes("strategy:'split_era_v1'"),'Completed split-era research must merge into the canonical major_press output.');
 assert.ok(engineJs.includes('timeoutMs:60000'),'Split-era web research must use a bounded request timeout shorter than the old 80-second monolith.');
 assert.ok(engineJs.includes('const waitMinutes=isTimeout?1:'),'Timeout recovery must retry automatically on the next-minute cadence, not wait through the old long backoff.');
-assert.ok(openaiJs.includes('requestTimeoutMs(timeoutMs)'),'The OpenAI wrapper must accept a per-stage timeout budget.');
+assert.ok(openaiJs.includes('requestTimeoutMs(timeoutMs, webSearch)'),'The OpenAI wrapper must pass the per-stage timeout budget through for every request type.');
+assert.equal(requestTimeoutMs(60000,true),60000,'An explicit Major Press timeout must not be enlarged by the archival-search default.');
+assert.equal(requestTimeoutMs(55000,true),55000,'An explicit Source Verification timeout must not be enlarged by the archival-search default.');
 console.log('MAJOR_PRESS_TIMEOUT_REGRESSION_TESTS_PASS');
 
 
@@ -106,3 +122,23 @@ assert.ok(engineRc6.includes("strategy:'bounded_candidate_batches_v1'"),'Verific
 assert.ok(engineRc6.includes("await runSourceVerification(current,context"),'The verification stage must use the bounded coordinator, not the generic monolithic runner.');
 assert.ok(adminRc6.includes('const rosterKeys=new Set(agents.map(a=>a.key))'),'Admin completion counts must exclude hidden split-work jobs.');
 console.log('SOURCE_VERIFICATION_TIMEOUT_REGRESSION_TESTS_PASS');
+
+
+// RC7 health-route regression: Vercel gives a physical /api file precedence
+// over the router rewrite, so the physical entrypoint must execute successfully
+// and report the canonical 19-agent roster.
+let healthBody='';
+const healthResponse={
+  statusCode:0,
+  headers:{},
+  status(code){this.statusCode=code;return this;},
+  setHeader(name,value){this.headers[name]=value;return this;},
+  end(body){healthBody=String(body||'');return this;},
+};
+await healthHandler({},healthResponse);
+assert.equal(healthResponse.statusCode,200,'The physical /api/health entrypoint must not crash.');
+const healthPayload=JSON.parse(healthBody);
+assert.equal(healthPayload.ok,true,'Health response must report ok.');
+assert.equal(healthPayload.agents.length,19,'Health response must expose the canonical 19-agent roster.');
+assert.equal(healthPayload.build,'2026-09-03.health-timeout-contract.1','Health response must expose the current build ID.');
+console.log('HEALTH_ROUTE_REGRESSION_TESTS_PASS');

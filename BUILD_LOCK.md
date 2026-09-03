@@ -35,3 +35,9 @@
 
 ## Verification execution lock
 Source Verification must remain bounded and resumable. Do not collapse all source candidates back into one long web-search call. Hidden verification batch jobs are implementation details and must not inflate the visible 19-agent completion count.
+
+## HEALTH + TIMEOUT CONTRACT — RC7
+- The physical `api/health.js` entrypoint must remain a thin forwarder to the canonical health route. Vercel may serve the physical file before applying a rewrite.
+- Explicit per-stage OpenAI timeouts are authoritative, including the 60-second Major Press subdesk budget and 55-second Source Verification batch budget.
+- The longer archival-search default applies only when a search-backed stage does not provide its own timeout.
+- Deployed physical API entrypoints are limited to the canonical router and its required thin forwarders. Retired queue workers, manual run controls, and parallel legacy status/publishing APIs must not return.
