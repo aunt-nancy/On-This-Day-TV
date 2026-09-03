@@ -12,10 +12,10 @@
   --scene-now:none;
   --scene-community-left:none;
   --scene-community-right:none;
-  --scene-showcase-1:none;
-  --scene-showcase-2:none;
-  --scene-showcase-3:none;
-  --scene-showcase-4:none;
+  --scene-showcase-1:var(--scene-vignette-y200);
+  --scene-showcase-2:var(--scene-vignette-y100);
+  --scene-showcase-3:var(--scene-vignette-y75);
+  --scene-showcase-4:var(--scene-vignette-community);
   --scene-recipe:none;
 }
 
@@ -118,7 +118,9 @@
   background-size:cover!important;
   background-position:center!important;
 }
-.showcase-card[data-has-scene="false"] .showcase-art{display:none!important}
+.graphic-showcase[data-checkpointed-vignettes="true"]{display:block!important}
+.graphic-showcase[data-checkpointed-vignettes="true"] .showcase-card,
+.graphic-showcase[data-checkpointed-vignettes="true"] .showcase-art{display:block!important}
 
 .recipe-illustration-banner{
   background-image:var(--scene-recipe)!important;

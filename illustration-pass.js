@@ -1,12 +1,13 @@
 (function(){
   const style=document.createElement('link');
   style.rel='stylesheet';
-  style.href='illustration-pass.css?v=20260903c';
+  style.href='illustration-pass.css?v=20260903e';
   document.head.appendChild(style);
 
   function text(v){return String(v||'').trim();}
+  function displayTitle(story){return window.OnThisDay?.storyDisplayTitle?.(story)||text(story?.englishTitle||story?.translatedTitle||story?.titleEnglish||story?.title);}
   function safeArray(v){return Array.isArray(v)?v:[];}
-  function validStory(story){return Boolean(text(story?.title)&&text(story?.sourceUrl));}
+  function validStory(story){return Boolean(displayTitle(story)&&text(story?.sourceUrl));}
   function storySummary(story,limit=230){
     const value=text(story?.summary||story?.evidenceNotes||story?.verificationNotes);
     if(!value)return'';
@@ -36,7 +37,7 @@
     const grid=document.createElement('div');grid.className='more-headline-visual-grid';
     stories.forEach(story=>{
       const card=document.createElement('div');card.className='more-headline-visual';
-      const b=document.createElement('b');b.textContent=story.title;
+      const b=document.createElement('b');b.textContent=displayTitle(story);
       const span=document.createElement('span');span.textContent=[story.publication,story.issueDate].filter(text).join(' • ');
       card.append(b,span);grid.appendChild(card);
     });
@@ -59,7 +60,7 @@
       const story=stories[key];if(!story)continue;
       const card=document.createElement('article');card.className='context-era-card';card.dataset.era=key;
       const label=document.createElement('div');label.className='context-era-label';label.textContent=labels[key];
-      const h3=document.createElement('h3');h3.textContent=text(story.title)||'Verified historical story';
+      const h3=document.createElement('h3');h3.textContent=displayTitle(story)||'Verified historical story';
       const p=document.createElement('p');p.textContent=storySummary(story)||'Verified source material from the exact historical issue anchors this era.';
       const source=document.createElement('span');source.className='context-era-source';source.textContent=[story.publication,story.issueDate,story.city].filter(text).join(' • ');
       card.append(label,h3,p,source);grid.appendChild(card);
@@ -77,7 +78,7 @@
   function addSourceTrail(edition){
     if(document.querySelector('.source-trail-band'))return;
     const candidates=[];
-    const push=story=>{if(story&&text(story.title)&&text(story.sourceUrl))candidates.push(story);};
+    const push=story=>{if(story&&displayTitle(story)&&text(story.sourceUrl))candidates.push(story);};
     push(edition?.stories?.y200);push(edition?.stories?.y100?.major);
     safeArray(edition?.stories?.y100?.secondary).forEach(push);
     safeArray(edition?.communityTiles).forEach(push);push(edition?.stories?.y75);
@@ -92,7 +93,7 @@
     dedupe.slice(0,6).forEach(story=>{
       const card=document.createElement('article');card.className='source-trail-card';
       const b=document.createElement('b');b.textContent=story.publication||story.archive||'Historical source';
-      const p=document.createElement('p');p.textContent=[story.issueDate,story.city,story.title].filter(text).join(' — ');
+      const p=document.createElement('p');p.textContent=[story.issueDate,story.city,displayTitle(story)].filter(text).join(' — ');
       const a=document.createElement('a');a.href=story.sourceUrl;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Open source →';
       card.append(b,p,a);grid.appendChild(card);
     });
@@ -177,17 +178,12 @@
     slots.now=choose(pool,used,{placementKeys:['now','thenNowNow']});
     slots.communityLeft=choose(pool,used,{placementKeys:['communityLeft'],eraKey:'y100'});
     slots.communityRight=choose(pool,used,{placementKeys:['communityRight'],eraKey:'y100'});
-    slots.show1=choose(pool,used,{placementKeys:['showcase1','lower1'],eraKey:'y200'});
-    slots.show2=choose(pool,used,{placementKeys:['showcase2','lower2'],eraKey:'y100'});
-    slots.show3=choose(pool,used,{placementKeys:['showcase3','lower3'],eraKey:'y75'});
-    slots.show4=choose(pool,used,{placementKeys:['showcase4','lower4'],eraKey:'y100'});
     slots.recipe=choose(pool,used,{placementKeys:['recipe']});
 
     setSceneVar('--scene-y200',slots.y200);setSceneVar('--scene-y75',slots.y75);
     setSceneVar('--scene-head-left',slots.headLeft);setSceneVar('--scene-head-right',slots.headRight);
     setSceneVar('--scene-then',slots.then);setSceneVar('--scene-changed',slots.changed);setSceneVar('--scene-now',slots.now);
     setSceneVar('--scene-community-left',slots.communityLeft);setSceneVar('--scene-community-right',slots.communityRight);
-    setSceneVar('--scene-showcase-1',slots.show1);setSceneVar('--scene-showcase-2',slots.show2);setSceneVar('--scene-showcase-3',slots.show3);setSceneVar('--scene-showcase-4',slots.show4);
     setSceneVar('--scene-recipe',slots.recipe);
 
     [['.era-200 .paper-illustration',slots.y200],['.era-76 .paper-illustration',slots.y75]].forEach(([selector,visual])=>{
@@ -198,10 +194,6 @@
 
     const thenMap=[['.then-now-visual.then',slots.then],['.then-now-visual.changed',slots.changed],['.then-now-visual.now',slots.now]];
     thenMap.forEach(([sel,v])=>{const el=document.querySelector(sel);if(el)el.dataset.hasScene=v?'true':'false';});
-    const showcase=document.querySelector('.graphic-showcase');
-    const show=[slots.show1,slots.show2,slots.show3,slots.show4];
-    document.querySelectorAll('.graphic-showcase .showcase-card').forEach((el,i)=>{el.dataset.hasScene=show[i]?'true':'false';el.hidden=!show[i];});
-    if(showcase)showcase.hidden=!show.some(Boolean);
     const recipe=document.querySelector('.recipe-illustration-banner');if(recipe)recipe.dataset.hasScene=slots.recipe?'true':'false';
     document.documentElement.dataset.dynamicSceneCount=String(Object.values(slots).filter(Boolean).length);
   }

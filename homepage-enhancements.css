@@ -192,6 +192,8 @@
 .community-card .community-publication{
   display:block;
   margin-top:5px;
+  padding-bottom:6px;
+  border-bottom:1px solid #dac9a9;
   color:#62584a;
   font:800 8px Arial,sans-serif;
   text-transform:uppercase;
@@ -199,9 +201,9 @@
 }
 .community-card .community-selection-note{
   display:block;
-  margin-top:7px;
-  padding-top:6px;
-  border-top:1px solid #dac9a9;
+  margin-top:6px;
+  padding:5px 6px;
+  background:#eee1c8;
   color:#283d52;
   font:800 8px/1.35 Arial,sans-serif;
   text-transform:uppercase;

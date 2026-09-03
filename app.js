@@ -3,7 +3,7 @@ window.OnThisDay=window.OnThisDay||{};
 (function(){
   const style=document.createElement('link');
   style.rel='stylesheet';
-  style.href='homepage-enhancements.css?v=20260903d';
+  style.href='homepage-enhancements.css?v=20260903e';
   document.head.appendChild(style);
 
   const SITE_TZ='America/Los_Angeles';
@@ -53,8 +53,10 @@ window.OnThisDay.setMajorHeadline=function(headline){
 };
 
 function text(value){return String(value||'').trim();}
+function storyDisplayTitle(story){return text(story?.englishTitle||story?.translatedTitle||story?.titleEnglish||story?.title);}
+window.OnThisDay.storyDisplayTitle=storyDisplayTitle;
 function setElText(el,value){if(el)el.textContent=text(value);}
-function validStory(story){return Boolean(text(story?.title)&&text(story?.sourceUrl));}
+function validStory(story){return Boolean(storyDisplayTitle(story)&&text(story?.sourceUrl));}
 function setSourceLink(el,url,label){
   if(!el||!text(url))return;
   el.href=url;el.target='_blank';el.rel='noopener noreferrer';
@@ -87,7 +89,7 @@ function bindPaper(paper,story,linkLabel){
     p.selection.title=text(story.sourceSelectionNote);
     p.selection.hidden=!p.selection.textContent;
   }
-  setElText(p.headline,story.title);
+  setElText(p.headline,storyDisplayTitle(story));
   setElText(p.copy,story.summary||story.evidenceNotes||story.verificationNotes);
   setSourceLink(p.link,story.sourceUrl,linkLabel);
   if(p.link)p.link.hidden=false;
@@ -185,7 +187,10 @@ function communityModeLabel(story,key){
   return'Community press source audit';
 }
 function communitySelectionLabel(story){
-  return text(story?.sourceRankLabel||story?.sourceSelectionNote);
+  const rank=text(story?.sourceRankLabel);
+  if(rank)return `Source rank • ${rank}`;
+  const note=text(story?.sourceSelectionNote);
+  return note?`Selection note • ${note}`:'';
 }
 function updateCommunityCard(card,story,key,isBlack=false){
   if(!card)return;
@@ -212,7 +217,7 @@ function updateCommunityCard(card,story,key,isBlack=false){
   card.dataset.communityMode=story.comparisonType||'community_lead';
   if(h3&&!isBlack)h3.textContent=communityLabel(story,key);
   if(mode)mode.textContent=communityModeLabel(story,key);
-  if(p){p.className='';p.textContent=`${story.title}${text(story.summary)?` — ${story.summary}`:''}`;}
+  if(p){p.className='';p.textContent=`${storyDisplayTitle(story)}${text(story.summary)?` — ${story.summary}`:''}`;}
   if(publication)publication.textContent=[story.publication,story.issueDate].filter(text).join(' • ');
   if(selection){
     selection.textContent=communitySelectionLabel(story);
@@ -227,7 +232,7 @@ function collectCommunityVoices(edition,major,black){
   const pool=[black,...(Array.isArray(edition?.stories?.y100?.secondary)?edition.stories.y100.secondary:[]),...(Array.isArray(edition?.communityTiles)?edition.communityTiles:[])].filter(Boolean).filter(story=>{
     const era=text(story.eraKey);
     const issue=text(story.issueDate);
-    return (era==='y100'||(!era&&y100Year&&issue.startsWith(y100Year)))&&text(story.title)&&text(story.sourceUrl);
+    return (era==='y100'||(!era&&y100Year&&issue.startsWith(y100Year)))&&storyDisplayTitle(story)&&text(story.sourceUrl);
   });
   const leadEventKey=text(edition?.leadEventKey||major?.eventKey);
   const leadTopicKey=text(major?.topicKey||edition?.leadTopicKey);
@@ -265,8 +270,8 @@ function renderFeaturedVoices(voices){
     const card=document.createElement('article');card.className='featured-voice';card.dataset.community=key;card.dataset.communityMode=story.comparisonType||'community_lead';
     const mode=document.createElement('div');mode.className='featured-voice-mode';mode.textContent=communityModeLabel(story,key);
     const label=document.createElement('h4');label.textContent=communityLabel(story,key);
-    const headline=document.createElement('p');headline.textContent=story.title;
-    const source=document.createElement('span');source.textContent=[story.publication,story.issueDate].filter(text).join(' • ');
+    const headline=document.createElement('p');headline.textContent=storyDisplayTitle(story);
+    const source=document.createElement('span');source.className='featured-voice-source';source.textContent=[story.publication,story.issueDate].filter(text).join(' • ');
     const selection=document.createElement('span');selection.className='featured-voice-selection';selection.textContent=communitySelectionLabel(story);selection.title=text(story.sourceSelectionNote);selection.hidden=!selection.textContent;
     const link=document.createElement('a');setSourceLink(link,story.sourceUrl,'Read this voice →');
     card.append(mode,label,headline,source,selection,link);grid.appendChild(card);
@@ -366,7 +371,7 @@ function renderArchiveRecipe(recipe){
     const board=document.querySelector('.history-board');if(board)board.hidden=false;
     document.querySelectorAll('.era-box').forEach(panel=>panel.hidden=false);
 
-    if(major?.title)window.OnThisDay.setMajorHeadline(major.title);
+    if(storyDisplayTitle(major))window.OnThisDay.setMajorHeadline(storyDisplayTitle(major));
     bindPaper(document.querySelector('.era-200 .paper'),y200,'View Original Source →');
     bindPaper(document.querySelector('.era-center .center-paper'),major,'View Original Source →');
     bindPaper(document.querySelector('.era-76 .paper'),y75,'View Original Source →');

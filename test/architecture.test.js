@@ -78,7 +78,7 @@ assert.ok(!/\by76\b/.test(allDataCode),'The clean newsroom data contract must us
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 assert.ok(app.includes('/api/content/today'),'Locked public site must receive live automatic edition data.');
 assert.ok(app.includes('America/Los_Angeles'),'Public date must use the newsroom site timezone.');
-assert.ok(index.includes('homepage-enhancements.css?v=20260903d')&&app.includes("homepage-enhancements.css?v=20260903d"),'Homepage enhancement CSS must use one current cache-busting version.');
+assert.ok(index.includes('homepage-enhancements.css?v=20260903e')&&app.includes("homepage-enhancements.css?v=20260903e"),'Homepage enhancement CSS must use one current cache-busting version.');
 assert.ok(!/pending exact-date|pending verification|being prepared/i.test(app),'Public hydration must hide missing slots instead of writing placeholder copy.');
 assert.ok(!app.includes('dataset.coreCount'),'Published hydration must never collapse the permanent three-era grid.');
 const illustrationPass=fs.readFileSync(path.join(root,'illustration-pass.js'),'utf8');
@@ -86,7 +86,12 @@ const illustrationPassCss=fs.readFileSync(path.join(root,'illustration-pass.css'
 assert.ok(!illustrationPass.includes('const any=pool'),'Visual selection must not fall back to an unrelated image.');
 assert.ok(illustrationPass.includes("!['public_domain','licensed'].includes(rights)"),'Visual selection must require reusable rights.');
 assert.ok(illustrationPass.includes('eventKey:events.y200')&&illustrationPass.includes('eventKey:events.y75'),'Article imagery must match the exact story event.');
+assert.ok(!illustrationPass.includes("setSceneVar('--scene-showcase-")&&!illustrationPass.includes('showcase.hidden'),'The live-image pass must not replace or hide checkpointed editorial vignettes.');
 assert.ok(!/\.community-card\.black-center\s*\{[^}]*grid-column:auto!important/s.test(illustrationPassCss),'Later visual CSS must not displace the permanent centered Black Press card.');
+const dynamicScenesCss=fs.readFileSync(path.join(root,'dynamic-scenes.css'),'utf8');
+assert.ok(dynamicScenesCss.includes('--scene-showcase-1:var(--scene-vignette-y200)')&&dynamicScenesCss.includes('--scene-showcase-4:var(--scene-vignette-community)'),'The checkpointed era and Black-press vignettes must remain wired to their approved local assets.');
+assert.ok(/<section class="graphic-showcase" data-checkpointed-vignettes="true">/.test(index),'The labeled vignette gallery must render without waiting for dynamic article imagery.');
+assert.ok(index.includes('class="recipe-accent-band"')&&css.includes('.recipe-column h3::before'),'The recipe section must keep its visible navy, red, and green accent treatment.');
 const archiveRoute=fs.readFileSync(path.join(root,'lib/routes/content-archive.js'),'utf8');
 assert.ok(archiveRoute.includes('edition_date=lt.${today}'),'Archive API must move editions into the archive only after their publication date closes.');
 assert.ok(archiveRoute.includes('editions}'),'Archive API must expose a clean editions response key.');
@@ -106,6 +111,10 @@ const exactSupplement=sanitizeExactDateEdition(supplemented,'2026-09-02');
 assert.equal(exactSupplement.complete,true,'The verified September 2 supplement must restore the missing 1826 core era.');
 assert.equal(exactSupplement.payload.stories.y100.major.topicKey,'mexico_church_state_conflict_1926','The national lead must carry the topic key used for related community reporting.');
 assert.ok(exactSupplement.payload.communityTiles.some(s=>s.communityKey==='latino'&&s.comparisonType==='same_event'),'The Mexico lead must include the verified Mexican same-event newspaper view.');
+const mexicanVoice=exactSupplement.payload.communityTiles.find(s=>s.communityKey==='latino'&&s.comparisonType==='same_event');
+assert.equal(mexicanVoice.title,'Intervention in Mexico','The Mexican newspaper voice must use an English public headline.');
+assert.equal(mexicanVoice.englishTitle,'Intervention in Mexico','The English display headline must be explicit in the story contract.');
+assert.equal(mexicanVoice.originalTitle,'La intervención en México','The original headline may be retained internally for source fidelity.');
 assert.ok(exactSupplement.payload.communityTiles.some(s=>s.communityKey==='jewish'&&s.comparisonType==='same_topic'&&s.topicKey==='mexico_church_state_conflict_1926'),'A second minority press must contribute a verified same-topic perspective.');
 assert.ok(!exactSupplement.payload.communityTiles.some(s=>/national-origins quota/i.test(s.summary||'')),'An unrelated Jewish press lead must not be substituted for topical perspective.');
 assert.ok(exactSupplement.payload.communityTiles.some(s=>s.communityKey==='black'&&s.dateRelation==='nearest_weekly_issue'&&s.searchOutcome==='same_topic_not_verified'&&s.sourceSelectionNote),'The Black Press fallback must be an explicit, sourced nearest-weekly audit.');
@@ -118,6 +127,8 @@ assert.equal(communityDateStory({...adjacentTopic,topicKey:''},'2026-09-02'),fal
 assert.ok(app.includes("comparisonType==='same_topic'")&&app.includes('source audit'),'The homepage must visibly distinguish same-topic reporting from source-audit fallbacks.');
 assert.ok(app.includes('selected.splice(Math.min(1,selected.length),0,black)'),'The featured three-card ring must keep the Black press voice in the center position.');
 assert.ok(index.includes('class="paper-selection"')&&app.includes('Source rank •'),'The national daily must expose its source-selection tier beside the 100-year headline.');
+assert.ok(app.includes('function storyDisplayTitle')&&app.includes('englishTitle||story?.translatedTitle'),'Public story surfaces must prefer verified English display headlines.');
+assert.ok(allDataCode.includes('PUBLIC LANGUAGE CONTRACT')&&allDataCode.includes('originalTitle'),'The newsroom must preserve source-language titles internally while publishing English display copy.');
 const contentTodayRoute=fs.readFileSync(path.join(root,'lib/routes/content-today.js'),'utf8');
 assert.ok(contentTodayRoute.includes('publishEditionSlots(run')&&contentTodayRoute.includes("policy:'single_verified_recovery_v1'"),'A publicly served verified recovery must pass through the authoritative publisher so it can enter the archive after rollover.');
 const engineJs=fs.readFileSync(path.join(root,'lib/engine.js'),'utf8');
@@ -194,5 +205,5 @@ assert.equal(healthResponse.statusCode,200,'The physical /api/health entrypoint 
 const healthPayload=JSON.parse(healthBody);
 assert.equal(healthPayload.ok,true,'Health response must report ok.');
 assert.equal(healthPayload.agents.length,19,'Health response must expose the canonical 19-agent roster.');
-assert.equal(healthPayload.build,'2026-09-03.three-era-community-ring.3','Health response must expose the current build ID.');
+assert.equal(healthPayload.build,'2026-09-03.english-vignettes-recipe-accents.4','Health response must expose the current build ID.');
 console.log('HEALTH_ROUTE_REGRESSION_TESTS_PASS');
