@@ -52,7 +52,7 @@
     };
     if(!Object.values(stories).some(Boolean))return;
     const band=document.createElement('section');band.className='daily-context-band';
-    const heading=document.createElement('div');heading.className='daily-context-heading';heading.textContent='Across the Three Eras';band.appendChild(heading);
+    const heading=document.createElement('div');heading.className='daily-context-heading';heading.textContent='Across the Published Eras';band.appendChild(heading);
     const grid=document.createElement('div');grid.className='daily-context-grid';
     const labels={y200:'Deep Archive',y100:'Central Civic Conversation',y75:'Living-Memory Reexamination'};
     for(const key of ['y200','y100','y75']){

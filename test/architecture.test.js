@@ -165,5 +165,5 @@ assert.equal(healthResponse.statusCode,200,'The physical /api/health entrypoint 
 const healthPayload=JSON.parse(healthBody);
 assert.equal(healthPayload.ok,true,'Health response must report ok.');
 assert.equal(healthPayload.agents.length,19,'Health response must expose the canonical 19-agent roster.');
-assert.equal(healthPayload.build,'2026-09-03.published-archive-visuals.1','Health response must expose the current build ID.');
+assert.equal(healthPayload.build,'2026-09-03.published-archive-visuals.2','Health response must expose the current build ID.');
 console.log('HEALTH_ROUTE_REGRESSION_TESTS_PASS');

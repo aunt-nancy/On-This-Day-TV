@@ -12,7 +12,7 @@ async function renderToday(){
   const core=storyCard(s.y200,'200 Years Ago')+storyCard(y.major,'100 Years Ago — Major American Press')+storyCard(y.black,'100 Years Ago — Black Press')+storyCard(s.y75,'75 Years Ago');
   if(!core){mount.hidden=true;return}
   mount.hidden=false;
-  mount.innerHTML=`<div class="page-kicker">${d.servingFallback?'Latest published edition • ':''}${esc(fmtDate(e.editionDate||d?.edition?.edition_date))}</div><p class="page-intro">One date. Three eras. Many American voices. Every displayed story links to the source record used by the newsroom.</p><div class="editorial-grid">${core}</div>${(y.secondary||[]).length?`<h2>More Verified Headlines</h2><div class="editorial-grid">${(y.secondary||[]).map(x=>storyCard(x,'Additional Headline')).join('')}</div>`:''}`;
+  mount.innerHTML=`<div class="page-kicker">${d.servingFallback?'Latest published edition • ':''}${esc(fmtDate(e.editionDate||d?.edition?.edition_date))}</div><p class="page-intro">One date. Many American voices. Every displayed story links to the source record used by the newsroom.</p><div class="editorial-grid">${core}</div>${(y.secondary||[]).length?`<h2>More Verified Headlines</h2><div class="editorial-grid">${(y.secondary||[]).map(x=>storyCard(x,'Additional Headline')).join('')}</div>`:''}`;
 }
 function communityName(s){return String(s?.community||'Community Press').replaceAll('_',' ')}
 async function renderCommunity(){
