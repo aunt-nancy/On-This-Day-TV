@@ -108,7 +108,7 @@
     section.querySelector('.recipe-grid')?.before(banner);
   }
 
-  const DECORATIVE_TYPES=new Set(['photograph','engraving','historical_illustration','map']);
+  const DECORATIVE_TYPES=new Set(['photograph','engraving','historical_illustration','map','newspaper_scan']);
   function candidateUrl(v){
     if(!v)return'';
     return text(v.url||v.assetUrl||v.downloadUrl||v.thumbnailUrl);
@@ -186,8 +186,8 @@
     setSceneVar('--scene-y200',slots.y200);setSceneVar('--scene-y75',slots.y75);
     setSceneVar('--scene-head-left',slots.headLeft);setSceneVar('--scene-head-right',slots.headRight);
     setSceneVar('--scene-then',slots.then);setSceneVar('--scene-changed',slots.changed);setSceneVar('--scene-now',slots.now);
-    setSceneVar('--scene-community-left',slots.communityLeft,'var(--scene-vignette-community)');setSceneVar('--scene-community-right',slots.communityRight,'var(--scene-vignette-y100)');
-    setSceneVar('--scene-showcase-1',slots.show1,'var(--scene-vignette-y200)');setSceneVar('--scene-showcase-2',slots.show2,'var(--scene-vignette-y100)');setSceneVar('--scene-showcase-3',slots.show3,'var(--scene-vignette-y75)');setSceneVar('--scene-showcase-4',slots.show4,'var(--scene-vignette-community)');
+    setSceneVar('--scene-community-left',slots.communityLeft);setSceneVar('--scene-community-right',slots.communityRight);
+    setSceneVar('--scene-showcase-1',slots.show1);setSceneVar('--scene-showcase-2',slots.show2);setSceneVar('--scene-showcase-3',slots.show3);setSceneVar('--scene-showcase-4',slots.show4);
     setSceneVar('--scene-recipe',slots.recipe);
 
     [['.era-200 .paper-illustration',slots.y200],['.era-76 .paper-illustration',slots.y75]].forEach(([selector,visual])=>{
@@ -198,7 +198,10 @@
 
     const thenMap=[['.then-now-visual.then',slots.then],['.then-now-visual.changed',slots.changed],['.then-now-visual.now',slots.now]];
     thenMap.forEach(([sel,v])=>{const el=document.querySelector(sel);if(el)el.dataset.hasScene=v?'true':'false';});
-    document.querySelectorAll('.graphic-showcase .showcase-card').forEach(el=>el.dataset.hasScene='true');
+    const showcase=document.querySelector('.graphic-showcase');
+    const show=[slots.show1,slots.show2,slots.show3,slots.show4];
+    document.querySelectorAll('.graphic-showcase .showcase-card').forEach((el,i)=>{el.dataset.hasScene=show[i]?'true':'false';el.hidden=!show[i];});
+    if(showcase)showcase.hidden=!show.some(Boolean);
     const recipe=document.querySelector('.recipe-illustration-banner');if(recipe)recipe.dataset.hasScene=slots.recipe?'true':'false';
     document.documentElement.dataset.dynamicSceneCount=String(Object.values(slots).filter(Boolean).length);
   }

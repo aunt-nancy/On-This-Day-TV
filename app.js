@@ -3,7 +3,7 @@ window.OnThisDay=window.OnThisDay||{};
 (function(){
   const style=document.createElement('link');
   style.rel='stylesheet';
-  style.href='homepage-enhancements.css?v=20260903a';
+  style.href='homepage-enhancements.css?v=20260903b';
   document.head.appendChild(style);
 
   const SITE_TZ='America/Los_Angeles';
@@ -90,8 +90,10 @@ function bindPaper(paper,story,linkLabel){
 function resetPublishedEditionDisplay(){
   window.OnThisDay.setMajorHeadline('');
   const board=document.querySelector('.history-board');if(board)board.hidden=true;
-  document.querySelectorAll('.era-box,.center-paper').forEach(el=>el.hidden=true);
   const more=document.querySelector('.more-headlines');if(more)more.hidden=true;
+  const perspectives=document.getElementById('featuredPerspectives');if(perspectives)perspectives.hidden=true;
+  const y200Context=document.getElementById('y200Context');if(y200Context)y200Context.hidden=true;
+  const communityHome=document.getElementById('communityHome');if(communityHome)communityHome.hidden=true;
   const thenNow=document.getElementById('thenNowStrip');if(thenNow)thenNow.hidden=true;
   const recipe=document.getElementById('archiveRecipe');if(recipe)recipe.hidden=true;
 }
@@ -104,7 +106,7 @@ function finishEditionDisplay(available){
 function normalizeCommunity(value,story={}){
   const s=`${text(value)} ${text(story.sourceDesk)} ${text(story.publication)}`.toLowerCase();
   if(/black|african|afro-american|afro american/.test(s))return'black';
-  if(/latino|spanish|hispanic|mexican american|el fronterizo/.test(s))return'latino';
+  if(/latino|spanish|hispanic|mexican|el fronterizo/.test(s))return'latino';
   if(/german/.test(s))return'german';
   if(/british|anglo/.test(s))return'british';
   if(/chinese/.test(s))return'chinese';
@@ -145,6 +147,11 @@ function chooseCommunityStory(candidates,leadEventKey){
   const fallback=[...candidates].sort((a,b)=>storyScore(b)-storyScore(a))[0];
   return fallback?{...fallback,comparisonType:'community_lead'}:null;
 }
+function communityModeLabel(story,key){
+  if(story?.comparisonType==='same_event')return'Response to the 100-year headline';
+  if(story?.dateRelation==='nearest_weekly_issue')return key==='black'?'What the Black press led with • nearest weekly issue':'Community lead • nearest weekly issue';
+  return key==='black'?'What the Black press led with':'What this community’s press led with';
+}
 function updateCommunityCard(card,story,key,isBlack=false){
   if(!card)return;
   const h3=card.querySelector('h3');
@@ -159,26 +166,19 @@ function updateCommunityCard(card,story,key,isBlack=false){
     publication=document.createElement('span');publication.className='community-publication';card.querySelector('div').append(publication);
   }
   if(!story){
-    if(mode)mode.textContent='Black Press archive desk';
-    if(p){p.className='community-empty-note';p.textContent='Browse Black Press reporting already published in the archive, organized by its original newspaper and date.';}
-    if(publication)publication.textContent='';
-    if(link){link.hidden=false;link.href='community.html#black';link.textContent='Explore Black Press →';}
+    card.hidden=true;
     return;
   }
+  card.hidden=false;
   card.dataset.communityMode=story.comparisonType||'community_lead';
   if(h3&&!isBlack)h3.textContent=communityLabel(story,key);
-  if(mode)mode.textContent=story.comparisonType==='same_event'?'Community coverage of the 100-year headline':'What mattered in this community that day';
+  if(mode)mode.textContent=communityModeLabel(story,key);
   if(p){p.className='';p.textContent=`${story.title}${text(story.summary)?` — ${story.summary}`:''}`;}
   if(publication)publication.textContent=[story.publication,story.issueDate].filter(text).join(' • ');
   setSourceLink(link,story.sourceUrl,'View Original Community Source →');
   if(link)link.hidden=false;
 }
-function renderDynamicCommunityVoices(edition,major,black){
-  const grid=document.getElementById('communityPriorityGrid');
-  if(!grid)return;
-  const blackCard=document.getElementById('blackCenter');
-  [...grid.querySelectorAll('.community-card:not(#blackCenter)')].forEach(card=>card.remove());
-
+function collectCommunityVoices(edition,major,black){
   const y100Year=String(edition?.years?.y100||major?.eraYear||'');
   const pool=[black,...(Array.isArray(edition?.stories?.y100?.secondary)?edition.stories.y100.secondary:[]),...(Array.isArray(edition?.communityTiles)?edition.communityTiles:[])].filter(Boolean).filter(story=>{
     const era=text(story.eraKey);
@@ -193,23 +193,44 @@ function renderDynamicCommunityVoices(edition,major,black){
     if(!grouped.has(key))grouped.set(key,[]);
     grouped.get(key).push(story);
   }
-
-  const blackStory=chooseCommunityStory(grouped.get('black')||[],leadEventKey);
-  updateCommunityCard(blackCard,blackStory,'black',true);
-
-  const dynamic=[];
+  const voices=[];
   for(const [key,candidates] of grouped){
-    if(key==='black')continue;
     const story=chooseCommunityStory(candidates,leadEventKey);
-    if(story)dynamic.push({key,story});
+    if(story)voices.push({key,story});
   }
-  dynamic.sort((a,b)=>{
-    const am=a.story.comparisonType==='same_event'?1:0;
-    const bm=b.story.comparisonType==='same_event'?1:0;
-    return bm-am||storyScore(b.story)-storyScore(a.story);
+  voices.sort((a,b)=>{
+    const priority=voice=>(voice.story.comparisonType==='same_event'?1000:0)+(voice.key==='black'?500:0)+storyScore(voice.story);
+    return priority(b)-priority(a);
   });
+  return voices;
+}
+function renderFeaturedVoices(voices){
+  const section=document.getElementById('featuredPerspectives');
+  const grid=document.getElementById('featuredVoices');
+  if(!section||!grid)return;
+  grid.replaceChildren();
+  voices.slice(0,3).forEach(({key,story})=>{
+    const card=document.createElement('article');card.className='featured-voice';card.dataset.community=key;card.dataset.communityMode=story.comparisonType||'community_lead';
+    const mode=document.createElement('div');mode.className='featured-voice-mode';mode.textContent=communityModeLabel(story,key);
+    const label=document.createElement('h4');label.textContent=communityLabel(story,key);
+    const headline=document.createElement('p');headline.textContent=story.title;
+    const source=document.createElement('span');source.textContent=[story.publication,story.issueDate].filter(text).join(' • ');
+    const link=document.createElement('a');setSourceLink(link,story.sourceUrl,'Read this voice →');
+    card.append(mode,label,headline,source,link);grid.appendChild(card);
+  });
+  section.hidden=!grid.children.length;
+}
+function renderDynamicCommunityVoices(edition,major,black){
+  const grid=document.getElementById('communityPriorityGrid');
+  if(!grid)return;
+  const blackCard=document.getElementById('blackCenter');
+  [...grid.querySelectorAll('.community-card:not(#blackCenter)')].forEach(card=>card.remove());
+  const voices=collectCommunityVoices(edition,major,black);
+  const home=document.getElementById('communityHome');if(home)home.hidden=!voices.length;
+  const blackVoice=voices.find(voice=>voice.key==='black');
+  updateCommunityCard(blackCard,blackVoice?.story||null,'black',true);
 
-  dynamic.slice(0,8).forEach(({key,story})=>{
+  voices.filter(voice=>voice.key!=='black').slice(0,8).forEach(({key,story})=>{
     const card=document.createElement('div');
     card.className='community-card dynamic-community';
     card.dataset.community=key;
@@ -219,8 +240,19 @@ function renderDynamicCommunityVoices(edition,major,black){
   });
 
   if(blackCard&&blackCard.parentElement===grid)grid.prepend(blackCard);
+  renderFeaturedVoices(voices);
   const intro=document.querySelector('.community-home .section-heading p');
-  if(intro)intro.textContent='Community Press Voices first follows the 100-year headline through the communities that covered it. When a community paper did not address that headline, its strongest verified story from that same day appears instead. These voices are representative, not required to disagree.';
+  if(intro)intro.textContent='The comparison first seeks reporting on the 100-year headline from communities closest to the subject. Other cards show what representative newspapers made important in that day’s issue—or the nearest surviving weekly issue—and are labeled separately from same-event responses.';
+}
+
+function renderY200Context(note){
+  const section=document.getElementById('y200Context');if(!section)return;
+  const valid=Boolean(note&&text(note.label)&&text(note.text)&&text(note.sourceUrl));
+  if(!valid){section.hidden=true;return;}
+  setElText(document.getElementById('y200ContextLabel'),note.label);
+  setElText(document.getElementById('y200ContextText'),note.text);
+  const link=document.getElementById('y200ContextLink');setSourceLink(link,note.sourceUrl,note.sourceLabel||'Examine the source →');
+  section.hidden=false;
 }
 
 function renderThenNow(data){
@@ -249,8 +281,9 @@ function renderArchiveRecipe(recipe){
   if(!valid){section.hidden=true;return;}
   setElText(document.getElementById('recipeTitle'),recipe.title);
   setElText(document.getElementById('recipeSourceLine'),[recipe.publication,recipe.issueDate,recipe.location,recipe.community].filter(text).join(' • '));
-  setElText(document.getElementById('recipeOriginal'),recipe.originalText);
-  setElText(document.getElementById('recipeModern'),recipe.modernVersion);
+  const compact=value=>text(value).replace(/[ \t]+\n/g,'\n').replace(/\n\s*\n+/g,'\n');
+  setElText(document.getElementById('recipeOriginal'),compact(recipe.originalText));
+  setElText(document.getElementById('recipeModern'),compact(recipe.modernVersion));
   setElText(document.getElementById('recipeContext'),recipe.historicalContext);
   setElText(document.getElementById('recipeCommunity'),recipe.community?`Community: ${recipe.community}`:'');
   const safety=document.getElementById('recipeSafety');if(safety){safety.textContent=recipe.safetyNote||'';safety.hidden=!text(recipe.safetyNote);}
@@ -273,23 +306,18 @@ function renderArchiveRecipe(recipe){
     const black=stories.y100?.black||null;
     const y75=stories.y75||null;
     const core=[y200,major,y75].filter(validStory);
-    if(!core.length)return;
+    if(core.length!==3)return;
     available=true;
 
     window.OnThisDay.setEditionDate(edition.editionDate||result?.edition?.edition_date||'',Boolean(result?.servingFallback));
     const board=document.querySelector('.history-board');if(board)board.hidden=false;
-    const boardTitle=document.querySelector('.history-board .board-title');if(boardTitle)boardTitle.hidden=!validStory(major);
-    const layout=document.querySelector('.era-layout');if(layout)layout.dataset.coreCount=String(core.length);
-    const center=document.querySelector('.era-center');if(center)center.hidden=!validStory(major);
-    const y200Panel=document.querySelector('.era-200');if(y200Panel)y200Panel.hidden=!validStory(y200);
-    const y75Panel=document.querySelector('.era-76');if(y75Panel)y75Panel.hidden=!validStory(y75);
+    document.querySelectorAll('.era-box').forEach(panel=>panel.hidden=false);
 
     if(major?.title)window.OnThisDay.setMajorHeadline(major.title);
     bindPaper(document.querySelector('.era-200 .paper'),y200,'View Original Source →');
-    bindPaper(document.querySelector('.era-center .center-paper:not(.black)'),major,'View Original Source →');
-    const hasBlack=bindPaper(document.querySelector('.era-center .center-paper.black'),black,'View Black Press Source →');
+    bindPaper(document.querySelector('.era-center .center-paper'),major,'View Original Source →');
     bindPaper(document.querySelector('.era-76 .paper'),y75,'View Original Source →');
-    const compare=document.querySelector('.center-compare');if(compare)compare.dataset.cardCount=hasBlack?'2':'1';
+    renderY200Context(edition.voicesBeyondNewsprint?.y200);
     const secondary=Array.isArray(stories.y100?.secondary)?stories.y100.secondary.filter(validStory):[];
     const more=document.querySelector('.more-headlines');if(more)more.hidden=!secondary.length;
 

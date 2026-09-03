@@ -7,7 +7,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "check": "node --check api/router.js && node --check api/health.js && node --check app.js && node --check page.js && node --check illustration-pass.js && node --check lib/engine.js && node --check lib/prompts.js && node --check lib/openai.js && node --check lib/routes/cron-newsroom.js && node --check lib/routes/admin-review.js && node --check lib/routes/content-today.js && node --check lib/routes/content-archive.js",
+    "check": "node --check api/router.js && node --check api/health.js && node --check app.js && node --check page.js && node --check illustration-pass.js && node --check lib/editorial-supplements.js && node --check lib/engine.js && node --check lib/prompts.js && node --check lib/openai.js && node --check lib/routes/cron-newsroom.js && node --check lib/routes/admin-review.js && node --check lib/routes/content-today.js && node --check lib/routes/content-archive.js",
     "test": "node test/architecture.test.js"
   }
 }

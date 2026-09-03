@@ -12,7 +12,7 @@ These five WebP files are AI-generated editorial illustrations. They are decorat
 
 ## Rendering contract
 
-- These assets may fill section-level or era-level decorative spaces only.
-- Article image slots must use a reusable `photograph`, `engraving`, `historical_illustration`, or `map` tied to the exact story event.
-- Newspaper scans, archive thumbnails, link-only records, permission-required media, and unrelated fallback photographs must never render as article illustrations.
+- These assets may fill the explicitly labeled masthead reconstruction only; they are not automatic substitutes for article or community imagery.
+- Article image slots must use a reusable `photograph`, `engraving`, `historical_illustration`, `map`, or source-page `newspaper_scan` tied to the exact story event.
+- A newspaper scan may render only when the archive permits reuse and the page is the exact issue used by the story. Link-only records, permission-required media, and unrelated fallback photographs must never render as article illustrations.
 - Generated scenes must remain visibly described on the public page as editorial reconstructions.

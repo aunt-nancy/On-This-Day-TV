@@ -1,6 +1,6 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>On This Day</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="homepage-enhancements.css?v=20260903a"><link rel="stylesheet" href="dynamic-scenes.css?v=20260903a"></head>
+<title>On This Day</title><link rel="stylesheet" href="styles.css?v=20260903b"><link rel="stylesheet" href="homepage-enhancements.css?v=20260903b"><link rel="stylesheet" href="dynamic-scenes.css?v=20260903b"></head>
 <body class="edition-loading"><div class="site">
 <header class="masthead-lock">
 <div class="site-nav">
@@ -47,6 +47,11 @@
 	          <div class="paper-copy"></div>
 	          <a class="source-link" hidden>View Original Source →</a>
         </div>
+        <aside class="era-context-note" id="y200Context" hidden>
+          <strong id="y200ContextLabel"></strong>
+          <p id="y200ContextText"></p>
+          <a id="y200ContextLink" target="_blank" rel="noopener noreferrer"></a>
+        </aside>
       </div>
     </article>
 
@@ -56,7 +61,7 @@
       <div class="era-ago">The Day’s Largest Historical News Desk</div>
       <div class="era-body">
         <div class="center-compare">
-          <div class="center-paper">
+          <div class="center-paper featured-major">
             <div class="paper-label">Major American Headline</div>
 	            <div class="paper-name"></div>
 	            <div class="paper-date" data-current-monthday></div>
@@ -64,15 +69,11 @@
 	            <div class="paper-copy"></div>
 	            <a class="source-link" hidden>View Original Source →</a>
           </div>
-          <div class="center-paper black">
-            <div class="paper-label">Black Press Report</div>
-	            <div class="paper-name"></div>
-	            <div class="paper-date" data-current-monthday></div>
-	            <div class="paper-headline"></div>
-	            <div class="paper-copy"></div>
-	            <a class="source-link" hidden>View Black Press Source →</a>
-          </div>
         </div>
+	      <section class="featured-perspectives" id="featuredPerspectives" hidden>
+	        <div class="featured-perspectives-heading"><span>Community Voices Around the Headline</span><b>Who was allowed to define its meaning?</b></div>
+	        <div class="featured-voices" id="featuredVoices"></div>
+	      </section>
 	        <div class="more-headlines" hidden><strong>More Major Headlines</strong><p>Multiple published headlines from the same historical date.</p></div>
       </div>
     </article>
@@ -126,21 +127,21 @@
  <div class="source-pillar"><b>Our Voices</b><span>Community press centered</span></div>
 </section>
 
-<section class="community-home">
+<section class="community-home" id="communityHome" hidden>
  <div class="section-heading">
    <h2>Community Press Voices</h2>
    <p>Community Press Voices first follows the 100-year headline through the communities that covered it. When a community paper did not address that headline, its strongest verified story from that same day appears instead. These voices are representative, not required to disagree.</p>
  </div>
 
  <div class="community-priority-grid" id="communityPriorityGrid">
-   <div class="community-card black-center" id="blackCenter" data-community="black">
+   <div class="community-card black-center" id="blackCenter" data-community="black" hidden>
       <div>
-        <div class="community-mode">Black Press archive desk</div>
+        <div class="community-mode"></div>
         <h3>African American / Black Press</h3>
-        <p>Browse Black Press reporting already published in the archive, organized by its original newspaper and date.</p>
+        <p></p>
         <span class="community-publication"></span>
       </div>
-      <a href="community.html#black">Explore Black Press →</a>
+      <a href="community.html#black"></a>
    </div>
  </div>
 </section>
@@ -173,7 +174,7 @@
   </div>
 </section>
 
-<section class="graphic-showcase">
+<section class="graphic-showcase" hidden>
   <div class="section-heading">
     <h2>Scenes Across Time</h2>
     <p>These clearly illustrative period settings provide atmosphere only. Article imagery appears solely when it is rights-cleared and matched to the exact published story.</p>
@@ -207,4 +208,4 @@
   <div class="fine">Source-first historical news. Routine agent work proceeds automatically; unresolved discrepancies are held for human review.</div>
 </footer>
 
-</div><script src="app.js?v=20260903a"></script><script src="illustration-pass.js?v=20260903a"></script></body></html>
+</div><script src="app.js?v=20260903b"></script><script src="illustration-pass.js?v=20260903b"></script></body></html>

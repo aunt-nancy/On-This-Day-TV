@@ -15,12 +15,17 @@ async function renderToday(){
   mount.innerHTML=`<div class="page-kicker">${d.servingFallback?'Latest published edition • ':''}${esc(fmtDate(e.editionDate||d?.edition?.edition_date))}</div><p class="page-intro">One date. Many American voices. Every displayed story links to the source record used by the newsroom.</p><div class="editorial-grid">${core}</div>${(y.secondary||[]).length?`<h2>More Verified Headlines</h2><div class="editorial-grid">${(y.secondary||[]).map(x=>storyCard(x,'Additional Headline')).join('')}</div>`:''}`;
 }
 function communityName(s){return String(s?.community||'Community Press').replaceAll('_',' ')}
+function communityContext(s){
+  if(s?.comparisonType==='same_event')return'Verified coverage of the featured event';
+  if(s?.dateRelation==='nearest_weekly_issue')return'Leading headline from the nearest surviving weekly issue';
+  return'Leading verified community headline for the date';
+}
 async function renderCommunity(){
   const mount=document.getElementById('communityMount');if(!mount)return;const d=await getToday();const e=d?.edition?.payload;
   const tiles=e?.communityTiles||[];const black=e?.stories?.y100?.black;const items=[...(black?.title?[black]:[]),...tiles];
   if(!items.length){mount.hidden=true;return}
   mount.hidden=false;
-  mount.innerHTML=`<h2>Published Community Press Articles</h2><div class="community-list">${items.map(s=>`<article class="editorial-card"><div class="meta">${esc(communityName(s))}</div><h2>${esc(s.title)}</h2><p>${esc(s.summary||'')}</p><p class="muted">${s.comparisonType==='same_event'?'Verified coverage of the featured event':'Leading verified community headline for the date'}</p>${s.sourceUrl?`<a target="_blank" rel="noopener" href="${esc(s.sourceUrl)}">View original source →</a>`:''}</article>`).join('')}</div>`;
+  mount.innerHTML=`<h2>Published Community Press Articles</h2><div class="community-list">${items.map(s=>`<article class="editorial-card"><div class="meta">${esc(communityName(s))}</div><h2>${esc(s.title)}</h2><p>${esc(s.summary||'')}</p><p class="muted">${esc(communityContext(s))}</p>${s.sourceUrl?`<a target="_blank" rel="noopener" href="${esc(s.sourceUrl)}">View original source →</a>`:''}</article>`).join('')}</div>`;
 }
 async function renderArchive(){
   const mount=document.getElementById('archiveMount');if(!mount)return;const r=await fetch('/api/content/archive',{cache:'no-store'});const d=await r.json();const rows=d.editions||[];
