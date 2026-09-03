@@ -21,15 +21,9 @@
 </section>
 
 <div class="content-wrap">
-<div class="filters"><input id="archiveSearch" placeholder="Search keywords, publication, city…"><select id="communityFilter"><option value="all">All communities</option><option value="black">Black Press</option><option value="indigenous">Indigenous Press</option><option value="latino">Latino / Spanish-language</option><option value="asian">Asian American Press</option></select><select><option>All eras</option><option>200 years ago</option><option>100 years ago</option><option>75 years ago</option></select><select><option>All regions</option><option>Northeast</option><option>South</option><option>Midwest</option><option>West</option></select></div>
-<div class="archive-grid">
- <div class="archive-card" data-community="black"><span class="badge">100 years ago</span><h3>Mainstream ↔ Black Press comparisons</h3><p>Daily comparison packages with original issue links and source metadata.</p></div>
- <div class="archive-card" data-community="indigenous"><span class="badge">Community Press</span><h3>Indigenous newspaper collection</h3><p>Native and tribal newspaper discoveries organized by publication, nation/community, region, and date.</p></div>
- <div class="archive-card" data-community="latino"><span class="badge">Community Press</span><h3>Spanish-language historical press</h3><p>Coverage from California, the Southwest, New York, and other Spanish-language communities.</p></div>
- <div class="archive-card" data-community="asian"><span class="badge">Community Press</span><h3>Asian American historical press</h3><p>Chinese American, Japanese American, Filipino, South Asian, and other newspaper records.</p></div>
- <div class="archive-card" data-community="all"><span class="badge">Regional</span><h3>Western newspaper history</h3><p>California, Pacific Northwest, Mountain West, Southwest, territorial, borderlands, and Pacific reporting.</p></div>
- <div class="archive-card" data-community="all"><span class="badge">Sources</span><h3>Oldest and legacy newspapers</h3><p>Historic newspapers linked to their individual archives or holding institutions whenever available.</p></div>
-</div></div>
+<div class="filters archive-filters"><input id="archiveSearch" aria-label="Search archived editions" placeholder="Search date or published headline…"></div>
+<section id="archiveMount" class="archive-list" aria-live="polite"></section>
+</div>
 <footer class="footer">
   <div class="footer-grid">
     <div><h3>ON THIS DAY</h3><p>History as it happened—through original newspapers, archives, and the communities that reported their own lives.</p></div>
@@ -38,4 +32,4 @@
   </div>
   <div class="fine">Source-first historical news. Routine agent work proceeds automatically; unresolved discrepancies are held for human review.</div>
 </footer>
-</div><script src="app.js"></script></body></html>
+</div><script src="app.js?v=20260903a"></script><script src="page.js?v=20260903a"></script></body></html>

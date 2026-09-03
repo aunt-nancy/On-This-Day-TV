@@ -1,11 +1,12 @@
 (function(){
   const style=document.createElement('link');
   style.rel='stylesheet';
-  style.href='illustration-pass.css?v=20260902a';
+  style.href='illustration-pass.css?v=20260903a';
   document.head.appendChild(style);
 
   function text(v){return String(v||'').trim();}
   function safeArray(v){return Array.isArray(v)?v:[];}
+  function validStory(story){return Boolean(text(story?.title)&&text(story?.sourceUrl));}
   function storySummary(story,limit=230){
     const value=text(story?.summary||story?.evidenceNotes||story?.verificationNotes);
     if(!value)return'';
@@ -30,7 +31,7 @@
 
   function addSecondaryCards(edition){
     const holder=document.querySelector('.more-headlines');if(!holder)return;
-    const stories=safeArray(edition?.stories?.y100?.secondary).filter(s=>text(s?.title)).slice(0,3);
+    const stories=safeArray(edition?.stories?.y100?.secondary).filter(validStory).slice(0,3);
     if(!stories.length||holder.querySelector('.more-headline-visual-grid'))return;
     const grid=document.createElement('div');grid.className='more-headline-visual-grid';
     stories.forEach(story=>{
@@ -44,7 +45,11 @@
 
   function addDailyContextBand(edition){
     if(document.querySelector('.daily-context-band'))return;
-    const stories={y200:edition?.stories?.y200||null,y100:edition?.stories?.y100?.major||null,y75:edition?.stories?.y75||null};
+    const stories={
+      y200:validStory(edition?.stories?.y200)?edition.stories.y200:null,
+      y100:validStory(edition?.stories?.y100?.major)?edition.stories.y100.major:null,
+      y75:validStory(edition?.stories?.y75)?edition.stories.y75:null,
+    };
     if(!Object.values(stories).some(Boolean))return;
     const band=document.createElement('section');band.className='daily-context-band';
     const heading=document.createElement('div');heading.className='daily-context-heading';heading.textContent='Across the Three Eras';band.appendChild(heading);
@@ -67,12 +72,6 @@
     const grid=document.getElementById('communityPriorityGrid');if(!grid)return;
     const cards=[...grid.querySelectorAll('.community-card')];
     grid.dataset.cardCount=String(Math.min(cards.length,4));
-    const black=document.getElementById('blackCenter');
-    if(cards.length===1&&black&&!black.querySelector('.community-desk-note')){
-      const note=document.createElement('div');note.className='community-desk-note';
-      note.innerHTML='<b>Why this desk remains visible</b>This is the permanent Community Press desk. Additional community boxes appear only when verified material exists for that exact date, so the page does not manufacture viewpoints or filler.';
-      black.appendChild(note);
-    }
   }
 
   function addSourceTrail(edition){
@@ -117,12 +116,11 @@
   function isSafeVisual(v){
     const url=candidateUrl(v);if(!url||/^data:/i.test(url))return false;
     const type=text(v.visualType).toLowerCase();
-    if(type&& !DECORATIVE_TYPES.has(type))return false;
-    if(/newspaper_scan|archive_thumbnail/i.test(type))return false;
+    if(!DECORATIVE_TYPES.has(type))return false;
     const rights=text(v.rightsStatus).toLowerCase();
-    if(rights&& !['public_domain','licensed'].includes(rights))return false;
+    if(!['public_domain','licensed'].includes(rights))return false;
     const mode=text(v.displayMode).toLowerCase();
-    if(mode&& !['full_image','thumbnail'].includes(mode))return false;
+    if(!['full_image','thumbnail'].includes(mode))return false;
     return true;
   }
   function visualScore(v,eraKey){
@@ -138,7 +136,7 @@
   }
   function collectDynamicVisuals(edition){
     const items=[];
-    for(const v of safeArray(edition?.visuals)) if(isSafeVisual(v)) items.push({...v,url:candidateUrl(v)});
+    for(const v of safeArray(edition?.visuals)) if(isSafeVisual(v)) items.push({...v,placementKey:v.placementKey||v.placement||'',url:candidateUrl(v)});
     const placements=edition?.illustrations||{};
     for(const [key,value] of Object.entries(placements)){
       const p=normalizePlacement(value,key);if(p&&isSafeVisual(p))items.unshift(p);
@@ -146,11 +144,14 @@
     const seen=new Set();
     return items.filter(v=>{const u=candidateUrl(v);if(!u||seen.has(u))return false;seen.add(u);return true;});
   }
-  function choose(pool,used,{placementKeys=[],eraKey=null}={}){
-    const explicit=pool.filter(v=>placementKeys.includes(text(v.placementKey))&&!used.has(candidateUrl(v))).sort((a,b)=>visualScore(b,eraKey)-visualScore(a,eraKey));
-    const era=pool.filter(v=>!used.has(candidateUrl(v))&&(!eraKey||text(v.eraKey)===eraKey)).sort((a,b)=>visualScore(b,eraKey)-visualScore(a,eraKey));
-    const any=pool.filter(v=>!used.has(candidateUrl(v))).sort((a,b)=>visualScore(b,eraKey)-visualScore(a,eraKey));
-    const picked=explicit[0]||era[0]||any[0]||null;
+  function choose(pool,used,{placementKeys=[],eraKey='',eventKey='',allowEraContext=false}={}){
+    const unused=v=>!used.has(candidateUrl(v));
+    const eraMatches=v=>!eraKey||text(v.eraKey)===eraKey;
+    const eventMatches=v=>!eventKey||text(v.eventKey)===eventKey;
+    const explicit=pool.filter(v=>unused(v)&&eraMatches(v)&&placementKeys.includes(text(v.placementKey))&&(!text(v.eventKey)||eventMatches(v))).sort((a,b)=>visualScore(b,eraKey)-visualScore(a,eraKey));
+    const event=eventKey?pool.filter(v=>unused(v)&&eraMatches(v)&&eventMatches(v)).sort((a,b)=>visualScore(b,eraKey)-visualScore(a,eraKey)):[];
+    const era=allowEraContext&&eraKey?pool.filter(v=>unused(v)&&eraMatches(v)).sort((a,b)=>visualScore(b,eraKey)-visualScore(a,eraKey)):[];
+    const picked=explicit[0]||event[0]||era[0]||null;
     if(picked)used.add(candidateUrl(picked));
     return picked;
   }
@@ -158,36 +159,46 @@
     const url=candidateUrl(v);if(!url)return'none';
     return `url("${url.replace(/"/g,'%22')}")`;
   }
-  function setSceneVar(name,v){document.documentElement.style.setProperty(name,cssImage(v));}
+  function setSceneVar(name,v,fallback='none'){document.documentElement.style.setProperty(name,v?cssImage(v):fallback);}
   function applyDynamicScenes(edition){
     const pool=collectDynamicVisuals(edition);const used=new Set();
+    const events={
+      y200:text(edition?.stories?.y200?.eventKey),
+      y100:text(edition?.stories?.y100?.major?.eventKey),
+      y75:text(edition?.stories?.y75?.eventKey),
+    };
     const slots={};
-    slots.y200=choose(pool,used,{placementKeys:['y200','sideY200'],eraKey:'y200'});
-    slots.headLeft=choose(pool,used,{placementKeys:['headlineLeft','headerLeft'],eraKey:'y100'});
-    slots.headRight=choose(pool,used,{placementKeys:['headlineRight','headerRight'],eraKey:'y100'});
-    slots.y75=choose(pool,used,{placementKeys:['y75','sideY75'],eraKey:'y75'});
+    slots.y200=choose(pool,used,{placementKeys:['y200','sideY200','y200_story_card'],eraKey:'y200',eventKey:events.y200});
+    slots.headLeft=choose(pool,used,{placementKeys:['headlineLeft','headerLeft'],eraKey:'y100',eventKey:events.y100});
+    slots.headRight=choose(pool,used,{placementKeys:['headlineRight','headerRight'],eraKey:'y100',eventKey:events.y100});
+    slots.y75=choose(pool,used,{placementKeys:['y75','sideY75','y75_story_card'],eraKey:'y75',eventKey:events.y75});
     slots.then=choose(pool,used,{placementKeys:['then','thenNowThen']});
     slots.changed=choose(pool,used,{placementKeys:['changed','thenNowChanged']});
     slots.now=choose(pool,used,{placementKeys:['now','thenNowNow']});
-    slots.communityLeft=choose(pool,used,{placementKeys:['communityLeft'] ,eraKey:'y100'});
+    slots.communityLeft=choose(pool,used,{placementKeys:['communityLeft'],eraKey:'y100'});
     slots.communityRight=choose(pool,used,{placementKeys:['communityRight'],eraKey:'y100'});
-    slots.show1=choose(pool,used,{placementKeys:['showcase1','lower1']});
-    slots.show2=choose(pool,used,{placementKeys:['showcase2','lower2']});
-    slots.show3=choose(pool,used,{placementKeys:['showcase3','lower3']});
-    slots.show4=choose(pool,used,{placementKeys:['showcase4','lower4']});
+    slots.show1=choose(pool,used,{placementKeys:['showcase1','lower1'],eraKey:'y200'});
+    slots.show2=choose(pool,used,{placementKeys:['showcase2','lower2'],eraKey:'y100'});
+    slots.show3=choose(pool,used,{placementKeys:['showcase3','lower3'],eraKey:'y75'});
+    slots.show4=choose(pool,used,{placementKeys:['showcase4','lower4'],eraKey:'y100'});
     slots.recipe=choose(pool,used,{placementKeys:['recipe']});
 
     setSceneVar('--scene-y200',slots.y200);setSceneVar('--scene-y75',slots.y75);
     setSceneVar('--scene-head-left',slots.headLeft);setSceneVar('--scene-head-right',slots.headRight);
     setSceneVar('--scene-then',slots.then);setSceneVar('--scene-changed',slots.changed);setSceneVar('--scene-now',slots.now);
-    setSceneVar('--scene-community-left',slots.communityLeft);setSceneVar('--scene-community-right',slots.communityRight);
-    setSceneVar('--scene-showcase-1',slots.show1);setSceneVar('--scene-showcase-2',slots.show2);setSceneVar('--scene-showcase-3',slots.show3);setSceneVar('--scene-showcase-4',slots.show4);
+    setSceneVar('--scene-community-left',slots.communityLeft,'var(--scene-vignette-community)');setSceneVar('--scene-community-right',slots.communityRight,'var(--scene-vignette-y100)');
+    setSceneVar('--scene-showcase-1',slots.show1,'var(--scene-vignette-y200)');setSceneVar('--scene-showcase-2',slots.show2,'var(--scene-vignette-y100)');setSceneVar('--scene-showcase-3',slots.show3,'var(--scene-vignette-y75)');setSceneVar('--scene-showcase-4',slots.show4,'var(--scene-vignette-community)');
     setSceneVar('--scene-recipe',slots.recipe);
+
+    [['.era-200 .paper-illustration',slots.y200],['.era-76 .paper-illustration',slots.y75]].forEach(([selector,visual])=>{
+      const el=document.querySelector(selector);if(!el)return;
+      el.dataset.hasScene=visual?'true':'false';el.hidden=!visual;
+      const panel=el.closest('.era-side');if(panel)panel.dataset.hasStoryScene=visual?'true':'false';
+    });
 
     const thenMap=[['.then-now-visual.then',slots.then],['.then-now-visual.changed',slots.changed],['.then-now-visual.now',slots.now]];
     thenMap.forEach(([sel,v])=>{const el=document.querySelector(sel);if(el)el.dataset.hasScene=v?'true':'false';});
-    const show=[slots.show1,slots.show2,slots.show3,slots.show4];
-    document.querySelectorAll('.graphic-showcase .showcase-card').forEach((el,i)=>el.dataset.hasScene=show[i]?'true':'false');
+    document.querySelectorAll('.graphic-showcase .showcase-card').forEach(el=>el.dataset.hasScene='true');
     const recipe=document.querySelector('.recipe-illustration-banner');if(recipe)recipe.dataset.hasScene=slots.recipe?'true':'false';
     document.documentElement.dataset.dynamicSceneCount=String(Object.values(slots).filter(Boolean).length);
   }

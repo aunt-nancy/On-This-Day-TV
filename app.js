@@ -1,50 +1,60 @@
+window.OnThisDay=window.OnThisDay||{};
+
 (function(){
   const style=document.createElement('link');
   style.rel='stylesheet';
-  style.href=`homepage-enhancements.css?v=20260901b`;
+  style.href='homepage-enhancements.css?v=20260903a';
   document.head.appendChild(style);
 
   const SITE_TZ='America/Los_Angeles';
-  const now=new Date();
-  const parts=new Intl.DateTimeFormat('en-US',{timeZone:SITE_TZ,year:'numeric',month:'long',day:'numeric'}).formatToParts(now);
-  const get=type=>parts.find(p=>p.type===type)?.value||'';
-  const year=Number(get('year'));
-  const month=get('month');
-  const day=Number(get('day'));
-  const fullDate=`${month} ${day}, ${year}`;
-  const monthDay=`${month} ${day}`;
+  function bindEditionDate(value='',servingFallback=false){
+    const dated=Boolean(/^\d{4}-\d{2}-\d{2}$/.test(String(value||'')));
+    const target=dated?new Date(`${value}T12:00:00Z`):new Date();
+    const parts=new Intl.DateTimeFormat('en-US',{timeZone:dated?'UTC':SITE_TZ,year:'numeric',month:'long',day:'numeric'}).formatToParts(target);
+    const get=type=>parts.find(p=>p.type===type)?.value||'';
+    const year=Number(get('year'));
+    const month=get('month');
+    const day=Number(get('day'));
+    const fullDate=`${month} ${day}, ${year}`;
+    const monthDay=`${month} ${day}`;
 
-  document.querySelectorAll('[data-current-date]').forEach(el=>el.textContent=fullDate);
-  document.querySelectorAll('[data-current-monthday]').forEach(el=>el.textContent=monthDay);
-  document.querySelectorAll('[data-current-year]').forEach(el=>el.textContent=String(year));
-  document.querySelectorAll('[data-year-offset]').forEach(el=>{
-    const offset=parseInt(el.getAttribute('data-year-offset'),10)||0;
-    el.textContent=String(year-offset);
-  });
+    document.querySelectorAll('[data-current-date]').forEach(el=>el.textContent=fullDate);
+    document.querySelectorAll('[data-current-monthday]').forEach(el=>el.textContent=monthDay);
+    document.querySelectorAll('[data-current-year]').forEach(el=>el.textContent=String(year));
+    document.querySelectorAll('[data-year-offset]').forEach(el=>{
+      const offset=parseInt(el.getAttribute('data-year-offset'),10)||0;
+      el.textContent=String(year-offset);
+    });
+    document.querySelectorAll('[data-edition-heading]').forEach(el=>{
+      el.textContent=servingFallback?'Latest Published Edition':'Today in History';
+    });
+  }
+  window.OnThisDay.setEditionDate=bindEditionDate;
+  bindEditionDate();
 
   const search=document.getElementById('archiveSearch');
   const community=document.getElementById('communityFilter');
   function filterArchive(){
     const q=(search?.value||'').toLowerCase().trim();
     const c=community?.value||'all';
-    document.querySelectorAll('.archive-card').forEach(card=>{
+    document.querySelectorAll('.archive-card,.archive-row').forEach(card=>{
       const body=card.textContent.toLowerCase();
-      card.style.display=(!q||body.includes(q))&&(c==='all'||card.dataset.community===c)?'block':'none';
+      card.hidden=!((!q||body.includes(q))&&(c==='all'||card.dataset.community===c));
     });
   }
   search?.addEventListener('input',filterArchive);
   community?.addEventListener('change',filterArchive);
 })();
 
-window.OnThisDay=window.OnThisDay||{};
 window.OnThisDay.setMajorHeadline=function(headline){
   document.querySelectorAll('[data-major-headline]').forEach(el=>{
-    el.textContent=headline||'Today’s Leading Verified Headline';
+    el.textContent=text(headline);
   });
 };
 
 function text(value){return String(value||'').trim();}
-function setElText(el,value){if(el&&text(value))el.textContent=text(value);}
+function setElText(el,value){if(el)el.textContent=text(value);}
+function validStory(story){return Boolean(text(story?.title)&&text(story?.sourceUrl));}
 function setSourceLink(el,url,label){
   if(!el||!text(url))return;
   el.href=url;el.target='_blank';el.rel='noopener noreferrer';
@@ -61,36 +71,34 @@ function paperParts(paper){
   };
 }
 function bindPaper(paper,story,linkLabel){
-  if(!paper)return;
+  if(!paper)return false;
   const p=paperParts(paper);
-  if(!story||!text(story.title)||!text(story.sourceUrl)){
-    if(p.headline)p.headline.textContent='Headline pending exact-date verification';
-    if(p.link)p.link.hidden=true;
-    return;
+  if(!validStory(story)){
+    paper.hidden=true;
+    if(p.link){p.link.hidden=true;p.link.removeAttribute('href');}
+    return false;
   }
+  paper.hidden=false;
   setElText(p.name,story.publication||story.archive);
   setElText(p.date,story.issueDate);
   setElText(p.headline,story.title);
   setElText(p.copy,story.summary||story.evidenceNotes||story.verificationNotes);
   setSourceLink(p.link,story.sourceUrl,linkLabel);
   if(p.link)p.link.hidden=false;
+  return true;
 }
 function resetPublishedEditionDisplay(){
-  window.OnThisDay.setMajorHeadline('Exact-date edition being prepared');
-  const resetPaper=(paper,name,copy)=>{
-    if(!paper)return;
-    const p=paperParts(paper);
-    if(p.name)p.name.textContent=name;
-    if(p.headline)p.headline.textContent='Headline pending exact-date verification';
-    if(p.copy)p.copy.textContent=copy;
-    if(p.link){p.link.hidden=true;p.link.removeAttribute('href');}
-  };
-  resetPaper(document.querySelector('.era-200 .paper'),'Original Newspaper','The 200-year lead is being verified against the exact newspaper issue.');
-  resetPaper(document.querySelector('.era-center .center-paper:not(.black)'),'Major American Press','The 100-year lead is being verified against the exact newspaper issue and circulation record.');
-  resetPaper(document.querySelector('.era-center .center-paper.black'),'Black American Press','Verified Black Press coverage or the day’s leading Black Press story will appear here.');
-  resetPaper(document.querySelector('.era-76 .paper'),'Original Newspaper','The 75-year lead is being verified against the exact newspaper issue.');
+  window.OnThisDay.setMajorHeadline('');
+  const board=document.querySelector('.history-board');if(board)board.hidden=true;
+  document.querySelectorAll('.era-box,.center-paper').forEach(el=>el.hidden=true);
+  const more=document.querySelector('.more-headlines');if(more)more.hidden=true;
   const thenNow=document.getElementById('thenNowStrip');if(thenNow)thenNow.hidden=true;
   const recipe=document.getElementById('archiveRecipe');if(recipe)recipe.hidden=true;
+}
+function finishEditionDisplay(available){
+  document.body.classList.remove('edition-loading');
+  document.body.classList.toggle('edition-ready',available);
+  document.body.classList.toggle('edition-unavailable',!available);
 }
 
 function normalizeCommunity(value,story={}){
@@ -151,8 +159,8 @@ function updateCommunityCard(card,story,key,isBlack=false){
     publication=document.createElement('span');publication.className='community-publication';card.querySelector('div').append(publication);
   }
   if(!story){
-    if(mode)mode.textContent='Permanent community desk';
-    if(p){p.className='community-empty-note';p.textContent='No verified Black Press article for the 100-year headline or same-date Black Press fallback was available in the sources searched. This desk remains permanently visible.';}
+    if(mode)mode.textContent='Black Press archive desk';
+    if(p){p.className='community-empty-note';p.textContent='Browse Black Press reporting already published in the archive, organized by its original newspaper and date.';}
     if(publication)publication.textContent='';
     if(link){link.hidden=false;link.href='community.html#black';link.textContent='Explore Black Press →';}
     return;
@@ -215,43 +223,6 @@ function renderDynamicCommunityVoices(edition,major,black){
   if(intro)intro.textContent='Community Press Voices first follows the 100-year headline through the communities that covered it. When a community paper did not address that headline, its strongest verified story from that same day appears instead. These voices are representative, not required to disagree.';
 }
 
-function periodVisualCandidate(edition,eraKey){
-  const visuals=Array.isArray(edition?.visuals)?edition.visuals.filter(v=>v?.eraKey===eraKey):[];
-  const safe=visuals.filter(v=>v.rightsStatus==='public_domain'||v.displayMode==='full_image');
-  const all=[...safe,...visuals];
-  for(const v of all){
-    const choices=[v.downloadUrl,v.assetUrl,v.thumbnailUrl,v.sourcePageUrl].filter(text);
-    const image=choices.find(u=>/\.(png|jpe?g|webp)(\?|$)/i.test(u));
-    if(image)return{url:image,type:'image',label:v.title||'Period newspaper view'};
-    const pdf=choices.find(u=>/\.pdf(\?|$)/i.test(u));
-    if(pdf)return{url:pdf,type:'pdf',label:v.title||'Period newspaper view'};
-  }
-  const ill=edition?.illustrations?.[eraKey];
-  if(ill?.url){
-    if(/\.pdf(\?|$)/i.test(ill.url))return{url:ill.url,type:'pdf',label:ill.label||'Period newspaper view'};
-    if(/\.(png|jpe?g|webp)(\?|$)/i.test(ill.url))return{url:ill.url,type:'image',label:ill.label||'Period newspaper view'};
-  }
-  return null;
-}
-function renderPeriodVisual(selector,visual,story,eraLabel){
-  const el=document.querySelector(selector);if(!el)return;
-  el.replaceChildren();el.classList.add('period-visual-active');
-  if(!visual){
-    const fallback=document.createElement('div');fallback.className='period-visual-fallback';
-    fallback.innerHTML=`<strong>${text(story?.publication)||eraLabel}</strong><span>${text(story?.issueDate)||'Period newspaper'}</span>`;
-    el.appendChild(fallback);return;
-  }
-  const frame=document.createElement('div');frame.className='period-visual-frame';
-  if(visual.type==='pdf'){
-    const iframe=document.createElement('iframe');
-    iframe.src=`${visual.url}#toolbar=0&navpanes=0&scrollbar=0&view=FitH`;
-    iframe.loading='lazy';iframe.title=visual.label;frame.appendChild(iframe);
-  }else{
-    const img=document.createElement('img');img.src=visual.url;img.alt=visual.label;img.loading='lazy';frame.appendChild(img);
-  }
-  const shade=document.createElement('div');shade.className='period-visual-shade';frame.appendChild(shade);el.appendChild(frame);
-}
-
 function renderThenNow(data){
   const section=document.getElementById('thenNowStrip');if(!section)return;
   const valid=Boolean(data&&data.show===true&&text(data.then?.title)&&text(data.now?.title)&&Array.isArray(data.sources)&&data.sources.some(s=>text(s?.url)));
@@ -289,6 +260,7 @@ function renderArchiveRecipe(recipe){
 
 (async function loadPublishedEditionIntoLockedDesign(){
   resetPublishedEditionDisplay();
+  let available=false;
   try{
     const response=await fetch(`/api/content/today?_=${Date.now()}`,{headers:{Accept:'application/json','Cache-Control':'no-cache'},cache:'no-store'});
     if(!response.ok)return;
@@ -300,19 +272,33 @@ function renderArchiveRecipe(recipe){
     const major=stories.y100?.major||null;
     const black=stories.y100?.black||null;
     const y75=stories.y75||null;
+    const core=[y200,major,y75].filter(validStory);
+    if(!core.length)return;
+    available=true;
+
+    window.OnThisDay.setEditionDate(edition.editionDate||result?.edition?.edition_date||'',Boolean(result?.servingFallback));
+    const board=document.querySelector('.history-board');if(board)board.hidden=false;
+    const boardTitle=document.querySelector('.history-board .board-title');if(boardTitle)boardTitle.hidden=!validStory(major);
+    const layout=document.querySelector('.era-layout');if(layout)layout.dataset.coreCount=String(core.length);
+    const center=document.querySelector('.era-center');if(center)center.hidden=!validStory(major);
+    const y200Panel=document.querySelector('.era-200');if(y200Panel)y200Panel.hidden=!validStory(y200);
+    const y75Panel=document.querySelector('.era-76');if(y75Panel)y75Panel.hidden=!validStory(y75);
 
     if(major?.title)window.OnThisDay.setMajorHeadline(major.title);
     bindPaper(document.querySelector('.era-200 .paper'),y200,'View Original Source →');
     bindPaper(document.querySelector('.era-center .center-paper:not(.black)'),major,'View Original Source →');
-    bindPaper(document.querySelector('.era-center .center-paper.black'),black,'View Black Press Source →');
+    const hasBlack=bindPaper(document.querySelector('.era-center .center-paper.black'),black,'View Black Press Source →');
     bindPaper(document.querySelector('.era-76 .paper'),y75,'View Original Source →');
+    const compare=document.querySelector('.center-compare');if(compare)compare.dataset.cardCount=hasBlack?'2':'1';
+    const secondary=Array.isArray(stories.y100?.secondary)?stories.y100.secondary.filter(validStory):[];
+    const more=document.querySelector('.more-headlines');if(more)more.hidden=!secondary.length;
 
-    renderPeriodVisual('.era-200 .paper-illustration',periodVisualCandidate(edition,'y200'),y200,'200 Years Ago');
-    renderPeriodVisual('.era-76 .paper-illustration',periodVisualCandidate(edition,'y75'),y75,'75 Years Ago');
     renderDynamicCommunityVoices(edition,major,black);
     renderThenNow(edition.thenNow);
     renderArchiveRecipe(edition.archiveRecipe);
   }catch(error){
-    console.warn('Published edition unavailable; exact-date placeholders retained.',error);
+    console.warn('Published edition request failed.',error);
+  }finally{
+    finishEditionDisplay(available);
   }
 })();

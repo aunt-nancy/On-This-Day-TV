@@ -6,6 +6,7 @@ import { AGENTS } from '../lib/agents.js';
 import { STAGES, siteDate, validateEdition, filterSafeVerified } from '../lib/engine.js';
 import { requestTimeoutMs } from '../lib/openai.js';
 import healthHandler from '../api/health.js';
+import { normalizePublishedEdition } from '../lib/routes/content-today.js';
 
 assert.equal(AGENTS.length,19,'The consolidated roster must contain exactly 19 automatic newsroom roles.');
 assert.equal(new Set(AGENTS.map(a=>a.key)).size,19,'Agent keys must be unique.');
@@ -31,7 +32,13 @@ const heldEventFallback=filterSafeVerified(sameEventVerified,[{status:'pending',
 assert.equal(heldEventFallback.verifiedStories.length,0,'Event fallback may exclude the event only when no source can identify the held item.');
 
 const root=path.resolve(new URL('..',import.meta.url).pathname);
-for(const f of ['index.html','today.html','archive.html','community.html','regional.html','sources.html','about.html','admin.html','schema.sql','vercel.json','masthead-readers.jpg','BUILD_LOCK.md','art-frontpage.svg','art-archive.svg','art-map.svg','art-voices.svg']) assert.ok(fs.existsSync(path.join(root,f)),`Missing required build file: ${f}`);
+const sceneFiles=['hero-1926-newsstand.webp','scene-1826-printshop.webp','scene-1926-civic-square.webp','scene-1951-public-square.webp','scene-black-press-1926.webp'];
+for(const f of ['index.html','today.html','archive.html','community.html','regional.html','sources.html','about.html','admin.html','schema.sql','vercel.json','BUILD_LOCK.md','SCENE_ASSETS.md',...sceneFiles]) assert.ok(fs.existsSync(path.join(root,f)),`Missing required build file: ${f}`);
+for(const f of sceneFiles){
+  const bytes=fs.readFileSync(path.join(root,f));
+  assert.equal(bytes.subarray(0,4).toString(),'RIFF',`${f} must be a real WebP image.`);
+  assert.equal(bytes.subarray(8,12).toString(),'WEBP',`${f} must be a real WebP image.`);
+}
 function jsFiles(directory){
   return fs.readdirSync(directory,{withFileTypes:true}).flatMap(entry=>{
     const full=path.join(directory,entry.name);
@@ -57,15 +64,33 @@ assert.ok(index.includes('communityPriorityGrid'),'Locked public Community Press
 assert.ok(index.includes('major-lead'),'Locked public 100-year major-headline centerpiece must be preserved.');
 assert.ok(index.includes('75 Years Ago'),'Public third-era label must be 75 years ago.');
 assert.ok(!/data-year-offset="76"/.test(index),'Public date binding must not calculate a 76-year era.');
+assert.ok(!index.includes('dynamic-scene-fallback.js'),'Homepage must not inject unrelated generic historical photographs.');
+assert.ok(!/Headline pending|edition being prepared/i.test(index),'Homepage HTML must not expose newsroom work-in-progress copy.');
+assert.ok(index.includes('class="edition-loading"'),'Homepage must hide unhydrated article slots instead of flashing placeholders.');
 const css=fs.readFileSync(path.join(root,'styles.css'),'utf8');
 assert.ok(css.includes('.community-priority-grid')&&css.includes('.history-board'),'Locked public design CSS must be present.');
+assert.ok(!/art-(archive|frontpage|map|press|voices)\.svg/.test(css),'Flat generic art must not remain in the public visual layer.');
 const allDataCode=['app.js','lib/agents.js','lib/prompts.js','lib/engine.js'].map(f=>fs.readFileSync(path.join(root,f),'utf8')).join('\n');
 assert.ok(!/\by76\b/.test(allDataCode),'The clean newsroom data contract must use y75 consistently.');
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 assert.ok(app.includes('/api/content/today'),'Locked public site must receive live automatic edition data.');
 assert.ok(app.includes('America/Los_Angeles'),'Public date must use the newsroom site timezone.');
+assert.ok(index.includes('homepage-enhancements.css?v=20260903a')&&app.includes("homepage-enhancements.css?v=20260903a"),'Homepage enhancement CSS must use one current cache-busting version.');
+assert.ok(!/pending exact-date|pending verification|being prepared/i.test(app),'Public hydration must hide missing slots instead of writing placeholder copy.');
+const illustrationPass=fs.readFileSync(path.join(root,'illustration-pass.js'),'utf8');
+assert.ok(!illustrationPass.includes('const any=pool'),'Visual selection must not fall back to an unrelated image.');
+assert.ok(illustrationPass.includes("!['public_domain','licensed'].includes(rights)"),'Visual selection must require reusable rights.');
+assert.ok(illustrationPass.includes('eventKey:events.y200')&&illustrationPass.includes('eventKey:events.y75'),'Article imagery must match the exact story event.');
 const archiveRoute=fs.readFileSync(path.join(root,'lib/routes/content-archive.js'),'utf8');
-assert.ok(archiveRoute.includes('{ok:true,editions:rows}'),'Archive API must expose a clean editions response key.');
+assert.ok(archiveRoute.includes('edition_date=lt.${today}'),'Archive API must move editions into the archive only after their publication date closes.');
+assert.ok(archiveRoute.includes('editions:rows'),'Archive API must expose a clean editions response key.');
+const archiveHtml=fs.readFileSync(path.join(root,'archive.html'),'utf8');
+assert.ok(archiveHtml.includes('id="archiveMount"')&&archiveHtml.includes('page.js'),'Archive page must mount live published editions.');
+for(const f of ['today.html','community.html','regional.html']) assert.ok(fs.readFileSync(path.join(root,f),'utf8').includes('page.js'),`${f} must render published newsroom content.`);
+const normalized=normalizePublishedEdition({status:'published',edition_date:'2026-09-01',payload:{stories:{y100:{major:{title:'Verified lead',sourceUrl:'https://example.com/source',issueDate:'1926-09-01'}}}}});
+assert.equal(normalized?.edition?.payload?.stories?.y100?.major?.title,'Verified lead','A prior exact-date publication must remain eligible as the rollover fallback.');
+const contentTodayRoute=fs.readFileSync(path.join(root,'lib/routes/content-today.js'),'utf8');
+assert.ok(contentTodayRoute.includes('publishEditionSlots(run')&&contentTodayRoute.includes("policy:'single_verified_recovery_v1'"),'A publicly served verified recovery must pass through the authoritative publisher so it can enter the archive after rollover.');
 const engineJs=fs.readFileSync(path.join(root,'lib/engine.js'),'utf8');
 assert.ok(engineJs.includes('function visualIdentity'),'Visual rights and placement must share one canonical archive/asset identity contract.');
 assert.ok(engineJs.includes('source_url:visualIdentity(raw)'),'Visual approval items must use the same identity contract as rights filtering.');
@@ -140,5 +165,5 @@ assert.equal(healthResponse.statusCode,200,'The physical /api/health entrypoint 
 const healthPayload=JSON.parse(healthBody);
 assert.equal(healthPayload.ok,true,'Health response must report ok.');
 assert.equal(healthPayload.agents.length,19,'Health response must expose the canonical 19-agent roster.');
-assert.equal(healthPayload.build,'2026-09-03.health-timeout-contract.1','Health response must expose the current build ID.');
+assert.equal(healthPayload.build,'2026-09-03.published-archive-visuals.1','Health response must expose the current build ID.');
 console.log('HEALTH_ROUTE_REGRESSION_TESTS_PASS');

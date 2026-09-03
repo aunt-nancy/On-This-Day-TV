@@ -1,7 +1,7 @@
 <!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>On This Day</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="homepage-enhancements.css?v=20260901b"><link rel="stylesheet" href="dynamic-scenes.css?v=20260902a"></head>
-<body><div class="site">
+<title>On This Day</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="homepage-enhancements.css?v=20260903a"><link rel="stylesheet" href="dynamic-scenes.css?v=20260903a"></head>
+<body class="edition-loading"><div class="site">
 <header class="masthead-lock">
 <div class="site-nav">
   <a class="brand-lock" href="index.html"><b>ON THIS DAY</b><span>HISTORY AS IT HAPPENED</span></a>
@@ -19,17 +19,17 @@
   <section class="locked-hero">
     <div class="hero-copy">
       <div class="hero-date" data-current-monthday></div>
-      <h1>Today in History</h1>
+      <h1 data-edition-heading>Today in History</h1>
       <p>Three eras. Many voices. One day in the life of our nation.</p>
     </div>
-    <div class="hero-image"><img src="masthead-readers.jpg" alt="Historic newspaper readers on an American city street"></div>
+    <div class="hero-image"><img src="hero-1926-newsstand.webp" alt="Editorial reconstruction of newspaper readers at a 1926 American city newsstand"></div>
   </section>
 </header>
 
 <section class="history-board">
   <div class="board-title major-lead">
     <div class="lead-kicker">Major Headline — 100 Years Ago</div>
-    <h2 data-major-headline>Today’s Leading Verified Headline</h2>
+    <h2 data-major-headline></h2>
         <div class="board-date"><span data-current-monthday></span></div>
   </div>
 
@@ -40,12 +40,12 @@
       <div class="era-ago">Early American News</div>
       <div class="era-body">
         <div class="paper">
-          <div class="paper-label">Major Headline</div><div class="paper-illustration press"></div>
-          <div class="paper-name">Original Newspaper</div>
-          <div class="paper-date" data-current-monthday></div>
-          <div class="paper-headline">Headline pending verification</div>
-          <div class="paper-copy">A short historical treatment with the original publication, date, page, and archive link.</div>
-          <a class="source-link" href="today.html">Read 200 Years Ago →</a>
+	          <div class="paper-label">Major Headline</div><div class="paper-illustration press" data-has-scene="false" hidden></div>
+	          <div class="paper-name"></div>
+	          <div class="paper-date" data-current-monthday></div>
+	          <div class="paper-headline"></div>
+	          <div class="paper-copy"></div>
+	          <a class="source-link" hidden>View Original Source →</a>
         </div>
       </div>
     </article>
@@ -58,22 +58,22 @@
         <div class="center-compare">
           <div class="center-paper">
             <div class="paper-label">Major American Headline</div>
-            <div class="paper-name">Major American Press</div>
-            <div class="paper-date" data-current-monthday></div>
-            <div class="paper-headline">The day’s leading verified headline</div>
-            <div class="paper-copy">How a major national or metropolitan newspaper framed the event.</div>
-            <a class="source-link" href="today.html">View Original Source →</a>
+	            <div class="paper-name"></div>
+	            <div class="paper-date" data-current-monthday></div>
+	            <div class="paper-headline"></div>
+	            <div class="paper-copy"></div>
+	            <a class="source-link" hidden>View Original Source →</a>
           </div>
           <div class="center-paper black">
             <div class="paper-label">Black Press Report</div>
-            <div class="paper-name">Black American Press</div>
-            <div class="paper-date" data-current-monthday></div>
-            <div class="paper-headline">How the Black press reported—or led—the day</div>
-            <div class="paper-copy">A verified Black Press view of the 100-year headline, or the day’s leading Black Press story when no same-event coverage survives.</div>
-            <a class="source-link" href="community.html#black">View Black Press Source →</a>
+	            <div class="paper-name"></div>
+	            <div class="paper-date" data-current-monthday></div>
+	            <div class="paper-headline"></div>
+	            <div class="paper-copy"></div>
+	            <a class="source-link" hidden>View Black Press Source →</a>
           </div>
         </div>
-        <div class="more-headlines"><strong>More Major Headlines</strong><p>Multiple daily headlines are grouped as a ranked news slate. Different front pages are preserved rather than forced into a false one-story comparison.</p></div>
+	        <div class="more-headlines" hidden><strong>More Major Headlines</strong><p>Multiple published headlines from the same historical date.</p></div>
       </div>
     </article>
 
@@ -83,12 +83,12 @@
       <div class="era-ago">Mid-Century American News</div>
       <div class="era-body">
         <div class="paper">
-          <div class="paper-label">Major Headline</div><div class="paper-illustration map"></div>
-          <div class="paper-name">Original Newspaper</div>
-          <div class="paper-date" data-current-monthday></div>
-          <div class="paper-headline">Headline pending verification</div>
-          <div class="paper-copy">Living-memory history: what the paper reported then, reconsidered with what later evidence made clearer.</div>
-          <a class="source-link" href="today.html">Read 75 Years Ago →</a>
+	          <div class="paper-label">Major Headline</div><div class="paper-illustration map" data-has-scene="false" hidden></div>
+	          <div class="paper-name"></div>
+	          <div class="paper-date" data-current-monthday></div>
+	          <div class="paper-headline"></div>
+	          <div class="paper-copy"></div>
+	          <a class="source-link" hidden>View Original Source →</a>
         </div>
       </div>
     </article>
@@ -135,9 +135,9 @@
  <div class="community-priority-grid" id="communityPriorityGrid">
    <div class="community-card black-center" id="blackCenter" data-community="black">
       <div>
-        <div class="community-mode">Permanent community desk</div>
+        <div class="community-mode">Black Press archive desk</div>
         <h3>African American / Black Press</h3>
-        <p>Verified Black Press coverage of the 100-year headline appears here when available. Otherwise, the leading verified Black Press headline for that exact day appears.</p>
+        <p>Browse Black Press reporting already published in the archive, organized by its original newspaper and date.</p>
         <span class="community-publication"></span>
       </div>
       <a href="community.html#black">Explore Black Press →</a>
@@ -176,24 +176,24 @@
 <section class="graphic-showcase">
   <div class="section-heading">
     <h2>Scenes Across Time</h2>
-    <p>Daily historical scene imagery is selected from verified, reusable visual sources for that edition. Images appear only where suitable material exists.</p>
+    <p>These clearly illustrative period settings provide atmosphere only. Article imagery appears solely when it is rights-cleared and matched to the exact published story.</p>
   </div>
   <div class="showcase-grid">
-    <article class="showcase-card">
-      <div class="showcase-art frontpage"></div>
-      <div class="showcase-copy"><h3>Early American Life</h3><p>Historical visual context from the day’s verified archive package.</p></div>
+    <article class="showcase-card" data-has-scene="true">
+      <div class="showcase-art frontpage" aria-hidden="true"></div>
+      <div class="showcase-copy"><h3>Early American Print Culture</h3><p>An editorial reconstruction of an 1820s print shop and its readers.</p></div>
     </article>
-    <article class="showcase-card">
-      <div class="showcase-art archive"></div>
-      <div class="showcase-copy"><h3>Public Life in the 1920s</h3><p>Historical visual context selected for the 100-year desk.</p></div>
+    <article class="showcase-card" data-has-scene="true">
+      <div class="showcase-art archive" aria-hidden="true"></div>
+      <div class="showcase-copy"><h3>Public Life in the 1920s</h3><p>An editorial reconstruction of readers gathering at a city newsstand.</p></div>
     </article>
-    <article class="showcase-card">
-      <div class="showcase-art map"></div>
-      <div class="showcase-copy"><h3>Mid-Century America</h3><p>Historical visual context selected for the 75-year desk.</p></div>
+    <article class="showcase-card" data-has-scene="true">
+      <div class="showcase-art map" aria-hidden="true"></div>
+      <div class="showcase-copy"><h3>Mid-Century Civic Life</h3><p>An editorial reconstruction of Americans reading the news in 1951.</p></div>
     </article>
-    <article class="showcase-card">
-      <div class="showcase-art voices"></div>
-      <div class="showcase-copy"><h3>Community Life</h3><p>Reusable community or public-life imagery from the day’s visual archive package.</p></div>
+    <article class="showcase-card" data-has-scene="true">
+      <div class="showcase-art voices" aria-hidden="true"></div>
+      <div class="showcase-copy"><h3>Black Community Newsrooms</h3><p>An editorial reconstruction honoring the work of the 1920s Black press.</p></div>
     </article>
   </div>
 </section>
@@ -207,4 +207,4 @@
   <div class="fine">Source-first historical news. Routine agent work proceeds automatically; unresolved discrepancies are held for human review.</div>
 </footer>
 
-</div><script src="app.js"></script><script src="illustration-pass.js?v=20260902a"></script><script src="dynamic-scene-fallback.js?v=20260902b"></script></body></html>
+</div><script src="app.js?v=20260903a"></script><script src="illustration-pass.js?v=20260903a"></script></body></html>

@@ -22,6 +22,8 @@
     {"source":"/","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
     {"source":"/index.html","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
     {"source":"/app.js","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
+    {"source":"/page.js","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
+    {"source":"/styles.css","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
     {"source":"/illustration-pass.js","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
     {"source":"/dynamic-scenes.css","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]},
     {"source":"/homepage-enhancements.css","headers":[{"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"}]}
