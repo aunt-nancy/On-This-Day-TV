@@ -17,15 +17,23 @@ async function renderToday(){
 function communityName(s){return String(s?.community||'Community Press').replaceAll('_',' ')}
 function communityContext(s){
   if(s?.comparisonType==='same_event')return'Verified coverage of the featured event';
-  if(s?.dateRelation==='nearest_weekly_issue')return'Leading headline from the nearest surviving weekly issue';
-  return'Leading verified community headline for the date';
+  if(s?.comparisonType==='same_topic'){
+    if(s.dateRelation==='previous_daily_issue')return'Verified reporting on the same topic from the previous daily issue';
+    if(s.dateRelation==='adjacent_daily_issue')return'Verified reporting on the same topic from an adjacent daily issue';
+    if(s.dateRelation==='nearest_weekly_issue')return'Verified reporting on the same topic from the nearest weekly issue';
+    return'Verified reporting on the same topic';
+  }
+  if(s?.searchOutcome==='same_topic_not_verified')return'Newspaper source audit: no same-topic item is claimed from the issue searched';
+  return'Newspaper source audit';
 }
 async function renderCommunity(){
   const mount=document.getElementById('communityMount');if(!mount)return;const d=await getToday();const e=d?.edition?.payload;
-  const tiles=e?.communityTiles||[];const black=e?.stories?.y100?.black;const items=[...(black?.title?[black]:[]),...tiles];
+  const tiles=e?.communityTiles||[];const black=e?.stories?.y100?.black;
+  const directBlack=black?.title?{...black,comparisonType:black.eventKey&&black.eventKey===e?.leadEventKey?'same_event':black.comparisonType}:null;
+  const items=[...(directBlack?[directBlack]:[]),...tiles];
   if(!items.length){mount.hidden=true;return}
   mount.hidden=false;
-  mount.innerHTML=`<h2>Published Community Press Articles</h2><div class="community-list">${items.map(s=>`<article class="editorial-card"><div class="meta">${esc(communityName(s))}</div><h2>${esc(s.title)}</h2><p>${esc(s.summary||'')}</p><p class="muted">${esc(communityContext(s))}</p>${s.sourceUrl?`<a target="_blank" rel="noopener" href="${esc(s.sourceUrl)}">View original source →</a>`:''}</article>`).join('')}</div>`;
+  mount.innerHTML=`<h2>Published Community Press Articles</h2><p class="page-intro">Papers are selected by documented historical circulation or reach, then longevity. Direct coverage of the national headline ranks first, followed by verified reporting on the same topic. A fallback is shown only as a labeled source audit.</p><div class="community-list">${items.map(s=>`<article class="editorial-card"><div class="meta">${esc(communityName(s))}</div><h2>${esc(s.title)}</h2><p>${esc(s.summary||'')}</p><p class="muted">${esc(communityContext(s))}</p>${s.sourceSelectionNote?`<p class="muted"><b>Why this paper:</b> ${esc(s.sourceSelectionNote)}</p>`:''}<p><b>${esc(s.publication||'')}</b>${s.issueDate?' • '+esc(fmtDate(s.issueDate)):''}</p>${s.sourceUrl?`<a target="_blank" rel="noopener" href="${esc(s.sourceUrl)}">View original source →</a>`:''}</article>`).join('')}</div>`;
 }
 async function renderArchive(){
   const mount=document.getElementById('archiveMount');if(!mount)return;const r=await fetch('/api/content/archive',{cache:'no-store'});const d=await r.json();const rows=d.editions||[];

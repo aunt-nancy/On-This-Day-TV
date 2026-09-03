@@ -162,10 +162,6 @@
 .community-card{
   min-height:0!important;
 }
-.community-card.black-center{
-  grid-column:auto!important;
-  grid-row:auto!important;
-}
 .community-priority-grid[data-card-count="1"] .black-center{
   display:grid;
   grid-template-columns:minmax(0,1.55fr) minmax(240px,.75fr);

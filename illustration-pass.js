@@ -1,7 +1,7 @@
 (function(){
   const style=document.createElement('link');
   style.rel='stylesheet';
-  style.href='illustration-pass.css?v=20260903a';
+  style.href='illustration-pass.css?v=20260903c';
   document.head.appendChild(style);
 
   function text(v){return String(v||'').trim();}

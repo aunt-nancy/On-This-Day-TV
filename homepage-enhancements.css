@@ -180,6 +180,7 @@
   background:linear-gradient(180deg,#fffaf1,#f7efe1);
 }
 .community-card.dynamic-community[data-community-mode="same_event"]{border-top-color:var(--gold)}
+.community-card.dynamic-community[data-community-mode="same_topic"]{border-top-color:var(--navy)}
 .community-card.dynamic-community[data-community-mode="community_lead"]{border-top-color:var(--green)}
 .community-card .community-mode{
   margin:0 0 6px;
@@ -195,6 +196,16 @@
   font:800 8px Arial,sans-serif;
   text-transform:uppercase;
   letter-spacing:.04em;
+}
+.community-card .community-selection-note{
+  display:block;
+  margin-top:7px;
+  padding-top:6px;
+  border-top:1px solid #dac9a9;
+  color:#283d52;
+  font:800 8px/1.35 Arial,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.035em;
 }
 .community-card.black-center{
   grid-column:2;

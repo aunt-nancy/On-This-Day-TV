@@ -75,6 +75,8 @@ a{color:inherit}
 .center-paper .paper-label{margin:-9px -9px 8px;padding:6px;background:var(--navy)}
 .center-paper.black .paper-label{background:var(--red)}
 .center-paper .paper-name{font-size:20px}
+.center-paper .paper-selection{display:inline-block;margin:5px 0 2px;padding:3px 5px;background:#eee1c8;color:var(--navy2);font:900 7px Arial,sans-serif;text-transform:uppercase;letter-spacing:.045em}
+.center-paper .paper-selection[hidden]{display:none}
 .center-paper .paper-headline{font-size:20px}
 .era-context-note{margin:10px 1px 2px;padding:9px 9px 8px;border:1px solid #c8b589;border-left:4px solid var(--gold);background:#f5ecda}
 .era-context-note strong{display:block;color:var(--red);font:900 8px Arial,sans-serif;text-transform:uppercase;letter-spacing:.08em}
@@ -87,11 +89,13 @@ a{color:inherit}
 .featured-voices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:#c9b58e}
 .featured-voice{min-width:0;padding:8px;background:#fffaf1;border-top:4px solid var(--green)}
 .featured-voice[data-community-mode="same_event"]{border-top-color:var(--gold)}
+.featured-voice[data-community-mode="same_topic"]{border-top-color:var(--green)}
 .featured-voice[data-community="black"]{border-top-color:var(--red);background:#fbf0e4}
 .featured-voice-mode{min-height:18px;color:var(--red);font:900 7px/1.25 Arial,sans-serif;text-transform:uppercase;letter-spacing:.045em}
 .featured-voice h4{margin:3px 0 4px;color:var(--navy2);font-size:12px;line-height:1.05}
 .featured-voice p{margin:0;color:#29251f;font-size:10px;line-height:1.28;font-weight:700}
 .featured-voice span{display:block;margin-top:5px;color:#6a6051;font:700 7px/1.25 Arial,sans-serif;text-transform:uppercase}
+.featured-voice .featured-voice-selection{padding-top:4px;border-top:1px solid #dac9a9;color:var(--navy2);letter-spacing:.035em}
 .featured-voice a{display:inline-block;margin-top:6px;color:var(--red);font:900 7px Arial,sans-serif;text-transform:uppercase;text-decoration:none}
 .more-headlines{margin-top:9px;border-top:1px solid var(--line);padding:9px 5px 2px;text-align:center}
 .more-headlines strong{font:900 9px Arial,sans-serif;text-transform:uppercase;color:var(--navy2);letter-spacing:.06em}

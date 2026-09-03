@@ -7,7 +7,7 @@ import { STAGES, siteDate, validateEdition, filterSafeVerified } from '../lib/en
 import { requestTimeoutMs } from '../lib/openai.js';
 import healthHandler from '../api/health.js';
 import { normalizePublishedEdition } from '../lib/routes/content-today.js';
-import { communityDateStory, sanitizeExactDateEdition } from '../lib/exact-date.js';
+import { communityDateStory, communityRelationshipStory, sanitizeExactDateEdition } from '../lib/exact-date.js';
 import { applyEditorialSupplements } from '../lib/editorial-supplements.js';
 
 assert.equal(AGENTS.length,19,'The consolidated roster must contain exactly 19 automatic newsroom roles.');
@@ -22,7 +22,7 @@ const verified={verifiedStories:[
 ]};
 const ed=validateEdition({stories:{y100:{major:verified.verifiedStories[0],black:verified.verifiedStories[1]}},communityTiles:[verified.verifiedStories[2]]},verified);
 assert.equal(ed.stories.y100.black.title,undefined,'Black Press comparison cannot use a different eventKey.');
-assert.equal(ed.communityTiles[0].comparisonType,'community_lead','Unmatched community coverage must not masquerade as same-event comparison.');
+assert.equal(ed.communityTiles.length,0,'An unmatched community story without a documented source audit must not masquerade as perspective on the lead.');
 const sameEventVerified={verifiedStories:[
   {eventKey:'shared',sourceUrl:'https://example.com/major',title:'Major'},
   {eventKey:'shared',sourceUrl:'https://example.com/black',title:'Black'},
@@ -78,13 +78,15 @@ assert.ok(!/\by76\b/.test(allDataCode),'The clean newsroom data contract must us
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 assert.ok(app.includes('/api/content/today'),'Locked public site must receive live automatic edition data.');
 assert.ok(app.includes('America/Los_Angeles'),'Public date must use the newsroom site timezone.');
-assert.ok(index.includes('homepage-enhancements.css?v=20260903b')&&app.includes("homepage-enhancements.css?v=20260903b"),'Homepage enhancement CSS must use one current cache-busting version.');
+assert.ok(index.includes('homepage-enhancements.css?v=20260903d')&&app.includes("homepage-enhancements.css?v=20260903d"),'Homepage enhancement CSS must use one current cache-busting version.');
 assert.ok(!/pending exact-date|pending verification|being prepared/i.test(app),'Public hydration must hide missing slots instead of writing placeholder copy.');
 assert.ok(!app.includes('dataset.coreCount'),'Published hydration must never collapse the permanent three-era grid.');
 const illustrationPass=fs.readFileSync(path.join(root,'illustration-pass.js'),'utf8');
+const illustrationPassCss=fs.readFileSync(path.join(root,'illustration-pass.css'),'utf8');
 assert.ok(!illustrationPass.includes('const any=pool'),'Visual selection must not fall back to an unrelated image.');
 assert.ok(illustrationPass.includes("!['public_domain','licensed'].includes(rights)"),'Visual selection must require reusable rights.');
 assert.ok(illustrationPass.includes('eventKey:events.y200')&&illustrationPass.includes('eventKey:events.y75'),'Article imagery must match the exact story event.');
+assert.ok(!/\.community-card\.black-center\s*\{[^}]*grid-column:auto!important/s.test(illustrationPassCss),'Later visual CSS must not displace the permanent centered Black Press card.');
 const archiveRoute=fs.readFileSync(path.join(root,'lib/routes/content-archive.js'),'utf8');
 assert.ok(archiveRoute.includes('edition_date=lt.${today}'),'Archive API must move editions into the archive only after their publication date closes.');
 assert.ok(archiveRoute.includes('editions}'),'Archive API must expose a clean editions response key.');
@@ -102,10 +104,20 @@ assert.equal(partial,null,'A partial edition must not collapse the public three-
 const supplemented=applyEditorialSupplements({stories:{y100:{major:{title:'Mexico lead',sourceUrl:'https://example.com/mexico',issueDate:'1926-09-02'}},y75:{title:'1951 lead',sourceUrl:'https://example.com/1951',issueDate:'1951-09-02'}}},'2026-09-02');
 const exactSupplement=sanitizeExactDateEdition(supplemented,'2026-09-02');
 assert.equal(exactSupplement.complete,true,'The verified September 2 supplement must restore the missing 1826 core era.');
+assert.equal(exactSupplement.payload.stories.y100.major.topicKey,'mexico_church_state_conflict_1926','The national lead must carry the topic key used for related community reporting.');
 assert.ok(exactSupplement.payload.communityTiles.some(s=>s.communityKey==='latino'&&s.comparisonType==='same_event'),'The Mexico lead must include the verified Mexican same-event newspaper view.');
-assert.ok(exactSupplement.payload.communityTiles.some(s=>s.communityKey==='black'&&s.dateRelation==='nearest_weekly_issue'),'The Black Press fallback must identify the nearest weekly issue explicitly.');
+assert.ok(exactSupplement.payload.communityTiles.some(s=>s.communityKey==='jewish'&&s.comparisonType==='same_topic'&&s.topicKey==='mexico_church_state_conflict_1926'),'A second minority press must contribute a verified same-topic perspective.');
+assert.ok(!exactSupplement.payload.communityTiles.some(s=>/national-origins quota/i.test(s.summary||'')),'An unrelated Jewish press lead must not be substituted for topical perspective.');
+assert.ok(exactSupplement.payload.communityTiles.some(s=>s.communityKey==='black'&&s.dateRelation==='nearest_weekly_issue'&&s.searchOutcome==='same_topic_not_verified'&&s.sourceSelectionNote),'The Black Press fallback must be an explicit, sourced nearest-weekly audit.');
 assert.equal(communityDateStory({title:'Weekly lead',sourceUrl:'https://example.com/weekly',issueDate:'1926-09-04',comparisonType:'community_lead',dateRelation:'nearest_weekly_issue'},'2026-09-02'),true,'A labeled nearest weekly community lead within seven days is valid.');
 assert.equal(communityDateStory({title:'False response',sourceUrl:'https://example.com/false-response',issueDate:'1926-09-04',comparisonType:'same_event',dateRelation:'nearest_weekly_issue'},'2026-09-02'),false,'An off-date weekly story must never pass as a same-event response.');
+const adjacentTopic={title:'Related daily report',sourceUrl:'https://example.com/related',issueDate:'1926-09-01',eventKey:'related_event',topicKey:'mexico_church_state_conflict_1926',comparisonType:'same_topic',dateRelation:'previous_daily_issue'};
+assert.equal(communityDateStory(adjacentTopic,'2026-09-02'),true,'A verified same-topic story from the previous daily issue is date-eligible.');
+assert.equal(communityRelationshipStory(adjacentTopic,{eventKey:'lead',topicKey:'mexico_church_state_conflict_1926'},'2026-09-02'),true,'A same-topic story must share the national lead topic key while retaining its own event key.');
+assert.equal(communityDateStory({...adjacentTopic,topicKey:''},'2026-09-02'),false,'A same-topic label without a topic key must be rejected.');
+assert.ok(app.includes("comparisonType==='same_topic'")&&app.includes('source audit'),'The homepage must visibly distinguish same-topic reporting from source-audit fallbacks.');
+assert.ok(app.includes('selected.splice(Math.min(1,selected.length),0,black)'),'The featured three-card ring must keep the Black press voice in the center position.');
+assert.ok(index.includes('class="paper-selection"')&&app.includes('Source rank •'),'The national daily must expose its source-selection tier beside the 100-year headline.');
 const contentTodayRoute=fs.readFileSync(path.join(root,'lib/routes/content-today.js'),'utf8');
 assert.ok(contentTodayRoute.includes('publishEditionSlots(run')&&contentTodayRoute.includes("policy:'single_verified_recovery_v1'"),'A publicly served verified recovery must pass through the authoritative publisher so it can enter the archive after rollover.');
 const engineJs=fs.readFileSync(path.join(root,'lib/engine.js'),'utf8');
@@ -182,5 +194,5 @@ assert.equal(healthResponse.statusCode,200,'The physical /api/health entrypoint 
 const healthPayload=JSON.parse(healthBody);
 assert.equal(healthPayload.ok,true,'Health response must report ok.');
 assert.equal(healthPayload.agents.length,19,'Health response must expose the canonical 19-agent roster.');
-assert.equal(healthPayload.build,'2026-09-03.three-era-community-ring.1','Health response must expose the current build ID.');
+assert.equal(healthPayload.build,'2026-09-03.three-era-community-ring.3','Health response must expose the current build ID.');
 console.log('HEALTH_ROUTE_REGRESSION_TESTS_PASS');
