@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { AGENTS } from '../lib/agents.js';
-import { STAGES, siteDate, validateEdition, filterSafeVerified } from '../lib/engine.js';
+import { currentUpdateWindow, STAGES, siteDate, UPDATE_WINDOWS, validateEdition, filterSafeVerified } from '../lib/engine.js';
 import { requestTimeoutMs } from '../lib/openai.js';
 import healthHandler from '../api/health.js';
 import { normalizePublishedEdition } from '../lib/routes/content-today.js';
@@ -14,6 +14,13 @@ assert.equal(AGENTS.length,19,'The consolidated roster must contain exactly 19 a
 assert.equal(new Set(AGENTS.map(a=>a.key)).size,19,'Agent keys must be unique.');
 assert.ok(STAGES.includes('publish')&&STAGES.at(-1)==='complete','Automatic stage model must end in complete.');
 assert.equal(siteDate(new Date('2026-09-01T06:30:00Z'),'America/Los_Angeles'),'2026-08-31','Site date must use Pacific time.');
+assert.equal(UPDATE_WINDOWS.length,7,'The newsroom must publish in seven Pacific-time windows each day.');
+for(const [iso,key] of [
+  ['2026-09-04T07:00:00Z','0000'],['2026-09-04T13:00:00Z','0600'],
+  ['2026-09-04T16:00:00Z','0900'],['2026-09-04T19:00:00Z','1200'],
+  ['2026-09-04T22:00:00Z','1500'],['2026-09-05T01:00:00Z','1800'],
+  ['2026-09-05T05:00:00Z','2200'],
+]) assert.equal(currentUpdateWindow(new Date(iso),'America/Los_Angeles').key,key,`${key} Pacific update window must resolve correctly.`);
 
 const verified={verifiedStories:[
   {eraKey:'y100',eventKey:'lead',title:'Major',sourceUrl:'https://example.com/major'},
@@ -219,5 +226,6 @@ assert.equal(healthResponse.statusCode,200,'The physical /api/health entrypoint 
 const healthPayload=JSON.parse(healthBody);
 assert.equal(healthPayload.ok,true,'Health response must report ok.');
 assert.equal(healthPayload.agents.length,19,'Health response must expose the canonical 19-agent roster.');
-assert.equal(healthPayload.build,'2026-09-04.exact-date-authoritative-publish.6','Health response must expose the current build ID.');
+assert.equal(healthPayload.build,'2026-09-04.seven-daily-update-windows.7','Health response must expose the current build ID.');
+assert.equal(healthPayload.publication.schedule.updatesPerDay,7,'Health response must expose the seven-window publication schedule.');
 console.log('HEALTH_ROUTE_REGRESSION_TESTS_PASS');

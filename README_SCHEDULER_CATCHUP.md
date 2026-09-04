@@ -13,16 +13,19 @@ CATCH-UP BEHAVIOR
 Whenever cron wakes, it determines the most recent publishing window that
 should already exist today:
 
-00:00–11:59 -> Morning
-12:00–17:59 -> Afternoon
+00:00–05:59 -> New-day kickoff
+06:00–08:59 -> Early morning
+09:00–11:59 -> Morning
+12:00–14:59 -> Midday
+15:00–17:59 -> Afternoon
 18:00–21:59 -> Evening
 22:00–23:59 -> Late Breaking
 
 If that slot has not been created, it is created immediately.
 
 Examples:
-- deploy at 12:43 AM -> Morning Edition starts at next cron wake-up
-- outage until 1:30 PM -> Afternoon Edition starts at next cron wake-up
+- deploy at 12:43 AM -> New-day Edition starts at next cron wake-up
+- outage until 1:30 PM -> Midday Edition starts at next cron wake-up
 - redeploy at 8:15 PM -> Evening Edition starts at next cron wake-up
 
 Idempotency still prevents duplicate runs for the same date/slot.

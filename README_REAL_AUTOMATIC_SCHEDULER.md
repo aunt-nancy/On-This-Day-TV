@@ -10,14 +10,17 @@ Nothing was automatically starting the 19-agent newsroom.
 
 THIS BUILD MAKES THE NEWSROOM AUTOMATIC
 
-FOUR PACIFIC-TIME WINDOWS
-00:00 — Morning / new-day kickoff
-12:00 — Afternoon
+SEVEN PACIFIC-TIME WINDOWS
+00:00 — New-day kickoff
+06:00 — Early morning
+09:00 — Morning
+12:00 — Midday
+15:00 — Afternoon
 18:00 — Evening
-22:00 — Late Breaking
+22:00 — Late breaking
 
 SERVERLESS-SAFE WORKER
-Vercel wakes the worker every 2 minutes.
+Vercel wakes the worker every minute.
 When idle, it returns immediately.
 When a scheduled run is active, it advances only the current eligible wave.
 
@@ -37,7 +40,7 @@ The rolling publish from #4 remains available for early verified content, while
 #12 remains the final website Closing Desk publisher.
 
 IDEMPOTENT
-Each publishing window is created only once per site date.
+Each of the seven publishing windows is created only once per site date.
 Cron retries cannot create duplicate automatic runs for the same slot.
 
 IMPORTANT VERCEL AUTH
