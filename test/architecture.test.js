@@ -78,7 +78,7 @@ assert.ok(!/\by76\b/.test(allDataCode),'The clean newsroom data contract must us
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 assert.ok(app.includes('/api/content/today'),'Locked public site must receive live automatic edition data.');
 assert.ok(app.includes('America/Los_Angeles'),'Public date must use the newsroom site timezone.');
-assert.ok(index.includes('homepage-enhancements.css?v=20260903e')&&app.includes("homepage-enhancements.css?v=20260903e"),'Homepage enhancement CSS must use one current cache-busting version.');
+assert.ok(index.includes('homepage-enhancements.css?v=20260904f')&&app.includes("homepage-enhancements.css?v=20260904f"),'Homepage enhancement CSS must use one current cache-busting version.');
 assert.ok(!/pending exact-date|pending verification|being prepared/i.test(app),'Public hydration must hide missing slots instead of writing placeholder copy.');
 assert.ok(!app.includes('dataset.coreCount'),'Published hydration must never collapse the permanent three-era grid.');
 const illustrationPass=fs.readFileSync(path.join(root,'illustration-pass.js'),'utf8');
@@ -131,6 +131,7 @@ assert.ok(app.includes('function storyDisplayTitle')&&app.includes('englishTitle
 assert.ok(allDataCode.includes('PUBLIC LANGUAGE CONTRACT')&&allDataCode.includes('originalTitle'),'The newsroom must preserve source-language titles internally while publishing English display copy.');
 const contentTodayRoute=fs.readFileSync(path.join(root,'lib/routes/content-today.js'),'utf8');
 assert.ok(contentTodayRoute.includes('publishEditionSlots(run')&&contentTodayRoute.includes("policy:'single_verified_recovery_v1'"),'A publicly served verified recovery must pass through the authoritative publisher so it can enter the archive after rollover.');
+assert.ok(contentTodayRoute.includes('Promise.all([')&&contentTodayRoute.includes('if(!edition&&stored)'),'A missing current-date row must render the rollover publication without waiting on request-time newsroom recovery.');
 const engineJs=fs.readFileSync(path.join(root,'lib/engine.js'),'utf8');
 assert.ok(engineJs.includes('function visualIdentity'),'Visual rights and placement must share one canonical archive/asset identity contract.');
 assert.ok(engineJs.includes('source_url:visualIdentity(raw)'),'Visual approval items must use the same identity contract as rights filtering.');
@@ -205,5 +206,5 @@ assert.equal(healthResponse.statusCode,200,'The physical /api/health entrypoint 
 const healthPayload=JSON.parse(healthBody);
 assert.equal(healthPayload.ok,true,'Health response must report ok.');
 assert.equal(healthPayload.agents.length,19,'Health response must expose the canonical 19-agent roster.');
-assert.equal(healthPayload.build,'2026-09-03.english-vignettes-recipe-accents.4','Health response must expose the current build ID.');
+assert.equal(healthPayload.build,'2026-09-04.iphone-rollover-observability.5','Health response must expose the current build ID.');
 console.log('HEALTH_ROUTE_REGRESSION_TESTS_PASS');

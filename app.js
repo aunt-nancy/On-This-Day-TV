@@ -3,7 +3,7 @@ window.OnThisDay=window.OnThisDay||{};
 (function(){
   const style=document.createElement('link');
   style.rel='stylesheet';
-  style.href='homepage-enhancements.css?v=20260903e';
+  style.href='homepage-enhancements.css?v=20260904f';
   document.head.appendChild(style);
 
   const SITE_TZ='America/Los_Angeles';
