@@ -78,7 +78,7 @@ assert.ok(!/\by76\b/.test(allDataCode),'The clean newsroom data contract must us
 const app=fs.readFileSync(path.join(root,'app.js'),'utf8');
 assert.ok(app.includes('/api/content/today'),'Locked public site must receive live automatic edition data.');
 assert.ok(app.includes('America/Los_Angeles'),'Public date must use the newsroom site timezone.');
-assert.ok(index.includes('homepage-enhancements.css?v=20260904f')&&app.includes("homepage-enhancements.css?v=20260904f"),'Homepage enhancement CSS must use one current cache-busting version.');
+assert.ok(index.includes('homepage-enhancements.css?v=20260904g')&&app.includes("homepage-enhancements.css?v=20260904g"),'Homepage enhancement CSS must use one current cache-busting version.');
 assert.ok(!/pending exact-date|pending verification|being prepared/i.test(app),'Public hydration must hide missing slots instead of writing placeholder copy.');
 assert.ok(!app.includes('dataset.coreCount'),'Published hydration must never collapse the permanent three-era grid.');
 const illustrationPass=fs.readFileSync(path.join(root,'illustration-pass.js'),'utf8');
@@ -118,6 +118,13 @@ assert.equal(mexicanVoice.originalTitle,'La intervención en México','The origi
 assert.ok(exactSupplement.payload.communityTiles.some(s=>s.communityKey==='jewish'&&s.comparisonType==='same_topic'&&s.topicKey==='mexico_church_state_conflict_1926'),'A second minority press must contribute a verified same-topic perspective.');
 assert.ok(!exactSupplement.payload.communityTiles.some(s=>/national-origins quota/i.test(s.summary||'')),'An unrelated Jewish press lead must not be substituted for topical perspective.');
 assert.ok(exactSupplement.payload.communityTiles.some(s=>s.communityKey==='black'&&s.dateRelation==='nearest_weekly_issue'&&s.searchOutcome==='same_topic_not_verified'&&s.sourceSelectionNote),'The Black Press fallback must be an explicit, sourced nearest-weekly audit.');
+const september4Supplement=applyEditorialSupplements({stories:{
+  y100:{major:{title:'1926 lead',sourceUrl:'https://example.com/1926',issueDate:'1926-09-04'}},
+  y75:{title:'1951 lead',sourceUrl:'https://example.com/1951',issueDate:'1951-09-04'},
+}},'2026-09-04');
+const september4Exact=sanitizeExactDateEdition(september4Supplement,'2026-09-04');
+assert.equal(september4Exact.complete,true,'The September 4 exact-date issue record must restore the missing 1826 core without weakening the three-era publication gate.');
+assert.equal(september4Exact.payload.stories.y200.articleType,'issue_record','The 1826 source must be labeled transparently as an issue record rather than a fabricated article headline.');
 assert.equal(communityDateStory({title:'Weekly lead',sourceUrl:'https://example.com/weekly',issueDate:'1926-09-04',comparisonType:'community_lead',dateRelation:'nearest_weekly_issue'},'2026-09-02'),true,'A labeled nearest weekly community lead within seven days is valid.');
 assert.equal(communityDateStory({title:'False response',sourceUrl:'https://example.com/false-response',issueDate:'1926-09-04',comparisonType:'same_event',dateRelation:'nearest_weekly_issue'},'2026-09-02'),false,'An off-date weekly story must never pass as a same-event response.');
 const adjacentTopic={title:'Related daily report',sourceUrl:'https://example.com/related',issueDate:'1926-09-01',eventKey:'related_event',topicKey:'mexico_church_state_conflict_1926',comparisonType:'same_topic',dateRelation:'previous_daily_issue'};
@@ -135,6 +142,12 @@ assert.ok(contentTodayRoute.includes('Promise.all([')&&contentTodayRoute.include
 const engineJs=fs.readFileSync(path.join(root,'lib/engine.js'),'utf8');
 assert.ok(engineJs.includes('function visualIdentity'),'Visual rights and placement must share one canonical archive/asset identity contract.');
 assert.ok(engineJs.includes('source_url:visualIdentity(raw)'),'Visual approval items must use the same identity contract as rights filtering.');
+assert.ok(engineJs.includes("policy:'single_newsroom_publish_v1'")&&engineJs.includes('publishEditionSlots(run'),'The normal newsroom publish stage must use the one authoritative edition writer.');
+const publisherJs=fs.readFileSync(path.join(root,'lib/publisher.js'),'utf8');
+assert.ok(publisherJs.includes("reason:'incomplete_exact_date_slots'"),'The authoritative publisher must hold an edition until all three exact-date eras are present.');
+const checkpointPublisherJs=fs.readFileSync(path.join(root,'lib/checkpoint-publisher.js'),'utf8');
+assert.ok(checkpointPublisherJs.includes("edition?.status==='published'&&sanitized?.complete"),'A partial publication must never lock the checkpoint or replace the last complete public edition.');
+assert.ok(fs.readFileSync(path.join(root,'lib/editorial-supplements.js'),'utf8').includes("'2026-09-04'")&&fs.readFileSync(path.join(root,'lib/editorial-supplements.js'),'utf8').includes('1826-09-04/ed-1'),'The September 4 edition must include the verified surviving 1826 exact-date issue record.');
 assert.ok(!fs.readFileSync(path.join(root,'lib/prompts.js'),'utf8').includes('sideEraRecoveryPrompt'),'Dead legacy recovery prompt must not ship in the consolidated build.');
 const vercel=JSON.parse(fs.readFileSync(path.join(root,'vercel.json'),'utf8'));
 assert.ok(Array.isArray(vercel.crons)&&vercel.crons.some(c=>c.path==='/api/cron/newsroom'),'The automatic newsroom must have a scheduler route.');
@@ -206,5 +219,5 @@ assert.equal(healthResponse.statusCode,200,'The physical /api/health entrypoint 
 const healthPayload=JSON.parse(healthBody);
 assert.equal(healthPayload.ok,true,'Health response must report ok.');
 assert.equal(healthPayload.agents.length,19,'Health response must expose the canonical 19-agent roster.');
-assert.equal(healthPayload.build,'2026-09-04.iphone-rollover-observability.5','Health response must expose the current build ID.');
+assert.equal(healthPayload.build,'2026-09-04.exact-date-authoritative-publish.6','Health response must expose the current build ID.');
 console.log('HEALTH_ROUTE_REGRESSION_TESTS_PASS');
